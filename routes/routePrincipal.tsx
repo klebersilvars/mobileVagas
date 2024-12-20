@@ -1,17 +1,26 @@
-import React from 'react'
-import {NavigationContainer} from '@react-navigation/native'
-import {createStackNavigator} from '@react-navigation/stack'
-import App from '../App';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import OnBoarding from '../src/components/onBoarding';
+import PageHome from '../src/pages/pageHome';
+
+const Stack = createStackNavigator();
 
 export default function Routes() {
-
-    const Stack = createStackNavigator();
-
     return (
-      <NavigationContainer>
-        <Stack.Navigator>
-          <Stack.Screen name="App" component={App} />
-        </Stack.Navigator>
-      </NavigationContainer>
+        <NavigationContainer>
+            <Stack.Navigator initialRouteName="OnBoarding">
+                <Stack.Screen
+                    name="OnBoarding"
+                    component={OnBoarding}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="PageHome"
+                    component={PageHome}
+                    options={{ headerShown: false }}
+                />
+            </Stack.Navigator>
+        </NavigationContainer>
     );
-  }
+}
