@@ -1,6 +1,9 @@
 import React from 'react';
-import { View, StyleSheet, Image, Button, StatusBar, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Image, Button, StatusBar, Text, TouchableOpacity, Dimensions } from 'react-native';
 import {useFonts, Roboto_100Thin, Roboto_700Bold} from '@expo-google-fonts/roboto'
+
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 export default function PageHome() {
 
@@ -8,6 +11,7 @@ export default function PageHome() {
         Roboto_100Thin,
         Roboto_700Bold
     })
+
 
     return (
         <View style={styles.container}>
@@ -19,19 +23,23 @@ export default function PageHome() {
             />
             <View style={styles.overlay} />
             <View style={styles.ContainerTextTitulo}>
-                <Text style={styles.TextTitulo}>NOVOS TALENTOS</Text>
+                <Image
+                style={styles.logoPageHome}
+                source={require('../../assets/logo-tela-home2.png')}
+                />
+                <Text style={styles.textNovosTalentos}>Novos Talentos</Text>
             </View>
             <View style={styles.ContainerButtons}>
                 <View style={styles.infoLoginContainer}>
                     <Text style={styles.textLogin}>Já tem uma conta? Faça o login clicando no botão abaixo</Text>
                     <TouchableOpacity style={styles.buttonEntrar}>
-                        <Text style={styles.textButtonEntrar}>Entrar</Text>
+                        <Text style={styles.textButtonEntrar}>ENTRAR</Text>
                     </TouchableOpacity>
                 </View>
                 <View style={styles.infoCadastroContainer}>
                     <Text style={styles.textLogin}>Não possui uma conta? Registre-se agora e participe da melhor plataforma de empregos para iniciantes.</Text>
                     <TouchableOpacity style={styles.buttonEntrar}>
-                        <Text style={styles.textButtonEntrar}>Registrar</Text>
+                        <Text style={styles.textButtonEntrar}>REGISTRAR</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -53,22 +61,39 @@ const styles = StyleSheet.create({
     },
     overlay: {
         ...StyleSheet.absoluteFillObject, // Cobre toda a tela
-        backgroundColor: 'rgba(0, 0, 0, 0.842)', // Fundo preto com opacidade
+        backgroundColor: 'rgba(0, 0, 0, 0.808)', // Fundo preto com opacidade
     },
     TextTitulo: {
         color: 'white',
-        fontSize: 45,
+        fontSize: windowWidth / 9,
         textAlign: 'center',
         fontFamily: 'Roboto_700Bold'
     },
+    logoPageHome: {
+        position: 'absolute',
+        top: -230
+    },
+    textNovosTalentos: {
+        position:'absolute',
+        top: 20,
+        color: 'white',
+        textTransform: 'uppercase',
+        fontFamily: 'Roboto_700Bold',
+        fontSize: windowWidth /10
+    },
     ContainerTextTitulo: {
         padding: 10,
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center'
     },
     infoLoginContainer: {
         position: 'absolute',
         width: '100%',
         height: 100,
-        top: 60,
+        top: 100,
         padding: 10,
         display: 'flex',
         gap: 10,
@@ -79,7 +104,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         width: '100%',
         height: 100,
-        top: 175,
+        top: 200,
         padding: 10,
         display: 'flex',
         gap: 10,
@@ -92,7 +117,7 @@ const styles = StyleSheet.create({
     },
     textLogin: {
         color: 'white',
-        fontSize: 14,
+        fontSize: windowWidth / 28,
         textAlign: 'center',
         fontFamily: 'Roboto_700Bold'
     },
