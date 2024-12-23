@@ -1,16 +1,27 @@
 import React from 'react';
 import { View, StyleSheet, Image, Button, StatusBar, Text, TouchableOpacity, Dimensions } from 'react-native';
 import {useFonts, Roboto_100Thin, Roboto_700Bold} from '@expo-google-fonts/roboto'
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../routes/RootStackParamList'; // Certifique-se de que este caminho está correto
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
+type OnBoardingNavigationProp = StackNavigationProp<RootStackParamList, 'OnBoarding'>;
 
 export default function PageHome() {
+
+    const navigation = useNavigation<OnBoardingNavigationProp>();
 
     const [fontLoadead] = useFonts({
         Roboto_100Thin,
         Roboto_700Bold
     })
+
+
+    function irPageLogin() {
+        navigation.navigate('PageLogin');
+    }
 
 
     return (
@@ -32,7 +43,7 @@ export default function PageHome() {
             <View style={styles.ContainerButtons}>
                 <View style={styles.infoLoginContainer}>
                     <Text style={styles.textLogin}>Já tem uma conta? Faça o login clicando no botão abaixo</Text>
-                    <TouchableOpacity style={styles.buttonEntrar}>
+                    <TouchableOpacity onPress={irPageLogin} style={styles.buttonEntrar}>
                         <Text style={styles.textButtonEntrar}>ENTRAR</Text>
                     </TouchableOpacity>
                 </View>
@@ -135,7 +146,8 @@ const styles = StyleSheet.create({
         color: 'white',
         textTransform: 'uppercase',
         fontSize: 19,
-        fontFamily: 'Roboto_700Bold'
+        fontFamily: 'Roboto_700Bold',
+        fontWeight: 'bold'
     },
     
 });
