@@ -8,7 +8,7 @@ import { RootStackParamList } from '../../routes/RootStackParamList'; // Certifi
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-type OnBoardingNavigationProp = StackNavigationProp<RootStackParamList, 'OnBoarding'>;
+type OnBoardingNavigationProp = StackNavigationProp<RootStackParamList>;
 
 export default function OnBoarding() {
     const navigation = useNavigation<OnBoardingNavigationProp>();
