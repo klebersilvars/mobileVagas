@@ -6,7 +6,7 @@ import PageHome from '../src/pages/pageHome';
 import PageLogin from '../src/pages/pageLogin';
 import PageRegistroOne from '../src/pages/pageRegistroOne';
 import PageRegistroTwo from '../src/pages/pageRegistroTwo';
-import HeaderLeft from '../src/components/HeaderLeft/headerleft';
+import HeaderLeft from '../src/components/HeaderLeft/HeaderLeft';
 
 
 

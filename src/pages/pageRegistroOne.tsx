@@ -1,22 +1,59 @@
-import React, { useState } from 'react';
-import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput, Switch, TouchableOpacity, Alert } from 'react-native';
-import ButtonStepOne from '../components/ButtonStepOne';
+import React, { useState, useEffect } from 'react';
+import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput } from 'react-native';
+import { ButtonStepOne } from '../components/ButtonStepOne';
+import { ButtonStepOneDisabled } from '../components/ButtonStepOne';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../routes/RootStackParamList';
 import { useNavigation } from '@react-navigation/native';
+import { TextInputMask } from 'react-native-masked-text';
 
-type NavigationStep = StackNavigationProp<RootStackParamList>
+type NavigationStep = StackNavigationProp<RootStackParamList>;
 
 export default function PageRegistroOne() {
 
-    //useState
-    const [SwitchPassowrd, setSwitchPassword] = useState<boolean>(false)
-    const [nomeCompletoRegistro, setNomeCompletoRegistro] = useState<string>('')
-    const [emailRegistro, setEmailRegitro] = useState<string>('')
+    // useState
+    const [nomeCompletoRegistro, setNomeCompletoRegistro] = useState<string>('');
+    const [emailRegistro, setEmailRegitro] = useState<string>('');
+    const [dataNascimentoRegistro, setDataNascimentoRegistro] = useState<string>('');
+    const [anoNascimento, setAnoNascimento] = useState<string>('');
+    const [anoAtual, setAnoAtual] = useState<number>(0);
+    const [maiorIdade, setMaiorIdade] = useState<boolean>(false);
+    const [mensagemIdade, setMensagemIdade] = useState<string>(''); // Estado para a mensagem de idade
     const navigation = useNavigation<NavigationStep>();
 
-    function irPageStepTwo():void {
-        navigation.navigate('PageRegistroTwo')
+    useEffect(() => {
+        const date = new Date();
+        setAnoAtual(date.getFullYear());
+    }, []);
+
+    // Função para verificar a idade e habilitar/desabilitar o botão
+    const verIdade = (anoNascimento: string) => {
+        const anoNascimentoNum = parseInt(anoNascimento);
+
+        if (anoNascimentoNum && (anoAtual - anoNascimentoNum) >= 18) {
+            setMaiorIdade(true); // Habilita o botão
+            setMensagemIdade(''); // Limpa qualquer mensagem caso a pessoa seja maior de idade
+        } else {
+            setMaiorIdade(false); // Desabilita o botão
+            setMensagemIdade('Você é menor de idade, não será possível prosseguir com a criação da conta.'); // Mensagem para menor de idade
+        }
+    };
+
+    // Função para lidar com a mudança da data de nascimento
+    const handleDateChange = (text: string) => {
+        setDataNascimentoRegistro(text);
+        if (text.length === 10) {
+            const ano = text.slice(6, 10);  // Extrai o ano da data
+            setAnoNascimento(ano);  // Armazena o ano de nascimento
+            verIdade(ano);  // Verifica a idade
+        } else if (text.length === 0) {
+            setMaiorIdade(false);  // Se a data for apagada, desabilita o botão
+            setMensagemIdade('');  // Limpa a mensagem
+        }
+    };
+
+    function irPageStepTwo(): void {
+        navigation.navigate('PageRegistroTwo');
     }
 
     return (
@@ -50,20 +87,35 @@ export default function PageRegistroOne() {
                         />
                     </View>
 
-                    <View style={styles.containerButtonStepOne}>
-                        <ButtonStepOne onPress={irPageStepTwo}/>
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.textLabel}>Data de nascimento</Text>
+                        <TextInputMask
+                            type={'custom'}
+                            options={{
+                                mask: '99/99/9999', // Máscara para data: DD/MM/YYYY
+                            }}
+                            value={dataNascimentoRegistro}
+                            onChangeText={handleDateChange} // Atualiza o valor do input
+                            style={styles.input}
+                            placeholder="00/00/2000"
+                            keyboardType='numeric'
+                        />
+                        {/* Exibe a mensagem de menor de idade se necessário */}
+                        {mensagemIdade ? (
+                                <Text style={styles.mensagemIdade}>{mensagemIdade}</Text>
+                            ) : null}
                     </View>
 
-                    {/* <View style={styles.acoesFormContainer}>
-                        <View style={styles.containerMostrarSenha}>
-                            <Text style={{fontWeight: 'bold', color: '#777777'}}>Mostrar senha</Text>
-                            <Switch
-                                value={SwitchPassowrd}
-                                thumbColor={SwitchPassowrd ? 'green' : 'red'}
-                                onValueChange={value => setSwitchPassword(value)}
-                            />
+                    {/* Lógica para habilitar/desabilitar o botão baseado na maioridade */}
+                    {maiorIdade ? (
+                        <View style={styles.containerButtonStepOne}>
+                            <ButtonStepOne disabled={false} onPress={irPageStepTwo} />
                         </View>
-                    </View> */}
+                    ) : (
+                        <View style={styles.containerButtonStepOne}>
+                            <ButtonStepOneDisabled onPress={irPageStepTwo} disabled={true}/>
+                        </View>
+                    )}
                 </View>
             </SafeAreaView>
         </>
@@ -132,54 +184,18 @@ const styles = StyleSheet.create({
         borderColor: '#3498DB',
         paddingHorizontal: 10,
     },
-    acoesFormContainer: {
-        width: '100%',
-        height: 'auto',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-around',
-        flexDirection: 'row',
-        position: 'relative'
-    },
-    containerMostrarSenha: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '50%',
-        position: 'absolute',
-        left: 15,
-        top: -30,
-    },
-    textEsqueciSenha: {
-        fontSize: 13,
-        color: '#777777',
-        fontWeight: 'bold',
-    },
-    ContainerEsqueciSenha: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '50%',
-        position: 'absolute',
-        right: 0,
-        top: -15,
-    },
-    buttonFazerLogin: {
-        backgroundColor: '#3498DB',
-        width: '50%',
-        height: 46,
-        display: 'flex',
-        justifyContent: 'center',
-        borderRadius: 10,
-        elevation: 1
-    },
     containerButtonStepOne: {
-        width:'100%',
+        width: '100%',
         height: 50,
         display: 'flex',
-        alignItems:'center',
-        justifyContent: 'center'
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    mensagemIdade: {
+        color: 'red',
+        marginTop: 10,
+        width: '70%',
+        fontSize: 14,
+        textAlign: 'center'
     }
 });

@@ -7,11 +7,22 @@ const height = Dimensions.get('window').height
 // Definindo o tipo das props
 interface ButtonStepOneProps {
     onPress: () => void; // onPress é uma função que não recebe parâmetros e não retorna nada
+    disabled: boolean; // minha prop vai receber boolean diretamente.
 }
 
-const ButtonStepOne: React.FC<ButtonStepOneProps> = ({ onPress }) => {
+const ButtonStepOne: React.FC<ButtonStepOneProps> = ({ onPress, disabled }) => {
     return (
-        <TouchableOpacity style={styles.containerButton} onPress={onPress}>
+        <TouchableOpacity style={styles.containerButton} disabled={disabled} onPress={onPress}>
+            <Text style={styles.textButtonStepOne}>
+                Continuar
+            </Text>
+        </TouchableOpacity>
+    );
+};
+
+const ButtonStepOneDisabled: React.FC<ButtonStepOneProps> = ({ onPress, disabled }) => {
+    return (
+        <TouchableOpacity style={styles.containerButtonDisabled} disabled={disabled} onPress={onPress}>
             <Text style={styles.textButtonStepOne}>
                 Continuar
             </Text>
@@ -29,6 +40,15 @@ const styles = StyleSheet.create({
         height: 46,
         borderRadius:10,
     },
+    containerButtonDisabled: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'gray',
+        width: width * 0.73, // tentando responsividade
+        height: 46,
+        borderRadius:10,
+    },
     textButtonStepOne: {
         color: 'white',
         fontSize: 16,
@@ -36,4 +56,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export default ButtonStepOne
+export {ButtonStepOne, ButtonStepOneDisabled}
