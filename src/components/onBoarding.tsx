@@ -13,8 +13,8 @@ type OnBoardingNavigationProp = StackNavigationProp<RootStackParamList>;
 export default function OnBoarding() {
     const navigation = useNavigation<OnBoardingNavigationProp>();
 
-    function navegarPageHome() {
-        navigation.navigate('PageHome'); // Corrigido
+    function navegarPageHome():void {
+        navigation.navigate('PageHome');
     }
 
     return (
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'space-around',
         alignItems: 'center',
-        backgroundColor: '#3498DB',
+        backgroundColor: '#ECF0F1',
         padding: 20,
     },
 
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'space-around',
         alignItems: 'center',
-        backgroundColor: '#1ABC9C',
+        backgroundColor: '#ECF0F1',
         padding: 20,
     },
 
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
         fontSize: windowWidth / 22,
         textAlign: 'justify', // Alinhamento alterado para evitar espaços entre palavras
         fontWeight: 'bold',
-        color: '#FFFFFF',
+        color: 'black',
         lineHeight: 24,
     },
 
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
         fontSize: windowWidth / 22,
         textAlign: 'justify', // Alinhamento alterado para evitar espaços entre palavras
         fontWeight: 'bold',
-        color: '#FFFFFF',
+        color: 'black',
         lineHeight: 24,
     },
 

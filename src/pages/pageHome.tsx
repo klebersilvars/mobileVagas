@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, StyleSheet, Image, Button, StatusBar, Text, TouchableOpacity, Dimensions } from 'react-native';
-import {useFonts, Roboto_100Thin, Roboto_700Bold} from '@expo-google-fonts/roboto'
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../routes/RootStackParamList'; // Certifique-se de que este caminho está correto
@@ -13,16 +12,13 @@ export default function PageHome() {
 
     const navigation = useNavigation<OnBoardingNavigationProp>();
 
-    const [fontLoadead] = useFonts({
-        Roboto_100Thin,
-        Roboto_700Bold
-    })
-
-
     function irPageLogin() {
         navigation.navigate('PageLogin');
     }
 
+    function irPageRegistro() {
+        navigation.navigate('PageRegistroOne');
+    }
 
     return (
         <View style={styles.container}>
@@ -33,13 +29,6 @@ export default function PageHome() {
                 source={require('../../assets/imagem-tela-principal.jpg')}
             />
             <View style={styles.overlay} />
-            <View style={styles.ContainerTextTitulo}>
-                <Image
-                style={styles.logoPageHome}
-                source={require('../../assets/logo-tela-home2.png')}
-                />
-                <Text style={styles.textNovosTalentos}>Novos Talentos</Text>
-            </View>
             <View style={styles.ContainerButtons}>
                 <View style={styles.infoLoginContainer}>
                     <Text style={styles.textLogin}>Já tem uma conta? Faça o login clicando no botão abaixo</Text>
@@ -49,7 +38,7 @@ export default function PageHome() {
                 </View>
                 <View style={styles.infoCadastroContainer}>
                     <Text style={styles.textLogin}>Não possui uma conta? Registre-se agora e participe da melhor plataforma de empregos para iniciantes.</Text>
-                    <TouchableOpacity style={styles.buttonEntrar}>
+                    <TouchableOpacity onPress={irPageRegistro} style={styles.buttonEntrar}>
                         <Text style={styles.textButtonEntrar}>REGISTRAR</Text>
                     </TouchableOpacity>
                 </View>
@@ -78,19 +67,18 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: windowWidth / 9,
         textAlign: 'center',
-        fontFamily: 'Roboto_700Bold'
+
     },
     logoPageHome: {
         position: 'absolute',
         top: -230
     },
     textNovosTalentos: {
-        position:'absolute',
+        position: 'absolute',
         top: 20,
         color: 'white',
         textTransform: 'uppercase',
-        fontFamily: 'Roboto_700Bold',
-        fontSize: windowWidth /10
+        fontSize: windowWidth / 10
     },
     ContainerTextTitulo: {
         padding: 10,
@@ -104,7 +92,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         width: '100%',
         height: 100,
-        top: 100,
+        top: 190,
         padding: 10,
         display: 'flex',
         gap: 10,
@@ -115,7 +103,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         width: '100%',
         height: 100,
-        top: 200,
+        top: 310,
         padding: 10,
         display: 'flex',
         gap: 10,
@@ -130,7 +118,6 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: windowWidth / 28,
         textAlign: 'center',
-        fontFamily: 'Roboto_700Bold'
     },
     buttonEntrar: {
         width: '75%',
@@ -146,8 +133,7 @@ const styles = StyleSheet.create({
         color: 'white',
         textTransform: 'uppercase',
         fontSize: 19,
-        fontFamily: 'Roboto_700Bold',
         fontWeight: 'bold'
     },
-    
+
 });

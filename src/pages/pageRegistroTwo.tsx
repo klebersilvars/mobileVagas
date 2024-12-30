@@ -1,15 +1,22 @@
 import React, { useState } from 'react';
-import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput, Switch, TouchableOpacity, Alert } from 'react-native';
+import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput, Button } from 'react-native';
+import ButtonStepOne from '../components/ButtonStepOne';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../routes/RootStackParamList';
+import { useNavigation } from '@react-navigation/native';
 
-export default function PageLogin() {
+type NavigationStep = StackNavigationProp<RootStackParamList>
+
+export default function PageRegistroTwo() {
 
     //useState
     const [SwitchPassowrd, setSwitchPassword] = useState<boolean>(false)
-    const [emailLogin, setEmailLogin] = useState<string>('')
-    const [PassLogin, setPassLogin] = useState<string|number>('')
+    const [nomeCompletoRegistro, setNomeCompletoRegistro] = useState<string>('')
+    const [emailRegistro, setEmailRegitro] = useState<string>('')
+    const navigation = useNavigation<NavigationStep>()
 
-    function esquecerSenha() {
-        Alert.alert('AVISO!', 'Implementação em andamento, peço que aguarde a próxima atualização.')
+    function irPageStepTwo():void {
+        alert('Teste botão')
     }
 
 
@@ -18,33 +25,36 @@ export default function PageLogin() {
             <SafeAreaView style={styles.container}>
                 <StatusBar backgroundColor="#ECF0F1" barStyle="dark-content" />
                 <View style={styles.containerLogo}>
-                    <Text style={styles.textLogo}>NOVOS TALENTOS</Text>
+                    <Text style={styles.textLogo}>Suas informações</Text>
                     <Text style={styles.textDescricaoLogo}>
-                        Venha aproveitar o melhor aplicativo de vagas para iniciantes!
-                    </Text>
+                    Sua plataforma para iniciar sua jornada profissional com facilidade.</Text>
                 </View>
 
                 <View style={styles.formLoginContainer}>
                     <View style={styles.inputContainer}>
-                        <Text style={styles.textLabel}>E-mail</Text>
+                        <Text style={styles.textLabel}>Nome Completo</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="Ex: teste.500@gmail.com"
-                            keyboardType="email-address"
-                            onChangeText={value => setEmailLogin(value)}
+                            placeholder="Arleuda da silva"
+                            keyboardType="default"
+                            onChangeText={value => setNomeCompletoRegistro(value)}
                         />
                     </View>
                     <View style={styles.inputContainer}>
-                        <Text style={styles.textLabel}>Senha</Text>
+                        <Text style={styles.textLabel}>E-mail</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="********"
-                            onChangeText={value => setPassLogin(value)}
-                            secureTextEntry={SwitchPassowrd ? false : true}
+                            placeholder="teste@gmail.com"
+                            keyboardType='email-address'
+                            onChangeText={value => setEmailRegitro(value)}
                         />
                     </View>
 
-                    <View style={styles.acoesFormContainer}>
+                    <View style={styles.containerButtonStepOne}>
+                        <ButtonStepOne onPress={irPageStepTwo}/>
+                    </View>
+
+                    {/* <View style={styles.acoesFormContainer}>
                         <View style={styles.containerMostrarSenha}>
                             <Text style={{fontWeight: 'bold', color: '#777777'}}>Mostrar senha</Text>
                             <Switch
@@ -53,17 +63,7 @@ export default function PageLogin() {
                                 onValueChange={value => setSwitchPassword(value)}
                             />
                         </View>
-                        <View style={styles.ContainerEsqueciSenha}>
-                            <TouchableOpacity onPress={esquecerSenha}>
-                                <Text style={styles.textEsqueciSenha}>Esqueci minha senha</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                    </View>
-
-                    <TouchableOpacity style={styles.buttonFazerLogin}>
-                        <Text style={{textAlign: 'center', color: 'white', fontSize: 18, textTransform: 'uppercase', fontWeight: 'bold'}}>Entrar</Text>
-                    </TouchableOpacity>
+                    </View> */}
                 </View>
             </SafeAreaView>
         </>
@@ -78,6 +78,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#ECF0F1',
+        position: 'relative'
     },
     containerLogo: {
         width: '100%',
@@ -97,6 +98,8 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#777777',
         fontWeight: 'bold',
+        width: '70%',
+        textAlign: 'center'
     },
     formLoginContainer: {
         height: 'auto',
@@ -120,7 +123,7 @@ const styles = StyleSheet.create({
         fontSize: 19,
         textAlign: 'left',
         position: 'absolute',
-        top: -23,
+        top: -27,
         left: 37,
     },
     input: {
@@ -129,7 +132,7 @@ const styles = StyleSheet.create({
         width: '80%',
         borderRadius: 3,
         marginTop: 5,
-        borderColor: '#1ABC9C',
+        borderColor: '#3498DB',
         paddingHorizontal: 10,
     },
     acoesFormContainer: {
@@ -174,5 +177,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderRadius: 10,
         elevation: 1
+    },
+    containerButtonStepOne: {
+        width:'100%',
+        height: 50,
+        display: 'flex',
+        alignItems:'center',
+        justifyContent: 'center'
     }
 });
