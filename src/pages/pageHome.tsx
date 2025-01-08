@@ -1,16 +1,31 @@
-import React from 'react';
-import { View, StyleSheet, Image, Button, StatusBar, Text, TouchableOpacity, Dimensions } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, StatusBar, Text, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../routes/RootStackParamList'; // Certifique-se de que este caminho está correto
 
+
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
-type OnBoardingNavigationProp = StackNavigationProp<RootStackParamList, 'OnBoarding'>;
+type OnBoardingNavigationProp = StackNavigationProp<RootStackParamList>;
 
 export default function PageHome() {
 
     const navigation = useNavigation<OnBoardingNavigationProp>();
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+
+    // Redefinir o loading quando a tela ganhar o foco
+    useFocusEffect(
+        React.useCallback(() => {
+            setIsLoading(true); // Ativa o carregamento ao voltar para a tela
+            const timer = setTimeout(() => {
+                setIsLoading(false); // Desativa o carregamento após 2 segundos
+            }, 2000);
+
+            return () => clearTimeout(timer); // Limpa o timeout ao sair da tela
+        }, [])
+    );
+
 
     function irPageLogin() {
         navigation.navigate('PageLogin');
@@ -21,29 +36,32 @@ export default function PageHome() {
     }
 
     return (
-        <View style={styles.container}>
-            <StatusBar barStyle='light-content' />
-            <Image
-                resizeMode="stretch"
-                style={styles.imagePrincipal}
-                source={require('../../assets/imagem-tela-principal.jpg')}
-            />
-            <View style={styles.overlay} />
-            <View style={styles.ContainerButtons}>
-                <View style={styles.infoLoginContainer}>
-                    <Text style={styles.textLogin}>Já tem uma conta? Faça o login clicando no botão abaixo</Text>
-                    <TouchableOpacity onPress={irPageLogin} style={styles.buttonEntrar}>
-                        <Text style={styles.textButtonEntrar}>ENTRAR</Text>
-                    </TouchableOpacity>
+        <>
+            {isLoading ? (
+                <View style={[styles.container]}>
+                    <ActivityIndicator size={80} color="black" />
                 </View>
-                <View style={styles.infoCadastroContainer}>
-                    <Text style={styles.textLogin}>Não possui uma conta? Registre-se agora e participe da melhor plataforma de empregos para iniciantes.</Text>
-                    <TouchableOpacity onPress={irPageRegistro} style={styles.buttonEntrar}>
-                        <Text style={styles.textButtonEntrar}>REGISTRAR</Text>
-                    </TouchableOpacity>
+            ) : (
+                <View style={styles.container}>
+                    <StatusBar barStyle='light-content' />
+                    <Text style={styles.titleNovosTalentos}>Novos Talentos</Text>
+                    <Text style={styles.textSlogan}>O melhor aplicativo para iniciantes encontrarem oportunidades de emprego</Text>
+                    <View style={styles.ContainerButtons}>
+
+                        <TouchableOpacity onPress={irPageLogin} style={styles.buttonEntrar}>
+                            <Text style={styles.textButtonEntrar}>ENTRAR</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity onPress={irPageRegistro} style={styles.buttonRegistrar}>
+                            <Text style={styles.textButtonEntrar}>REGISTRAR</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>
-        </View>
+            )
+
+            }
+
+        </>
     );
 }
 
@@ -53,25 +71,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
+        backgroundColor: '#ECF0F1'
     },
-    imagePrincipal: {
-        height: '100%',
-        width: '100%',
-        position: 'absolute', // Deixa a imagem como fundo
-    },
-    overlay: {
-        ...StyleSheet.absoluteFillObject, // Cobre toda a tela
-        backgroundColor: 'rgba(0, 0, 0, 0.808)', // Fundo preto com opacidade
-    },
-    TextTitulo: {
-        color: 'white',
-        fontSize: windowWidth / 9,
-        textAlign: 'center',
-
-    },
-    logoPageHome: {
-        position: 'absolute',
-        top: -230
+    titleNovosTalentos: {
+        fontSize: 38,
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
     },
     textNovosTalentos: {
         position: 'absolute',
@@ -92,7 +97,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         width: '100%',
         height: 100,
-        top: 190,
+        top: windowHeight / 10,
         padding: 10,
         display: 'flex',
         gap: 10,
@@ -103,7 +108,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         width: '100%',
         height: 100,
-        top: 310,
+        top: windowHeight / 3.8,
         padding: 10,
         display: 'flex',
         gap: 10,
@@ -111,22 +116,38 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     ContainerButtons: {
-        position: 'relative',
         width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative'
     },
     textLogin: {
-        color: 'white',
         fontSize: windowWidth / 28,
         textAlign: 'center',
+        fontWeight: 'bold'
     },
     buttonEntrar: {
-        width: '75%',
-        height: 46,
-        backgroundColor: '#3498DB',
+        width: '50%',
+        height: 50,
+        backgroundColor: 'black',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 10,
+        position: 'absolute',
+        top: windowHeight / 5
+    },
+    buttonRegistrar: {
+        width: '50%',
+        height: 50,
+        backgroundColor: 'black',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 10,
+        position: 'absolute',
+        top: windowHeight / 3.5
     },
     textButtonEntrar: {
         textAlign: 'center',
@@ -135,5 +156,11 @@ const styles = StyleSheet.create({
         fontSize: 19,
         fontWeight: 'bold'
     },
+    textSlogan: {
+        color: 'grey',
+        fontWeight: 'bold',
+        width: '75%',
+        textAlign: 'justify'
+    }
 
 });

@@ -10,7 +10,7 @@ interface ButtonStepOneProps {
     disabled: boolean; // minha prop vai receber boolean diretamente.
 }
 
-const ButtonStepOne: React.FC<ButtonStepOneProps> = ({ onPress, disabled }) => {
+export const ButtonStepOne: React.FC<ButtonStepOneProps> = ({ onPress, disabled }) => {
     return (
         <TouchableOpacity style={styles.containerButton} disabled={disabled} onPress={onPress}>
             <Text style={styles.textButtonStepOne}>
@@ -20,7 +20,7 @@ const ButtonStepOne: React.FC<ButtonStepOneProps> = ({ onPress, disabled }) => {
     );
 };
 
-const ButtonStepOneDisabled: React.FC<ButtonStepOneProps> = ({ onPress, disabled }) => {
+export const ButtonStepOneDisabled: React.FC<ButtonStepOneProps> = ({ onPress, disabled }) => {
     return (
         <TouchableOpacity style={styles.containerButtonDisabled} disabled={disabled} onPress={onPress}>
             <Text style={styles.textButtonStepOne}>
@@ -56,4 +56,3 @@ const styles = StyleSheet.create({
     }
 })
 
-export {ButtonStepOne, ButtonStepOneDisabled}

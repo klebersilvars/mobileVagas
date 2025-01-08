@@ -74,7 +74,7 @@ export default function PageRegistroOne() {
                             style={styles.input}
                             placeholder="Arleuda da silva"
                             keyboardType="default"
-                            onChangeText={value => setNomeCompletoRegistro(value)}
+                            onChangeText={(value:string) => setNomeCompletoRegistro(value)}
                         />
                     </View>
                     <View style={styles.inputContainer}>
@@ -83,7 +83,7 @@ export default function PageRegistroOne() {
                             style={styles.input}
                             placeholder="teste@gmail.com"
                             keyboardType='email-address'
-                            onChangeText={value => setEmailRegitro(value)}
+                            onChangeText={(value:string) => setEmailRegitro(value)}
                         />
                     </View>
 

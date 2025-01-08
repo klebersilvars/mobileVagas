@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput, Switch, TouchableOpacity, Alert } from 'react-native';
+import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput, Switch, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function PageLogin() {
 
@@ -7,15 +8,33 @@ export default function PageLogin() {
     const [SwitchPassowrd, setSwitchPassword] = useState<boolean>(false)
     const [emailLogin, setEmailLogin] = useState<string>('')
     const [PassLogin, setPassLogin] = useState<string|number>('')
+    const [IsLoadingIndicator, setIsLoadingIndicator] = useState<boolean>(true);
 
     function esquecerSenha() {
         Alert.alert('AVISO!', 'Implementação em andamento, peço que aguarde a próxima atualização.')
     }
 
+    useFocusEffect(
+        React.useCallback(()=> {
+            setIsLoadingIndicator(true) // ativa o carregamento
+            const timer = setTimeout(() => {
+                setIsLoadingIndicator(false) //desativa o carregamento
+            }, 2000);
+
+            return () => clearTimeout(timer); // Limpa o timeout ao sair da tela
+        }, [])   
+    )
 
     return (
         <>
-            <SafeAreaView style={styles.container}>
+            { IsLoadingIndicator ? (
+                <View style={{flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                    <ActivityIndicator size={80} color="black"/>
+                </View>
+            ): (
+
+                <SafeAreaView style={styles.container}>
                 <StatusBar backgroundColor="#ECF0F1" barStyle="dark-content" />
                 <View style={styles.containerLogo}>
                     <Text style={styles.textLogo}>NOVOS TALENTOS</Text>
@@ -66,6 +85,9 @@ export default function PageLogin() {
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>
+            )
+        
+        }
         </>
     );
 }
@@ -127,9 +149,9 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         height: 46,
         width: '80%',
-        borderRadius: 3,
+        borderRadius: 5,
         marginTop: 5,
-        borderColor: '#1ABC9C',
+        borderColor: '#gray',
         paddingHorizontal: 10,
     },
     acoesFormContainer: {
@@ -167,8 +189,8 @@ const styles = StyleSheet.create({
         top: -15,
     },
     buttonFazerLogin: {
-        backgroundColor: '#3498DB',
-        width: '50%',
+        backgroundColor: 'black',
+        width: '75%',
         height: 46,
         display: 'flex',
         justifyContent: 'center',
