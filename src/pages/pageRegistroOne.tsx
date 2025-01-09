@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
         width: '80%',
         borderRadius: 5,
         marginTop: 5,
-        borderColor: '#3498DB',
+        borderColor: 'gray',
         paddingHorizontal: 10,
     },
     containerButtonStepOne: {

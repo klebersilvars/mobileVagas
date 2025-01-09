@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { ButtonStepOne } from '../components/ButtonStepOne';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../routes/RootStackParamList';
@@ -43,18 +43,20 @@ export default function PageRegistroTwo() {
 
         try {
             // Fazendo a requisição para a API ViaCEP
-            const response = await axios.get(`https://viacep.com.br/ws/${cepRegistro.replace('-', '')}/json/`);
-
+            const response = await axios.get(`https://viacep.com.br/ws/${cepRegistro}/json/`);
             if (response.data.erro) {
                 alert('CEP não encontrado!');
             } else {
                 setRegistroCepUser(response.data);
+                Alert.alert('Sucesso', 'Cep encontrado com sucesso')
+                setLoading(false)
             }
+            
         } catch (error) {
             console.error('Erro ao buscar CEP:', error);
-            setError('Erro ao buscar o CEP. Tente novamente!');
-        } finally {
-            setLoading(false); // Finaliza o carregamento
+            setError('Erro ao buscar o CEP. Tente novamente mais tarde!');
+        }finally{
+            
         }
     };
 
@@ -84,12 +86,13 @@ export default function PageRegistroTwo() {
                                 }}
                                 style={styles.input}
                                 placeholder="Somente números"
+                                keyboardType='numeric'
                                 onChangeText={(value: string) => setCepRegistro(value)}
                             />
 
                             <TouchableOpacity onPress={buscarCep} style={styles.buttonBuscarCep}>
                                 {loading ? (
-                                    <ActivityIndicator size={30} color="#fff" />
+                                    <ActivityIndicator size={35} color="#fff" />
                                 ) : (
                                     <Text style={styles.textBuscarCep}>Buscar</Text>
                                 )}
@@ -224,7 +227,7 @@ const styles = StyleSheet.create({
         width: '80%',
         borderRadius: 3,
         marginTop: 5,
-        borderColor: '#3498DB',
+        borderColor: 'gray',
         paddingHorizontal: 10,
     },
     inputDisabled: {
@@ -233,9 +236,9 @@ const styles = StyleSheet.create({
         width: '80%',
         borderRadius: 3,
         marginTop: 5,
-        borderColor: '#3498DB',
+        borderColor: 'gray',
         paddingHorizontal: 10,
-        backgroundColor: '#c0c0c0'
+        backgroundColor: '#c0c0c0b7'
     },
     containerButtonStepOne: {
         width: '100%',
@@ -245,16 +248,19 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     buttonBuscarCep: {
-        backgroundColor: '#3498DB',
+        backgroundColor: 'black',
         width: '50%',
         height: 46,
         display: 'flex',
         justifyContent: 'center',
         borderRadius: 10,
         elevation: 1,
-        marginTop: 5,
+        marginTop: 10,
     },
     textBuscarCep: {
         textAlign: 'center',
+        color: 'white',
+        fontWeight:'bold',
+        fontSize: 18,
     }
 });

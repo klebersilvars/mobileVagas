@@ -35,9 +35,9 @@ const styles = StyleSheet.create({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#3498DB',
+        backgroundColor: 'black',
         width: width * 0.73, // tentando responsividade
-        height: 46,
+        height: 50,
         borderRadius:10,
     },
     containerButtonDisabled: {
