@@ -5,6 +5,7 @@ import PageHome from '../src/pages/pageHome';
 import PageLogin from '../src/pages/pageLogin';
 import PageRegistroOne from '../src/pages/pageRegistroOne';
 import PageRegistroTwo from '../src/pages/pageRegistroTwo';
+import PageRegistroThree from '../src/pages/pageRegistroThree'
 import HeaderLeft from '../src/components/HeaderLeft/HeaderLeft';
 
 
@@ -31,7 +32,7 @@ export default function Routes() {
                             // Use navigation dentro de um componente de tela
                             <HeaderLeft />
                         ),
-                    }}/>
+                    }} />
                 <Stack.Screen
                     name="PageRegistroOne"
                     component={PageRegistroOne}
@@ -48,6 +49,20 @@ export default function Routes() {
                 <Stack.Screen
                     name="PageRegistroTwo"
                     component={PageRegistroTwo}
+                    options={{
+                        headerShown: true,           // Exibe o cabeçalho
+                        title: '',                   // Remove o título da tela
+                        headerTransparent: true,     // Torna o cabeçalho transparente
+                        headerLeft: () => (
+                            // Use navigation dentro de um componente de tela
+                            <HeaderLeft />
+                        ),
+                    }}
+                />
+
+                <Stack.Screen
+                    name="PageRegistroThree"
+                    component={PageRegistroThree}
                     options={{
                         headerShown: true,           // Exibe o cabeçalho
                         title: '',                   // Remove o título da tela

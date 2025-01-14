@@ -3,4 +3,5 @@ export type RootStackParamList = {
     PageLogin: undefined;
     PageRegistroOne: undefined;
     PageRegistroTwo: undefined;
+    PageRegistroThree: undefined;
 };

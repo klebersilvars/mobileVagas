@@ -60,8 +60,8 @@ export default function PageRegistroTwo() {
         }
     };
 
-    function irPageStepThree(): void {
-        alert('Teste botão');
+    function irPageStepThree() {
+        navigation.navigate('PageRegistroThree');
     }
 
     return (

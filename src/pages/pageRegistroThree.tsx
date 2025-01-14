@@ -1,0 +1,140 @@
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, SafeAreaView, StatusBar, ScrollView, Text, TextInput, TouchableOpacity } from 'react-native';
+import { ButtonStepOne } from '../components/ButtonStepOne';
+
+export default function PageRegistroThree() {
+
+    const [password, setPassword] = useState<string>('');
+    const [passwordSecondary, setPasswordSecondary] = useState<string>('');
+    const [passwordsMatch, setPasswordsMatch] = useState<boolean>(false);
+
+    // Verifica se as senhas são iguais
+    useEffect(() => {
+        if (passwordSecondary === password && password !== '') {
+            setPasswordsMatch(true);
+        } else {
+            setPasswordsMatch(false);
+        }
+    }, [passwordSecondary, password]);
+
+    return (
+        <>
+            <SafeAreaView style={styles.container}>
+                <StatusBar backgroundColor="#ECF0F1" barStyle="dark-content" />
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    <View style={styles.containerLogo}>
+                        <Text style={styles.textLogo}>Finalização de cadastro</Text>
+                        <Text style={styles.textDescricaoLogo}>
+                            Use a plataforma a seu favor, encontre os melhores empregos!
+                        </Text>
+                    </View>
+
+                    <View style={styles.formLoginContainer}>
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.textLabel}>Senha</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="***********"
+                                keyboardType="default"
+                                onChangeText={(value: string) => setPassword(value)}
+                                secureTextEntry
+                                autoCapitalize="none"
+                            />
+                        </View>
+
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.textLabel}>Confirme sua senha</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="***********"
+                                keyboardType="default"
+                                onChangeText={(value: string) => setPasswordSecondary(value)}
+                                secureTextEntry
+                                autoCapitalize="none"
+                            />
+                        </View>
+
+                        <View style={styles.containerButtonStepOne}>
+                            <ButtonStepOne disabled={!passwordsMatch} onPress={() => undefined} />
+                        </View>
+                    </View>
+                </ScrollView>
+            </SafeAreaView>
+        </>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#ECF0F1',
+        position: 'relative',
+    },
+    containerLogo: {
+        width: '100%',
+        height: 100,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        marginBottom: 50,
+        marginTop: 90,
+    },
+    textLogo: {
+        textAlign: 'center',
+        fontWeight: 'bold',
+        fontSize: 35,
+    },
+    textDescricaoLogo: {
+        fontSize: 13,
+        color: '#777777',
+        fontWeight: 'bold',
+        width: '70%',
+        textAlign: 'center',
+    },
+    formLoginContainer: {
+        height: 'auto',
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 20,
+        position: 'relative',
+        gap: 40,
+    },
+    inputContainer: {
+        width: '100%',
+        height: 'auto',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    textLabel: {
+        fontWeight: 'bold',
+        fontSize: 19,
+        textAlign: 'left',
+        position: 'absolute',
+        top: -27,
+        left: 37,
+    },
+    input: {
+        borderWidth: 1,
+        height: 46,
+        width: '80%',
+        borderRadius: 3,
+        marginTop: 5,
+        borderColor: 'gray',
+        paddingHorizontal: 10,
+    },
+    containerButtonStepOne: {
+        width: '100%',
+        height: 50,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+});
