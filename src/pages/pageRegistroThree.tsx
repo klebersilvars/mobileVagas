@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, SafeAreaView, StatusBar, ScrollView, Text, TextInput, TouchableOpacity } from 'react-native';
-import { ButtonStepOne } from '../components/ButtonStepOne';
+import { View, StyleSheet, SafeAreaView, StatusBar, ScrollView, Text, TextInput } from 'react-native';
+import { ButtonPasswordFalse, ButtonPasswordTrue } from '../components/ButtonStepOne';
 
 export default function PageRegistroThree() {
 
     const [password, setPassword] = useState<string>('');
     const [passwordSecondary, setPasswordSecondary] = useState<string>('');
     const [passwordsMatch, setPasswordsMatch] = useState<boolean>(false);
+    const [passwordLength, setPasswordLength] = useState<boolean>(false)
 
     // Verifica se as senhas são iguais
     useEffect(() => {
         if (passwordSecondary === password && password !== '') {
             setPasswordsMatch(true);
+        } else if (password.length !== 6 && passwordSecondary.length !== 6) {
+            setPasswordLength(true)
         } else {
-            setPasswordsMatch(false);
+            setPasswordsMatch(false)
+            setPasswordLength(false)
         }
     }, [passwordSecondary, password]);
 
@@ -54,9 +58,18 @@ export default function PageRegistroThree() {
                             />
                         </View>
 
-                        <View style={styles.containerButtonStepOne}>
-                            <ButtonStepOne disabled={!passwordsMatch} onPress={() => undefined} />
-                        </View>
+                        {passwordsMatch ? (
+                            <View style={styles.containerButtonStepOne}>
+                                <ButtonPasswordTrue disabled={!passwordsMatch} onPress={() => undefined} />
+                            </View>
+                        ) : (
+                            <View style={styles.containerButtonStepOne}>
+                                <ButtonPasswordFalse disabled={!passwordsMatch} onPress={() => undefined} />
+                                {passwordLength ? <Text style={{ color: 'red', marginTop: 10, }}>Sua senha precisa ter 6 caracteres ou mais!</Text> : <></>}
+                            </View>
+                        )
+
+                        }
                     </View>
                 </ScrollView>
             </SafeAreaView>
@@ -81,8 +94,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         flexDirection: 'column',
-        marginBottom: 50,
-        marginTop: 90,
+        marginTop: '40%',
     },
     textLogo: {
         textAlign: 'center',
@@ -97,7 +109,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     formLoginContainer: {
-        height: 'auto',
+        height: '100%',
         width: '100%',
         display: 'flex',
         alignItems: 'center',
@@ -136,5 +148,5 @@ const styles = StyleSheet.create({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-    },
+    }
 });

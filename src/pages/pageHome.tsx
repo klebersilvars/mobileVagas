@@ -31,6 +31,10 @@ export default function PageHome() {
         navigation.navigate('PageLogin');
     }
 
+    function irPageEntrarEmpresa() {
+        navigation.navigate('PageEntrarEmpresa')
+    }
+
     function irPageRegistro() {
         navigation.navigate('PageRegistroOne');
     }
@@ -49,11 +53,15 @@ export default function PageHome() {
                     <View style={styles.ContainerButtons}>
 
                         <TouchableOpacity onPress={irPageLogin} style={styles.buttonEntrar}>
-                            <Text style={styles.textButtonEntrar}>ENTRAR</Text>
+                            <Text style={styles.textButtonEntrar}>Entrar como candidato</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity onPress={irPageEntrarEmpresa} style={styles.buttonEntrarEmpresa}>
+                            <Text style={styles.textButtonEntrar}>Entrar como empresa</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={irPageRegistro} style={styles.buttonRegistrar}>
-                            <Text style={styles.textButtonEntrar}>REGISTRAR</Text>
+                            <Text style={styles.textButtonEntrar}>Registrar</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -128,33 +136,41 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     },
     buttonEntrar: {
-        width: '50%',
+        width: '70%',
         height: 50,
-        backgroundColor: 'black',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 10,
         position: 'absolute',
-        top: windowHeight / 5
+        top: windowHeight / 4.2
+    },
+    buttonEntrarEmpresa: {
+        width: '70%',
+        height: 50,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 10,
+        position: 'absolute',
+        top: windowHeight / 3.3
     },
     buttonRegistrar: {
-        width: '50%',
+        width: '70%',
         height: 50,
-        backgroundColor: 'black',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 10,
         position: 'absolute',
-        top: windowHeight / 3.5
+        top: windowHeight / 2.7
     },
     textButtonEntrar: {
         textAlign: 'center',
-        color: 'white',
-        textTransform: 'uppercase',
+        color: 'black',
         fontSize: 19,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        textDecorationLine: 'underline'
     },
     textSlogan: {
         color: 'grey',

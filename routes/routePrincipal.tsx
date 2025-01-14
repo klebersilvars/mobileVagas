@@ -7,8 +7,7 @@ import PageRegistroOne from '../src/pages/pageRegistroOne';
 import PageRegistroTwo from '../src/pages/pageRegistroTwo';
 import PageRegistroThree from '../src/pages/pageRegistroThree'
 import HeaderLeft from '../src/components/HeaderLeft/HeaderLeft';
-
-
+import PageEntrarEmpresa from '../src/pages/pageEntrarEmpresa';
 
 const Stack = createStackNavigator();
 
@@ -16,6 +15,11 @@ export default function Routes() {
     return (
         <NavigationContainer>
             <Stack.Navigator initialRouteName="PageHome">
+                {/* <Stack.Screen
+                    name="SplashScreen"
+                    component={SplashScreen}
+                    options={{ headerShown: false }} // Oculta o cabeçalho na tela principal
+                /> */}
                 <Stack.Screen
                     name="PageHome"
                     component={PageHome}
@@ -33,9 +37,10 @@ export default function Routes() {
                             <HeaderLeft />
                         ),
                     }} />
+
                 <Stack.Screen
-                    name="PageRegistroOne"
-                    component={PageRegistroOne}
+                    name="PageEntrarEmpresa"
+                    component={PageEntrarEmpresa}
                     options={{
                         headerShown: true,           // Exibe o cabeçalho
                         title: '',                   // Remove o título da tela
@@ -44,8 +49,20 @@ export default function Routes() {
                             // Use navigation dentro de um componente de tela
                             <HeaderLeft />
                         ),
+                    }} />
+                <Stack.Screen
+                    name="PageRegistroOne"
+                    component={PageRegistroOne}
+                    options={{
+                        headerShown: true,           // Exibe o cabeçalho
+                        title: '',                   // Remove o título da tela
+                        headerTransparent: true,    // Define o cabeçalho como opaco (não transparente)
+                        headerLeft: () => (
+                            <HeaderLeft />
+                        ),
                     }}
                 />
+
                 <Stack.Screen
                     name="PageRegistroTwo"
                     component={PageRegistroTwo}

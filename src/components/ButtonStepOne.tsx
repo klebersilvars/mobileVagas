@@ -30,6 +30,26 @@ export const ButtonStepOneDisabled: React.FC<ButtonStepOneProps> = ({ onPress, d
     );
 };
 
+export const ButtonPasswordFalse: React.FC<ButtonStepOneProps> = ({ onPress, disabled }) => {
+    return (
+        <TouchableOpacity style={styles.containerButtonDisabled} disabled={disabled} onPress={onPress}>
+            <Text style={styles.textButtonStepOne}>
+                Criar conta
+            </Text>
+        </TouchableOpacity>
+    );
+};
+
+export const ButtonPasswordTrue: React.FC<ButtonStepOneProps> = ({ onPress, disabled }) => {
+    return (
+        <TouchableOpacity style={styles.containerButton} disabled={disabled} onPress={onPress}>
+            <Text style={styles.textButtonStepOne}>
+                Criar conta
+            </Text>
+        </TouchableOpacity>
+    );
+};
+
 const styles = StyleSheet.create({
     containerButton: {
         display: 'flex',

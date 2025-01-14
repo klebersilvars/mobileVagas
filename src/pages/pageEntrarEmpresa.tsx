@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput, Switch, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
-export default function PageLogin() {
+export default function PageEntrarEmpresa() {
 
     //useState
     const [SwitchPassowrd, setSwitchPassword] = useState<boolean>(false)
@@ -40,7 +40,7 @@ export default function PageLogin() {
                     {/* <Text style={styles.textLogo}>NOVOS TALENTOS</Text> */}
                     <Image style={{height: '80%', width: '80%'}} source={require('../../assets/novos_talentos_logo_fundo.png')}/>
                     <Text style={styles.textDescricaoLogo}>
-                        Venha aproveitar o melhor aplicativo de vagas para iniciantes!
+                        Publique as melhores vagas e atraia os melhores candidatos!
                     </Text>
                 </View>
 
