@@ -24,13 +24,14 @@ export default function PageRegistroOne() {
     const [anoAtual, setAnoAtual] = useState<number>(0);
     const [maiorIdade, setMaiorIdade] = useState<boolean>(false);
     const [mensagemIdade, setMensagemIdade] = useState<string>(''); // Estado para a mensagem de idade
-    const [typeConta, setTypeConta] = useState<string>('')
+    const [typeConta, setTypeConta] = useState<string>('candidato')
     const [dataCriacaoEmpresa, setDataCriacaoEmpresa] = useState<string>('');
     const [nomeEmpresa, setNomeEmpresa] = useState<string>('');
     const [emailEmpresa, setEmailEmpresa] = useState<string>('');
     const [cnpjEmpresa, setCnpjEmpresa] = useState<string>('');
     const [passwordEmpresa, setPasswordEmpresa] = useState<string>('')
     const navigation = useNavigation<NavigationStep>();
+    const [camposCandidatos, setCamposCandidatos] = useState<boolean>(false)
 
 
     useEffect(() => {
@@ -88,6 +89,36 @@ export default function PageRegistroOne() {
         setDataCriacaoEmpresa(formattedValue);
     };
 
+    //mascara para o CNPJ
+    const handleCnpjChange = (text: string) => {
+        // Remove qualquer caractere que não seja número
+        const numericText = text.replace(/[^0-9]/g, '');
+
+        // Aplica a máscara de CNPJ
+        let formattedText = numericText;
+        if (numericText.length > 2) {
+            formattedText = `${numericText.slice(0, 2)}.${numericText.slice(2)}`;
+        }
+        if (numericText.length > 5) {
+            formattedText = `${numericText.slice(0, 2)}.${numericText.slice(2, 5)}.${numericText.slice(5)}`;
+        }
+        if (numericText.length > 8) {
+            formattedText = `${numericText.slice(0, 2)}.${numericText.slice(2, 5)}.${numericText.slice(5, 8)}/${numericText.slice(8)}`;
+        }
+        if (numericText.length > 12) {
+            formattedText = `${numericText.slice(0, 2)}.${numericText.slice(2, 5)}.${numericText.slice(5, 8)}/${numericText.slice(8, 12)}-${numericText.slice(12, 14)}`;
+        }
+
+        setCnpjEmpresa(formattedText);
+    };
+
+    //função que faça a validação dos inputs dos candidatos
+    const validacaoCamposCandidatos = ()=> {
+        if (nomeCompletoRegistro == '' && emailRegistro == '' && dataNascimentoRegistro == '') {
+            setCamposCandidatos(false)
+        }
+    }
+
     return (
         <>
 
@@ -109,7 +140,7 @@ export default function PageRegistroOne() {
 
 
 
-            {typeConta == 'candidato' ? (
+            {typeConta === 'candidato' ? (
                 <SafeAreaView style={styles.container}>
                     <StatusBar backgroundColor="#ECF0F1" barStyle="dark-content" />
                     <View style={styles.containerLogo}>
@@ -144,10 +175,10 @@ export default function PageRegistroOne() {
                             <TextInputMask
                                 type={'custom'}
                                 options={{
-                                    mask: '99/99/9999', // Máscara para data: DD/MM/YYYY
+                                    mask: '99/99/9999',
                                 }}
                                 value={dataNascimentoRegistro}
-                                onChangeText={handleDateChange} // Atualiza o valor do input
+                                onChangeText={handleDateChange}
                                 style={styles.input}
                                 placeholder="00/00/2000"
                                 keyboardType='numeric'
@@ -159,7 +190,7 @@ export default function PageRegistroOne() {
                         </View>
 
                         {/* Lógica para habilitar/desabilitar o botão baseado na maioridade */}
-                        {maiorIdade ? (
+                        {maiorIdade && !camposCandidatos ? (
                             <View style={styles.containerButtonStepOne}>
                                 <ButtonStepOne disabled={false} onPress={irPageStepTwo} />
                             </View>
@@ -214,9 +245,11 @@ export default function PageRegistroOne() {
                                 <Text style={styles.textLabel}>CNPJ da empresa</Text>
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="00/00/00"
-                                    keyboardType='default'
-                                    onChangeText={(value: string) => setCnpjEmpresa(value)}
+                                    placeholder="Somente números"
+                                    keyboardType='numeric'
+                                    value={cnpjEmpresa}
+                                    maxLength={18}
+                                    onChangeText={handleCnpjChange}
                                 />
                             </View>
                             <View style={styles.inputContainer}>

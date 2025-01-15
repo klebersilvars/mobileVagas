@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
-import { ButtonStepOne } from '../components/ButtonStepOne';
+import { ButtonStepOne, ButtonStepOneDisabled } from '../components/ButtonStepOne';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../routes/RootStackParamList';
 import { useNavigation } from '@react-navigation/native';
@@ -30,6 +30,7 @@ export default function PageRegistroTwo() {
     const [loading, setLoading] = useState<boolean>(false); // Estado para carregar a requisição
     const [error, setError] = useState<string | null>(null); // Estado para mostrar mensagens de erro
     const navigation = useNavigation<NavigationStep>();
+    const [verificarCepCandidato, setVerificarCepCandidato] = useState<boolean>(false)
 
     // Função para buscar o CEP
     const buscarCep = async () => {
@@ -62,6 +63,13 @@ export default function PageRegistroTwo() {
 
     function irPageStepThree() {
         navigation.navigate('PageRegistroThree');
+    }
+
+    //validação para verificar se o CEP NÃO está VAZIO
+    const validacaoInputsCandidatoTwo = ()=> {
+        if(cepRegistro =='') {
+            setVerificarCepCandidato(false)
+        }
     }
 
     return (
@@ -154,9 +162,17 @@ export default function PageRegistroTwo() {
                             />
                         </View>
 
-                        <View style={styles.containerButtonStepOne}>
-                            <ButtonStepOne disabled={false} onPress={irPageStepThree} />
-                        </View>
+                        {
+                            !verificarCepCandidato ? (
+                            <View style={styles.containerButtonStepOne}>
+                                <ButtonStepOneDisabled onPress={irPageStepThree} disabled={true} />
+                            </View>
+                            ): (
+                                <View style={styles.containerButtonStepOne}>
+                                    <ButtonStepOne disabled={false} onPress={irPageStepThree} />
+                                </View>
+                            )
+                        }
                     </View>
                 </ScrollView>
             </SafeAreaView>
