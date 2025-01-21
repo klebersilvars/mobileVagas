@@ -7,7 +7,7 @@ export default function PageRegistroThree() {
     const [password, setPassword] = useState<string>('');
     const [passwordSecondary, setPasswordSecondary] = useState<string>('');
     const [passwordsMatch, setPasswordsMatch] = useState<boolean>(false);
-    const [passwordLength, setPasswordLength] = useState<boolean>(false)
+    const [passwordLength, setPasswordLength] = useState<boolean>(false);
 
     // Verifica se as senhas são iguais
     useEffect(() => {
@@ -20,6 +20,7 @@ export default function PageRegistroThree() {
             setPasswordLength(false)
         }
     }, [passwordSecondary, password]);
+
 
     return (
         <>

@@ -7,6 +7,9 @@ import { RootStackParamList } from '../../routes/RootStackParamList';
 import { useNavigation } from '@react-navigation/native';
 import { TextInputMask } from 'react-native-masked-text';
 import { Picker } from '@react-native-picker/picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {RegistroUserOne} from '../interfaces/storageRegistroInterface';
+
 
 const width = Dimensions.get('window').width
 const height = Dimensions.get('window').height
@@ -32,7 +35,11 @@ export default function PageRegistroOne() {
     const [passwordEmpresa, setPasswordEmpresa] = useState<string>('')
     const navigation = useNavigation<NavigationStep>();
     const [camposCandidatos, setCamposCandidatos] = useState<boolean>(false)
+    const [camposEmpresa, setCamposEmpresa] = useState<boolean>(false);
+    const [dadosUserInterface, setDadosUserInterface] = useState<RegistroUserOne | null>(null)
 
+
+    
 
     useEffect(() => {
         const date = new Date();
@@ -69,26 +76,6 @@ export default function PageRegistroOne() {
         navigation.navigate('PageRegistroTwo');
     }
 
-    //função para data de criação da empresa
-
-
-
-    const handleInputChange = (value: string) => {
-        // Remove tudo que não for número
-        const cleanedValue = value.replace(/\D/g, '');
-
-        // Aplica a máscara
-        let formattedValue = cleanedValue;
-        if (cleanedValue.length > 2) {
-            formattedValue = `${cleanedValue.slice(0, 2)}/${cleanedValue.slice(2)}`;
-        }
-        if (cleanedValue.length > 4) {
-            formattedValue = `${cleanedValue.slice(0, 2)}/${cleanedValue.slice(2, 4)}/${cleanedValue.slice(4, 6)}`;
-        }
-
-        setDataCriacaoEmpresa(formattedValue);
-    };
-
     //mascara para o CNPJ
     const handleCnpjChange = (text: string) => {
         // Remove qualquer caractere que não seja número
@@ -113,12 +100,36 @@ export default function PageRegistroOne() {
     };
 
     //função que faça a validação dos inputs dos candidatos
-    const validacaoCamposCandidatos = ()=> {
+    const validacaoCamposCandidatos = () => {
         if (nomeCompletoRegistro == '' && emailRegistro == '' && dataNascimentoRegistro == '') {
             setCamposCandidatos(false)
         }
     }
 
+    const validacaoCamposEmpresas = () => {
+        if (!nomeEmpresa || !emailEmpresa || !cnpjEmpresa || !passwordEmpresa) {
+            setCamposEmpresa(false); // Desabilita botão se qualquer campo estiver vazio
+        } else {
+            setCamposEmpresa(true); // Habilita botão quando todos os campos estiverem preenchidos
+        }
+    };
+    
+    useEffect(() => {
+        validacaoCamposEmpresas(); // Chama validação sempre que os valores mudarem
+    }, [nomeEmpresa, emailEmpresa, cnpjEmpresa, passwordEmpresa]);
+
+        useEffect(() => {
+            const novoUsuario: RegistroUserOne = {
+                nome_completo: nomeCompletoRegistro, // Preencha com o valor apropriado
+                email: emailRegistro,         // Preencha com o valor apropriado
+                data_nascimento: dataNascimentoRegistro,
+            };
+
+            setDadosUserInterface(novoUsuario)
+        }, [nomeCompletoRegistro, emailRegistro, dataNascimentoRegistro])
+
+        console.log(dadosUserInterface?.nome_completo)
+        
     return (
         <>
 
@@ -213,36 +224,25 @@ export default function PageRegistroOne() {
                         </View>
                         <View style={styles.formLoginContainer}>
                             <View style={styles.inputContainer}>
-                                <Text style={styles.textLabel}>Nome da empresa</Text>
+                                <Text style={styles.textLabel}>Nome da empresa*</Text>
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="Arleuda da silva"
+                                    placeholder="Empresa LTDA"
                                     keyboardType="default"
                                     onChangeText={(value: string) => setNomeEmpresa(value)}
                                 />
                             </View>
                             <View style={styles.inputContainer}>
-                                <Text style={styles.textLabel}>E-mail da empresa</Text>
+                                <Text style={styles.textLabel}>E-mail da empresa*</Text>
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="teste@gmail.com"
+                                    placeholder="empresa@ltda.com"
                                     keyboardType='email-address'
                                     onChangeText={(value: string) => setEmailEmpresa(value)}
                                 />
                             </View>
                             <View style={styles.inputContainer}>
-                                <Text style={styles.textLabel}>Data de criação da empresa</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="00/00/00"
-                                    keyboardType="numeric"
-                                    value={dataCriacaoEmpresa}
-                                    onChangeText={handleInputChange}
-                                    maxLength={8} // Limita a entrada ao tamanho esperado
-                                />
-                            </View>
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.textLabel}>CNPJ da empresa</Text>
+                                <Text style={styles.textLabel}>CNPJ da empresa*</Text>
                                 <TextInput
                                     style={styles.input}
                                     placeholder="Somente números"
@@ -253,7 +253,7 @@ export default function PageRegistroOne() {
                                 />
                             </View>
                             <View style={styles.inputContainer}>
-                                <Text style={styles.textLabel}>Senha</Text>
+                                <Text style={styles.textLabel}>Senha*</Text>
                                 <TextInput
                                     style={styles.input}
                                     placeholder="********"
@@ -263,9 +263,15 @@ export default function PageRegistroOne() {
                                 />
                             </View>
 
-                            <TouchableOpacity style={styles.ButtonCriarEmpresa}>
-                                <Text style={styles.textButtonCriarEmpresa}>Criar Conta Empresa</Text>
-                            </TouchableOpacity>
+                            {camposEmpresa ? (
+                                <View style={styles.containerButtonStepOne}>
+                                    <ButtonStepOne disabled={false} onPress={() => { undefined }} />
+                                </View>
+                            ) : (
+                                <View style={styles.containerButtonStepOne}>
+                                    <ButtonStepOneDisabled onPress={() => { undefined }} disabled={true} />
+                                </View>
+                            )}
                         </View>
                     </ScrollView>
                 </SafeAreaView>

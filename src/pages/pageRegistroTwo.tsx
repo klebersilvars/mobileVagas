@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { ButtonStepOne, ButtonStepOneDisabled } from '../components/ButtonStepOne';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -32,13 +32,24 @@ export default function PageRegistroTwo() {
     const navigation = useNavigation<NavigationStep>();
     const [verificarCepCandidato, setVerificarCepCandidato] = useState<boolean>(false)
 
+
+    //validação para verificar se o CEP está VAZIO
+    const validacaoInputsCandidatoTwo = () => {
+        if (!cepRegistro) {
+            setVerificarCepCandidato(false)
+        } else {
+            setVerificarCepCandidato(true)
+
+        }
+    }
+
+    useEffect(() => {
+
+        validacaoInputsCandidatoTwo()
+    }, [cepRegistro])
+
     // Função para buscar o CEP
     const buscarCep = async () => {
-        if (!cepRegistro) {
-            alert('Por favor, insira um CEP');
-            return;
-        }
-
         setLoading(true); // Começa o carregamento
         setError(null); // Limpa mensagens de erro
 
@@ -52,12 +63,11 @@ export default function PageRegistroTwo() {
                 Alert.alert('Sucesso', 'Cep encontrado com sucesso')
                 setLoading(false)
             }
-            
         } catch (error) {
-            console.error('Erro ao buscar CEP:', error);
+            Alert.alert('Erro', 'CEP inválido!')
             setError('Erro ao buscar o CEP. Tente novamente mais tarde!');
-        }finally{
-            
+        } finally {
+            setLoading(false)
         }
     };
 
@@ -65,12 +75,10 @@ export default function PageRegistroTwo() {
         navigation.navigate('PageRegistroThree');
     }
 
-    //validação para verificar se o CEP NÃO está VAZIO
-    const validacaoInputsCandidatoTwo = ()=> {
-        if(cepRegistro =='') {
-            setVerificarCepCandidato(false)
-        }
-    }
+    
+
+
+
 
     return (
         <>
@@ -98,13 +106,25 @@ export default function PageRegistroTwo() {
                                 onChangeText={(value: string) => setCepRegistro(value)}
                             />
 
-                            <TouchableOpacity onPress={buscarCep} style={styles.buttonBuscarCep}>
-                                {loading ? (
-                                    <ActivityIndicator size={35} color="#fff" />
-                                ) : (
-                                    <Text style={styles.textBuscarCep}>Buscar</Text>
-                                )}
-                            </TouchableOpacity>
+                            {verificarCepCandidato ? (
+                                <TouchableOpacity onPress={buscarCep} style={styles.buttonBuscarCep}>
+                                    {loading ? (
+                                        <ActivityIndicator size={35} color="#fff" />
+                                    ) : (
+                                        <Text style={styles.textBuscarCep}>Buscar</Text>
+                                    )}
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity onPress={buscarCep} style={styles.buttonBuscarCepDisabled}>
+                                    {loading ? (
+                                        <ActivityIndicator size={35} color="#fff" />
+                                    ) : (
+                                        <Text style={styles.textBuscarCep}>Buscar</Text>
+                                    )}
+                                </TouchableOpacity>
+                            )
+
+                            }
                         </View>
 
                         <View style={styles.inputContainer}>
@@ -164,10 +184,10 @@ export default function PageRegistroTwo() {
 
                         {
                             !verificarCepCandidato ? (
-                            <View style={styles.containerButtonStepOne}>
-                                <ButtonStepOneDisabled onPress={irPageStepThree} disabled={true} />
-                            </View>
-                            ): (
+                                <View style={styles.containerButtonStepOne}>
+                                    <ButtonStepOneDisabled onPress={irPageStepThree} disabled={true} />
+                                </View>
+                            ) : (
                                 <View style={styles.containerButtonStepOne}>
                                     <ButtonStepOne disabled={false} onPress={irPageStepThree} />
                                 </View>
@@ -273,10 +293,20 @@ const styles = StyleSheet.create({
         elevation: 1,
         marginTop: 10,
     },
+    buttonBuscarCepDisabled: {
+        backgroundColor: 'gray',
+        width: '50%',
+        height: 46,
+        display: 'flex',
+        justifyContent: 'center',
+        borderRadius: 10,
+        elevation: 1,
+        marginTop: 10,
+    },
     textBuscarCep: {
         textAlign: 'center',
         color: 'white',
-        fontWeight:'bold',
+        fontWeight: 'bold',
         fontSize: 18,
     }
 });
