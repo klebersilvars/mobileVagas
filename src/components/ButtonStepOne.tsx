@@ -6,7 +6,7 @@ const height = Dimensions.get('window').height
 
 // Definindo o tipo das props
 interface ButtonStepOneProps {
-    onPress: () => void | undefined; // onPress é uma função que não recebe parâmetros e não retorna nada
+    onPress: () => void; // onPress é uma função que não recebe parâmetros e não retorna nada
     disabled: boolean; // minha prop vai receber boolean diretamente.
 }
 

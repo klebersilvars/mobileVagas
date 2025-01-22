@@ -128,7 +128,20 @@ export default function PageRegistroOne() {
             setDadosUserInterface(novoUsuario)
         }, [nomeCompletoRegistro, emailRegistro, dataNascimentoRegistro])
 
-        console.log(dadosUserInterface?.nome_completo)
+
+        const dadosUserOne = async ()=> {
+            try{
+                const valueUserOne = await AsyncStorage.setItem('registroUserOne', JSON.stringify(dadosUserInterface))
+            }catch(e) {
+                console.log(e)
+            }
+        }
+
+        const salvarUserOneStepPage = async () => {
+            await dadosUserOne();  // Aguarda salvar os dados
+            irPageStepTwo();  // Só então vai para a próxima página
+        };
+        
         
     return (
         <>
@@ -203,7 +216,7 @@ export default function PageRegistroOne() {
                         {/* Lógica para habilitar/desabilitar o botão baseado na maioridade */}
                         {maiorIdade && !camposCandidatos ? (
                             <View style={styles.containerButtonStepOne}>
-                                <ButtonStepOne disabled={false} onPress={irPageStepTwo} />
+                                <ButtonStepOne disabled={false} onPress={salvarUserOneStepPage} />
                             </View>
                         ) : (
                             <View style={styles.containerButtonStepOne}>
