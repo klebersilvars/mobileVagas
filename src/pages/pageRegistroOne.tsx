@@ -123,6 +123,7 @@ export default function PageRegistroOne() {
                 nome_completo: nomeCompletoRegistro, // Preencha com o valor apropriado
                 email: emailRegistro,         // Preencha com o valor apropriado
                 data_nascimento: dataNascimentoRegistro,
+                type_conta: typeConta
             };
 
             setDadosUserInterface(novoUsuario)

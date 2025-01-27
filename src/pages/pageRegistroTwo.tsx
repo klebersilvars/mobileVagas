@@ -6,6 +6,8 @@ import { RootStackParamList } from '../../routes/RootStackParamList';
 import { useNavigation } from '@react-navigation/native';
 import { TextInputMask } from 'react-native-masked-text';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { RegistroUserTwo } from '../interfaces/storageRegistroInterface';
 
 type NavigationStep = StackNavigationProp<RootStackParamList>;
 
@@ -31,6 +33,7 @@ export default function PageRegistroTwo() {
     const [error, setError] = useState<string | null>(null); // Estado para mostrar mensagens de erro
     const navigation = useNavigation<NavigationStep>();
     const [verificarCepCandidato, setVerificarCepCandidato] = useState<boolean>(false)
+    const [DadosUserTwo, setDadosUserTwo] = useState<RegistroUserTwo | null>(null)
 
 
     //validação para verificar se o CEP está VAZIO
@@ -75,7 +78,35 @@ export default function PageRegistroTwo() {
         navigation.navigate('PageRegistroThree');
     }
 
-    
+
+    useEffect(() => {
+        const novoUsuarioTwo: RegistroUserTwo = {
+            cep: cepRegistro,
+            logradouro: registroCepUser?.logradouro,
+            bairro: registroCepUser?.bairro,
+            estado: registroCepUser?.estado,
+            uf: registroCepUser?.uf,
+            complemento: registroCepUser?.complemento,
+
+
+        };
+
+        setDadosUserTwo(novoUsuarioTwo) //vai guardar os dados aqui
+    }, [cepRegistro,registroCepUser?.logradouro,registroCepUser?.bairro,registroCepUser?.estado,registroCepUser?.uf, registroCepUser?.complemento])
+
+    const dadosUserTwo = async ()=> {
+        try{
+            const valueUserTwo = await AsyncStorage.setItem('registroUserTwo', JSON.stringify(DadosUserTwo))
+        }catch(e) {
+            console.log(e)
+        }
+    }
+
+    const salvarUserTwoStepPage = async () => {
+        await dadosUserTwo();  // Aguarda salvar os dados
+        irPageStepThree();  // Só então vai para a próxima página
+    };
+
 
 
 
@@ -185,11 +216,11 @@ export default function PageRegistroTwo() {
                         {
                             !verificarCepCandidato ? (
                                 <View style={styles.containerButtonStepOne}>
-                                    <ButtonStepOneDisabled onPress={irPageStepThree} disabled={true} />
+                                    <ButtonStepOneDisabled onPress={salvarUserTwoStepPage} disabled={true} />
                                 </View>
                             ) : (
                                 <View style={styles.containerButtonStepOne}>
-                                    <ButtonStepOne disabled={false} onPress={irPageStepThree} />
+                                    <ButtonStepOne disabled={false} onPress={salvarUserTwoStepPage} />
                                 </View>
                             )
                         }
