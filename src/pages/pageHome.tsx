@@ -143,7 +143,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderRadius: 10,
         position: 'absolute',
-        top: windowHeight / 4.2
+        top: windowHeight / 4.2,
+        borderWidth: 1
     },
     buttonEntrarEmpresa: {
         width: '70%',
@@ -153,7 +154,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderRadius: 10,
         position: 'absolute',
-        top: windowHeight / 3.3
+        top: windowHeight / 3.3,
+        borderWidth: 1
     },
     buttonRegistrar: {
         width: '70%',
@@ -163,14 +165,14 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderRadius: 10,
         position: 'absolute',
-        top: windowHeight / 2.7
+        top: windowHeight / 2.7,
+        borderWidth: 1,
     },
     textButtonEntrar: {
         textAlign: 'center',
         color: 'black',
         fontSize: 19,
         fontWeight: 'bold',
-        textDecorationLine: 'underline'
     },
     textSlogan: {
         color: 'grey',

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput, ScrollView, Alert, Dimensions } from 'react-native';
 import { ButtonStepOne } from '../components/ButtonStepOne';
 import { ButtonStepOneDisabled } from '../components/ButtonStepOne';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -8,7 +8,11 @@ import { useNavigation } from '@react-navigation/native';
 import { TextInputMask } from 'react-native-masked-text';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {RegistroUserOne} from '../interfaces/storageRegistroInterface';
+import {RegistroUserOne, RegistroEmpresaFirebase} from '../interfaces/storageRegistroInterface';
+import { auth } from '../firebase/firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { db } from '../firebase/firebase';
+import { setDoc, doc } from 'firebase/firestore';
 
 
 const width = Dimensions.get('window').width
@@ -142,8 +146,34 @@ export default function PageRegistroOne() {
             await dadosUserOne();  // Aguarda salvar os dados
             irPageStepTwo();  // Só então vai para a próxima página
         };
-        
-        
+
+        //lógica abaixo feita para cadastrar empresa no authentication e no firestore
+        async function criarUserEmpresa() {
+            try{
+                const empresaUser = await createUserWithEmailAndPassword(auth, emailEmpresa, passwordEmpresa)
+                const uidEmpresa = empresaUser.user.uid
+
+                //salvando os dados da empresa no firestore
+                const empresaData:RegistroEmpresaFirebase = {
+                    nome_empresa: nomeEmpresa,
+                    email_empresa: emailEmpresa,
+                    cnpj_empresa: cnpjEmpresa,
+                    password_empresa: passwordEmpresa
+                }
+
+                await setDoc(doc(db, 'user_empresa', uidEmpresa), empresaData)
+                Alert.alert('Sucesso', 'Conta da empresa foi criada com sucesso!');
+
+                setNomeEmpresa('');
+                setEmailEmpresa('');
+                setCnpjEmpresa('');
+                setPasswordEmpresa('');
+
+                navigation.navigate('PageHome');
+            }catch (e){
+                console.log(e)
+            }
+        }
     return (
         <>
 
@@ -279,11 +309,11 @@ export default function PageRegistroOne() {
 
                             {camposEmpresa ? (
                                 <View style={styles.containerButtonStepOne}>
-                                    <ButtonStepOne disabled={false} onPress={() => { undefined }} />
+                                    <ButtonStepOne disabled={false} onPress={criarUserEmpresa } />
                                 </View>
                             ) : (
                                 <View style={styles.containerButtonStepOne}>
-                                    <ButtonStepOneDisabled onPress={() => { undefined }} disabled={true} />
+                                    <ButtonStepOneDisabled onPress={criarUserEmpresa} disabled={true} />
                                 </View>
                             )}
                         </View>

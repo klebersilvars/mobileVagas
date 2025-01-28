@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, SafeAreaView, StatusBar, ScrollView, Text, TextInput } from 'react-native';
+import { View, StyleSheet, SafeAreaView, StatusBar, ScrollView, Text, TextInput, Alert } from 'react-native';
 import { ButtonPasswordFalse, ButtonPasswordTrue } from '../components/ButtonStepOne';
 import { RegistroUserGeral } from '../interfaces/storageRegistroInterface';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { auth } from '../firebase/firebase';
 import { db } from '../firebase/firebase';
 import {setDoc, doc} from 'firebase/firestore'
-import { createUserWithEmailAndPassword } from 'firebase/auth'
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from '../../routes/RootStackParamList';
+
+type navigationRegistroThree = StackNavigationProp<RootStackParamList>
 
 export default function PageRegistroThree() {
 
@@ -15,6 +20,7 @@ export default function PageRegistroThree() {
     const [passwordsMatch, setPasswordsMatch] = useState<boolean>(false);
     const [passwordLength, setPasswordLength] = useState<boolean>(false);
     const [dadosUserGeral, setDadosUserGeral] = useState<RegistroUserGeral | null>(null)
+    const navigation = useNavigation<navigationRegistroThree>();
 
     // Verifica se as senhas são iguais
     useEffect(() => {
@@ -62,10 +68,11 @@ export default function PageRegistroThree() {
                 const userCredential = await createUserWithEmailAndPassword(auth, dadosUserGeral.email, password);
                 const user = userCredential.user;
 
+                //cadastrando os dados do usuário no firestore database
                 await setDoc(doc(db, 'user_candidato', user.uid), dadosUserGeral)
+                Alert.alert('Sucesso!', 'Você será redirecionado para a tela principal.')
+                navigation.navigate('PageHome');
 
-
-                console.log('Usuário criado com sucesso:', user);
             } catch (error) {
                 console.log(error)
             }
