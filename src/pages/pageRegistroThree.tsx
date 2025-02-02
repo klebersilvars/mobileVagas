@@ -62,6 +62,7 @@ export default function PageRegistroThree() {
                 const userCredential = await createUserWithEmailAndPassword(auth, dadosUserGeral.email, password);
                 const user = userCredential.user;
 
+                //gerar o documento com o nome personalizado
                 await setDoc(doc(db, 'user_candidato', user.uid), dadosUserGeral)
 
 
