@@ -2,15 +2,17 @@ import React, { useState } from 'react';
 import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput, Switch, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { db } from '../firebase/firebase';
-import { collection, where, query, getDocs, doc } from 'firebase/firestore';
+import { collection, where, query, getDocs} from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebase/firebase';
 
 export default function PageLogin() {
 
     //useState
     const [SwitchPassowrd, setSwitchPassword] = useState<boolean>(false)
     const [emailLogin, setEmailLogin] = useState<string>('')
-    const [passLogin, setPassLogin] = useState<string | number>('')
+    const [passLogin, setPassLogin] = useState<string>('')
     const [IsLoadingIndicator, setIsLoadingIndicator] = useState<boolean>(true);
     const user_candidato_db = collection(db, 'user_candidato')
 
@@ -31,13 +33,19 @@ export default function PageLogin() {
 
                 // Verificando se encontrou algum usuário
                 if (!querySnapshot.empty) {
+                    //verificando se encontrou algum usuário.
                     console.log('Usuário encontrado:', querySnapshot.docs.map(doc => doc.data()));
                     const asyncStorageUser = querySnapshot.docs.map(doc => doc.data())
 
+                    //colocando os dados do user buscado no firestore para fazer a verificação no AsyncStorage
                     await AsyncStorage.setItem('dadosUserLogin', JSON.stringify(asyncStorageUser));
-                    alert('foi colocado no asyncStorage')
-                    //achando o usuário, vou logar ele para a página de loginUser
 
+                    //logando usuário com a função abaixo
+                    const userCredentialLoginUser = await signInWithEmailAndPassword(auth, emailLogin, passLogin)
+                    const userDadosLogado = userCredentialLoginUser.user.uid
+
+                    //depois de logar, vai mostrar esse alerta e levar para a página de candidato
+                    Alert.alert('Sucesso!', 'Usuário logado com sucesso')
                 } else {
                     console.log('Nenhum usuário encontrado com essas credenciais.');
                 }
