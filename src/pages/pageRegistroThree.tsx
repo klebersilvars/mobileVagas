@@ -84,34 +84,34 @@ export default function PageRegistroThree() {
                     <StatusBar backgroundColor="#ECF0F1" barStyle="dark-content" />
                     <ScrollView showsVerticalScrollIndicator={false}>
                         <View style={styles.containerLogo}>
-                            <Text style={styles.textLogo}>Finalização de cadastro</Text>
-                            <Text style={styles.textDescricaoLogo}>
+                            <Text allowFontScaling= {false} style={styles.textLogo}>Finalização de cadastro</Text>
+                            <Text allowFontScaling= {false} style={styles.textDescricaoLogo}>
                                 Use a plataforma a seu favor, encontre os melhores empregos!
                             </Text>
                         </View>
 
                         <View style={styles.formLoginContainer}>
                             <View style={styles.inputContainer}>
-                                <Text style={styles.textLabel}>Senha</Text>
+                                <Text allowFontScaling= {false} style={styles.textLabel}>Senha</Text>
                                 <TextInput
                                     style={styles.input}
                                     placeholder="***********"
                                     keyboardType="default"
                                     onChangeText={(value: string) => setPassword(value)}
                                     secureTextEntry
-                                    autoCapitalize="none"
+                                    autoCapitalize="none" //desabilitar primeira letra maiúscula
                                 />
                             </View>
 
                             <View style={styles.inputContainer}>
-                                <Text style={styles.textLabel}>Confirme sua senha</Text>
+                                <Text allowFontScaling= {false} style={styles.textLabel}>Confirme sua senha</Text>
                                 <TextInput
                                     style={styles.input}
                                     placeholder="***********"
                                     keyboardType="default"
                                     onChangeText={(value: string) => setPasswordSecondary(value)}
                                     secureTextEntry
-                                    autoCapitalize="none"
+                                    autoCapitalize="none" //desabilitar primeira letra maiúscula
                                 />
                             </View>
 

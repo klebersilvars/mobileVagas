@@ -151,7 +151,7 @@ export default function PageRegistroOne() {
                 backgroundColor: '#ECF0F1', display: 'flex',
                 justifyContent: 'center', flex: 0.3, alignItems: 'center',
             }}>
-                <Text style={{ marginTop: 10, }}>Escolha o tipo de conta que você deseja criar</Text>
+                <Text allowFontScaling= {false} style={{ marginTop: 10, }}>Escolha o tipo de conta que você deseja criar</Text>
                 <Picker
                     style={{ backgroundColor: 'white', height: 60, width: '50%', marginTop: 10 }}
                     selectedValue={typeConta}
@@ -169,15 +169,15 @@ export default function PageRegistroOne() {
                 <SafeAreaView style={styles.container}>
                     <StatusBar backgroundColor="#ECF0F1" barStyle="dark-content" />
                     <View style={styles.containerLogo}>
-                        <Text style={styles.textLogo}>NOVOS TALENTOS</Text>
-                        <Text style={styles.textDescricaoLogo}>
+                        <Text allowFontScaling= {false} style={styles.textLogo}>NOVOS TALENTOS</Text>
+                        <Text allowFontScaling= {false} style={styles.textDescricaoLogo}>
                             Registre-se na melhor plataforma de empregos para iniciantes!
                         </Text>
                     </View>
 
                     <View style={styles.formLoginContainer}>
                         <View style={styles.inputContainer}>
-                            <Text style={styles.textLabel}>Nome Completo</Text>
+                            <Text allowFontScaling= {false} style={styles.textLabel}>Nome Completo</Text>
                             <TextInput
                                 style={styles.input}
                                 placeholder="Arleuda da silva"
@@ -186,17 +186,18 @@ export default function PageRegistroOne() {
                             />
                         </View>
                         <View style={styles.inputContainer}>
-                            <Text style={styles.textLabel}>E-mail</Text>
+                            <Text allowFontScaling= {false} style={styles.textLabel}>E-mail</Text>
                             <TextInput
                                 style={styles.input}
                                 placeholder="teste@gmail.com"
                                 keyboardType='email-address'
                                 onChangeText={(value: string) => setEmailRegitro(value)}
+                                autoCapitalize="none" //desabilitar primeira letra maiúscula
                             />
                         </View>
 
                         <View style={styles.inputContainer}>
-                            <Text style={styles.textLabel}>Data de nascimento</Text>
+                            <Text allowFontScaling= {false} style={styles.textLabel}>Data de nascimento</Text>
                             <TextInputMask
                                 type={'custom'}
                                 options={{
@@ -210,7 +211,7 @@ export default function PageRegistroOne() {
                             />
                             {/* Exibe a mensagem de menor de idade se necessário */}
                             {mensagemIdade ? (
-                                <Text style={styles.mensagemIdade}>{mensagemIdade}</Text>
+                                <Text allowFontScaling= {false} style={styles.mensagemIdade}>{mensagemIdade}</Text>
                             ) : null}
                         </View>
 
@@ -231,14 +232,14 @@ export default function PageRegistroOne() {
                     <StatusBar backgroundColor="#ECF0F1" barStyle="dark-content" />
                     <ScrollView>
                         <View style={styles.containerLogo}>
-                            <Text style={styles.textLogo}>NOVOS TALENTOS</Text>
-                            <Text style={styles.textDescricaoLogo}>
+                            <Text allowFontScaling= {false} style={styles.textLogo}>NOVOS TALENTOS</Text>
+                            <Text allowFontScaling= {false} style={styles.textDescricaoLogo}>
                                 Registre sua empresa na melhor plataforma de empregos para iniciantes!
                             </Text>
                         </View>
                         <View style={styles.formLoginContainer}>
                             <View style={styles.inputContainer}>
-                                <Text style={styles.textLabel}>Nome da empresa*</Text>
+                                <Text allowFontScaling= {false} style={styles.textLabel}>Nome da empresa*</Text>
                                 <TextInput
                                     style={styles.input}
                                     placeholder="Empresa LTDA"
@@ -247,16 +248,17 @@ export default function PageRegistroOne() {
                                 />
                             </View>
                             <View style={styles.inputContainer}>
-                                <Text style={styles.textLabel}>E-mail da empresa*</Text>
+                                <Text allowFontScaling= {false} style={styles.textLabel}>E-mail da empresa*</Text>
                                 <TextInput
                                     style={styles.input}
                                     placeholder="empresa@ltda.com"
                                     keyboardType='email-address'
                                     onChangeText={(value: string) => setEmailEmpresa(value)}
+                                    autoCapitalize="none" //desabilitar primeira letra maiúscula
                                 />
                             </View>
                             <View style={styles.inputContainer}>
-                                <Text style={styles.textLabel}>CNPJ da empresa*</Text>
+                                <Text allowFontScaling= {false} style={styles.textLabel}>CNPJ da empresa*</Text>
                                 <TextInput
                                     style={styles.input}
                                     placeholder="Somente números"
@@ -267,13 +269,14 @@ export default function PageRegistroOne() {
                                 />
                             </View>
                             <View style={styles.inputContainer}>
-                                <Text style={styles.textLabel}>Senha*</Text>
+                                <Text allowFontScaling= {false} style={styles.textLabel}>Senha*</Text>
                                 <TextInput
                                     style={styles.input}
                                     placeholder="********"
                                     keyboardType='default'
                                     onChangeText={(value: string) => setPasswordEmpresa(value)}
                                     secureTextEntry={true}
+                                    autoCapitalize="none" //desabilitar primeira letra maiúscula
                                 />
                             </View>
 

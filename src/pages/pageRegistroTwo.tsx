@@ -117,15 +117,15 @@ export default function PageRegistroTwo() {
                 <StatusBar backgroundColor="#ECF0F1" barStyle="dark-content" />
                 <ScrollView showsVerticalScrollIndicator={false} horizontal={false}>
                     <View style={styles.containerLogo}>
-                        <Text style={styles.textLogo}>Preciso de mais informações...</Text>
-                        <Text style={styles.textDescricaoLogo}>
+                        <Text allowFontScaling= {false} style={styles.textLogo}>Preciso de mais informações...</Text>
+                        <Text allowFontScaling= {false} style={styles.textDescricaoLogo}>
                             Sua plataforma para iniciar sua jornada profissional com facilidade.
                         </Text>
                     </View>
 
                     <View style={styles.formLoginContainer}>
                         <View style={styles.inputContainer}>
-                            <Text style={styles.textLabel}>CEP</Text>
+                            <Text allowFontScaling= {false} style={styles.textLabel}>CEP</Text>
                             <TextInputMask
                                 type={'custom'}
                                 options={{
@@ -142,7 +142,7 @@ export default function PageRegistroTwo() {
                                     {loading ? (
                                         <ActivityIndicator size={35} color="#fff" />
                                     ) : (
-                                        <Text style={styles.textBuscarCep}>Buscar</Text>
+                                        <Text allowFontScaling= {false} style={styles.textBuscarCep}>Buscar</Text>
                                     )}
                                 </TouchableOpacity>
                             ) : (
@@ -150,7 +150,7 @@ export default function PageRegistroTwo() {
                                     {loading ? (
                                         <ActivityIndicator size={35} color="#fff" />
                                     ) : (
-                                        <Text style={styles.textBuscarCep}>Buscar</Text>
+                                        <Text allowFontScaling= {false} style={styles.textBuscarCep}>Buscar</Text>
                                     )}
                                 </TouchableOpacity>
                             )
@@ -159,7 +159,7 @@ export default function PageRegistroTwo() {
                         </View>
 
                         <View style={styles.inputContainer}>
-                            <Text style={styles.textLabel}>Logradouro</Text>
+                            <Text allowFontScaling= {false} style={styles.textLabel}>Logradouro</Text>
                             <TextInput
                                 style={styles.inputDisabled}
                                 placeholder="Logradouro"
@@ -170,7 +170,7 @@ export default function PageRegistroTwo() {
                         </View>
 
                         <View style={styles.inputContainer}>
-                            <Text style={styles.textLabel}>Bairro</Text>
+                            <Text allowFontScaling= {false} style={styles.textLabel}>Bairro</Text>
                             <TextInput
                                 style={styles.inputDisabled}
                                 placeholder="Bairro"
@@ -181,7 +181,7 @@ export default function PageRegistroTwo() {
                         </View>
 
                         <View style={styles.inputContainer}>
-                            <Text style={styles.textLabel}>Complemento</Text>
+                            <Text allowFontScaling= {false} style={styles.textLabel}>Complemento</Text>
                             <TextInput
                                 style={styles.inputDisabled}
                                 placeholder="Complemento"
@@ -192,7 +192,7 @@ export default function PageRegistroTwo() {
                         </View>
 
                         <View style={styles.inputContainer}>
-                            <Text style={styles.textLabel}>Estado</Text>
+                            <Text allowFontScaling= {false} style={styles.textLabel}>Estado</Text>
                             <TextInput
                                 style={styles.inputDisabled}
                                 placeholder="Estado"
@@ -203,7 +203,7 @@ export default function PageRegistroTwo() {
                         </View>
 
                         <View style={styles.inputContainer}>
-                            <Text style={styles.textLabel}>UF</Text>
+                            <Text allowFontScaling= {false} style={styles.textLabel}>UF</Text>
                             <TextInput
                                 style={styles.inputDisabled}
                                 placeholder="UF"

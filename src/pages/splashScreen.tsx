@@ -18,7 +18,7 @@ export default function SplashScreen() {
         
             <SafeAreaView>
                 <Image source={require('../../assets/novos_talentos_logo_fundo.png')}/>
-                <Text>SplashScreen</Text>
+                <Text allowFontScaling= {false}>SplashScreen</Text>
             </SafeAreaView>
 
         </>
