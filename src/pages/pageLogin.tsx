@@ -1,94 +1,130 @@
 import React, { useState } from 'react';
 import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput, Switch, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { db } from '../firebase/firebase';
+import { collection, where, query, getDocs, doc } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function PageLogin() {
 
     //useState
     const [SwitchPassowrd, setSwitchPassword] = useState<boolean>(false)
     const [emailLogin, setEmailLogin] = useState<string>('')
-    const [PassLogin, setPassLogin] = useState<string|number>('')
+    const [passLogin, setPassLogin] = useState<string | number>('')
     const [IsLoadingIndicator, setIsLoadingIndicator] = useState<boolean>(true);
+    const user_candidato_db = collection(db, 'user_candidato')
 
     function esquecerSenha() {
         Alert.alert('AVISO!', 'Implementação em andamento, peço que aguarde a próxima atualização.')
     }
 
+    async function logarUser() {
+        try {
+            if (emailLogin === '' || passLogin === '') {
+                Alert.alert('ERRO', 'Você precisa preencher todos os campos corretamente')
+            } else {
+                //lógica para logar o usuário
+                const queryVerificarUserBD = query(user_candidato_db, where('email', '==', emailLogin), where('password', '==', passLogin))
+
+                // Executando a query
+                const querySnapshot = await getDocs(queryVerificarUserBD);
+
+                // Verificando se encontrou algum usuário
+                if (!querySnapshot.empty) {
+                    console.log('Usuário encontrado:', querySnapshot.docs.map(doc => doc.data()));
+                    const asyncStorageUser = querySnapshot.docs.map(doc => doc.data())
+
+                    await AsyncStorage.setItem('dadosUserLogin', JSON.stringify(asyncStorageUser));
+                    alert('foi colocado no asyncStorage')
+                    //achando o usuário, vou logar ele para a página de loginUser
+
+                } else {
+                    console.log('Nenhum usuário encontrado com essas credenciais.');
+                }
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
     useFocusEffect(
-        React.useCallback(()=> {
+        React.useCallback(() => {
             setIsLoadingIndicator(true) // ativa o carregamento
             const timer = setTimeout(() => {
                 setIsLoadingIndicator(false) //desativa o carregamento
             }, 2000);
 
             return () => clearTimeout(timer); // Limpa o timeout ao sair da tela
-        }, [])   
+        }, [])
     )
 
     return (
         <>
-            { IsLoadingIndicator ? (
-                <View style={{flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center'
+            {IsLoadingIndicator ? (
+                <View style={{
+                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                    <ActivityIndicator size={80} color="black"/>
+                    <ActivityIndicator size={80} color="black" />
                 </View>
-            ): (
+            ) : (
 
                 <SafeAreaView style={styles.container}>
-                <StatusBar backgroundColor="#ECF0F1" barStyle="dark-content" />
-                <View style={styles.containerLogo}>
-                    {/* <Text style={styles.textLogo}>NOVOS TALENTOS</Text> */}
-                    <Image style={{height: '80%', width: '80%'}} source={require('../../assets/novos_talentos_logo_fundo.png')}/>
-                    <Text allowFontScaling= {false} style={styles.textDescricaoLogo}>
-                        Venha aproveitar o melhor aplicativo de vagas para iniciantes!
-                    </Text>
-                </View>
-
-                <View style={styles.formLoginContainer}>
-                    <View style={styles.inputContainer}>
-                        <Text allowFontScaling= {false} style={styles.textLabel}>E-mail</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Ex: teste.500@gmail.com"
-                            keyboardType="email-address"
-                            onChangeText={value => setEmailLogin(value)}
-                        />
-                    </View>
-                    <View style={styles.inputContainer}>
-                        <Text allowFontScaling= {false} style={styles.textLabel}>Senha</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="********"
-                            onChangeText={value => setPassLogin(value)}
-                            secureTextEntry={SwitchPassowrd ? false : true}
-                        />
+                    <StatusBar backgroundColor="#ECF0F1" barStyle="dark-content" />
+                    <View style={styles.containerLogo}>
+                        {/* <Text style={styles.textLogo}>NOVOS TALENTOS</Text> */}
+                        <Image style={{ height: '80%', width: '80%' }} source={require('../../assets/novos_talentos_logo_fundo.png')} />
+                        <Text allowFontScaling={false} style={styles.textDescricaoLogo}>
+                            Venha aproveitar o melhor aplicativo de vagas para iniciantes!
+                        </Text>
                     </View>
 
-                    <View style={styles.acoesFormContainer}>
-                        <View style={styles.containerMostrarSenha}>
-                            <Text allowFontScaling= {false} style={{fontWeight: 'bold', color: '#777777'}}>Mostrar senha</Text>
-                            <Switch
-                                value={SwitchPassowrd}
-                                thumbColor={SwitchPassowrd ? 'green' : 'red'}
-                                onValueChange={value => setSwitchPassword(value)}
+                    <View style={styles.formLoginContainer}>
+                        <View style={styles.inputContainer}>
+                            <Text allowFontScaling={false} style={styles.textLabel}>E-mail</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Ex: teste.500@gmail.com"
+                                keyboardType="email-address"
+                                onChangeText={value => setEmailLogin(value)}
+                                autoCapitalize='none'
                             />
                         </View>
-                        <View style={styles.ContainerEsqueciSenha}>
-                            <TouchableOpacity onPress={esquecerSenha}>
-                                <Text allowFontScaling= {false} style={styles.textEsqueciSenha}>Esqueci minha senha</Text>
-                            </TouchableOpacity>
+                        <View style={styles.inputContainer}>
+                            <Text allowFontScaling={false} style={styles.textLabel}>Senha</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="********"
+                                onChangeText={value => setPassLogin(value)}
+                                secureTextEntry={SwitchPassowrd ? false : true}
+                                autoCapitalize='none'
+                            />
                         </View>
 
-                    </View>
+                        <View style={styles.acoesFormContainer}>
+                            <View style={styles.containerMostrarSenha}>
+                                <Text allowFontScaling={false} style={{ fontWeight: 'bold', color: '#777777' }}>Mostrar senha</Text>
+                                <Switch
+                                    value={SwitchPassowrd}
+                                    thumbColor={SwitchPassowrd ? 'green' : 'red'}
+                                    onValueChange={value => setSwitchPassword(value)}
+                                />
+                            </View>
+                            <View style={styles.ContainerEsqueciSenha}>
+                                <TouchableOpacity onPress={esquecerSenha}>
+                                    <Text allowFontScaling={false} style={styles.textEsqueciSenha}>Esqueci minha senha</Text>
+                                </TouchableOpacity>
+                            </View>
 
-                    <TouchableOpacity style={styles.buttonFazerLogin}>
-                        <Text allowFontScaling= {false} style={{textAlign: 'center', color: 'white', fontSize: 18, textTransform: 'uppercase', fontWeight: 'bold'}}>Entrar</Text>
-                    </TouchableOpacity>
-                </View>
-            </SafeAreaView>
+                        </View>
+
+                        <TouchableOpacity onPress={logarUser} style={styles.buttonFazerLogin}>
+                            <Text allowFontScaling={false} style={{ textAlign: 'center', color: 'white', fontSize: 18, textTransform: 'uppercase', fontWeight: 'bold' }}>Entrar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </SafeAreaView>
             )
-        
-        }
+
+            }
         </>
     );
 }

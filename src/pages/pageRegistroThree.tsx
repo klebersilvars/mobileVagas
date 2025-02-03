@@ -48,7 +48,7 @@ export default function PageRegistroThree() {
                     const dadosTwo = JSON.parse(trazendoDadosTwo);
 
                     // Mesclando os dados e atualizando o estado
-                    setDadosUserGeral({ ...dadosOne, ...dadosTwo });
+                    setDadosUserGeral({ ...dadosOne, ...dadosTwo, password });
                 }
 
                 
@@ -58,7 +58,7 @@ export default function PageRegistroThree() {
         };
 
         dadosUserStorage();
-    }, []);
+    }, [password]);
 
 
     //função para executar o clique do botão e efetuar o cadastro do usuário enviando os dados para o banco de dados
