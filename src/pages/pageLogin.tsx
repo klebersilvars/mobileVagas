@@ -39,14 +39,14 @@ export default function PageLogin() {
                 <View style={styles.containerLogo}>
                     {/* <Text style={styles.textLogo}>NOVOS TALENTOS</Text> */}
                     <Image style={{height: '80%', width: '80%'}} source={require('../../assets/novos_talentos_logo_fundo.png')}/>
-                    <Text style={styles.textDescricaoLogo}>
+                    <Text allowFontScaling= {false} style={styles.textDescricaoLogo}>
                         Venha aproveitar o melhor aplicativo de vagas para iniciantes!
                     </Text>
                 </View>
 
                 <View style={styles.formLoginContainer}>
                     <View style={styles.inputContainer}>
-                        <Text style={styles.textLabel}>E-mail</Text>
+                        <Text allowFontScaling= {false} style={styles.textLabel}>E-mail</Text>
                         <TextInput
                             style={styles.input}
                             placeholder="Ex: teste.500@gmail.com"
@@ -55,7 +55,7 @@ export default function PageLogin() {
                         />
                     </View>
                     <View style={styles.inputContainer}>
-                        <Text style={styles.textLabel}>Senha</Text>
+                        <Text allowFontScaling= {false} style={styles.textLabel}>Senha</Text>
                         <TextInput
                             style={styles.input}
                             placeholder="********"
@@ -66,7 +66,7 @@ export default function PageLogin() {
 
                     <View style={styles.acoesFormContainer}>
                         <View style={styles.containerMostrarSenha}>
-                            <Text style={{fontWeight: 'bold', color: '#777777'}}>Mostrar senha</Text>
+                            <Text allowFontScaling= {false} style={{fontWeight: 'bold', color: '#777777'}}>Mostrar senha</Text>
                             <Switch
                                 value={SwitchPassowrd}
                                 thumbColor={SwitchPassowrd ? 'green' : 'red'}
@@ -75,14 +75,14 @@ export default function PageLogin() {
                         </View>
                         <View style={styles.ContainerEsqueciSenha}>
                             <TouchableOpacity onPress={esquecerSenha}>
-                                <Text style={styles.textEsqueciSenha}>Esqueci minha senha</Text>
+                                <Text allowFontScaling= {false} style={styles.textEsqueciSenha}>Esqueci minha senha</Text>
                             </TouchableOpacity>
                         </View>
 
                     </View>
 
                     <TouchableOpacity style={styles.buttonFazerLogin}>
-                        <Text style={{textAlign: 'center', color: 'white', fontSize: 18, textTransform: 'uppercase', fontWeight: 'bold'}}>Entrar</Text>
+                        <Text allowFontScaling= {false} style={{textAlign: 'center', color: 'white', fontSize: 18, textTransform: 'uppercase', fontWeight: 'bold'}}>Entrar</Text>
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>

@@ -48,20 +48,20 @@ export default function PageHome() {
             ) : (
                 <View style={styles.container}>
                     <StatusBar barStyle='light-content' />
-                    <Text style={styles.titleNovosTalentos}>Novos Talentos</Text>
-                    <Text style={styles.textSlogan}>O melhor aplicativo para iniciantes encontrarem oportunidades de emprego</Text>
+                    <Text allowFontScaling= {false} style={styles.titleNovosTalentos}>Novos Talentos</Text>
+                    <Text allowFontScaling= {false} style={styles.textSlogan}>O melhor aplicativo para iniciantes encontrarem oportunidades de emprego</Text>
                     <View style={styles.ContainerButtons}>
 
                         <TouchableOpacity onPress={irPageLogin} style={styles.buttonEntrar}>
-                            <Text style={styles.textButtonEntrar}>Entrar como candidato</Text>
+                            <Text allowFontScaling= {false} style={styles.textButtonEntrar}>Entrar como candidato</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={irPageEntrarEmpresa} style={styles.buttonEntrarEmpresa}>
-                            <Text style={styles.textButtonEntrar}>Entrar como empresa</Text>
+                            <Text allowFontScaling= {false} style={styles.textButtonEntrar}>Entrar como empresa</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={irPageRegistro} style={styles.buttonRegistrar}>
-                            <Text style={styles.textButtonEntrar}>Registrar</Text>
+                            <Text allowFontScaling= {false} style={styles.textButtonEntrar}>Registrar</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
