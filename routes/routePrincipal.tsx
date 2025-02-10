@@ -8,6 +8,7 @@ import PageRegistroTwo from '../src/pages/pageRegistroTwo';
 import PageRegistroThree from '../src/pages/pageRegistroThree'
 import HeaderLeft from '../src/components/HeaderLeft/HeaderLeft';
 import PageEntrarEmpresa from '../src/pages/pageEntrarEmpresa';
+import TabRouter from './tabRouter';
 
 const Stack = createStackNavigator();
 
@@ -89,6 +90,16 @@ export default function Routes() {
                             <HeaderLeft />
                         ),
                     }}
+                />
+
+                <Stack.Screen
+                   name='BottomTabs'
+                   component={TabRouter} 
+                   options={{
+                    headerShown: false,           // Exibe o cabeçalho
+                    title: '',                   // Remove o título da tela
+                    headerTransparent: true,     // Torna o cabeçalho transparente
+                }}
                 />
             </Stack.Navigator>
         </NavigationContainer>

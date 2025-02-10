@@ -6,6 +6,13 @@ import { collection, where, query, getDocs} from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase/firebase';
+import { useNavigation } from '@react-navigation/native';
+import {  BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+
+import { RootTabParamList } from '../../routes/RootTabParamList';
+
+type createTabNavigatorProp = BottomTabNavigationProp<RootTabParamList>;
+
 
 export default function PageLogin() {
 
@@ -15,45 +22,65 @@ export default function PageLogin() {
     const [passLogin, setPassLogin] = useState<string>('')
     const [IsLoadingIndicator, setIsLoadingIndicator] = useState<boolean>(true);
     const user_candidato_db = collection(db, 'user_candidato')
+    const navigation = useNavigation<createTabNavigatorProp>();
 
     function esquecerSenha() {
         Alert.alert('AVISO!', 'Implementação em andamento, peço que aguarde a próxima atualização.')
     }
 
     async function logarUser() {
+        console.log("Email digitado:", emailLogin);
+        console.log("Senha digitada:", passLogin);
+    
+        if (!emailLogin.trim() || !passLogin.trim()) {
+            Alert.alert('ERRO', 'Você precisa preencher todos os campos corretamente');
+            return;
+        }
+    
         try {
-            if (emailLogin === '' || passLogin === '') {
-                Alert.alert('ERRO', 'Você precisa preencher todos os campos corretamente')
+            // Logando usuário no Firebase Authentication
+            const userCredential = await signInWithEmailAndPassword(auth, emailLogin.trim(), passLogin.trim());
+            const userUID = userCredential.user.uid; // Obtendo UID do usuário
+            console.log(userCredential)
+    
+            // Buscar os dados do usuário no Firestore usando o UID
+            const queryVerificarUserBD = query(user_candidato_db, where('email', '==', emailLogin.trim()));
+            const querySnapshot = await getDocs(queryVerificarUserBD);
+    
+            if (!querySnapshot.empty) {
+                const asyncStorageUser = querySnapshot.docs.map(doc => doc.data());
+    
+                await AsyncStorage.setItem('dadosUserLogin', JSON.stringify(asyncStorageUser));
+    
+                Alert.alert('Sucesso!', 'Usuário logado com sucesso');
+                console.log('UID do usuário:', userUID);
+                console.log('Usuários encontrados:', querySnapshot.docs.map(doc => doc.data()));
+    
+                navigation.navigate("BottomTabs", { screen: "homeUsuario" });
             } else {
-                //lógica para logar o usuário
-                const queryVerificarUserBD = query(user_candidato_db, where('email', '==', emailLogin), where('password', '==', passLogin))
-
-                // Executando a query
-                const querySnapshot = await getDocs(queryVerificarUserBD);
-
-                // Verificando se encontrou algum usuário
-                if (!querySnapshot.empty) {
-                    //verificando se encontrou algum usuário.
-                    console.log('Usuário encontrado:', querySnapshot.docs.map(doc => doc.data()));
-                    const asyncStorageUser = querySnapshot.docs.map(doc => doc.data())
-
-                    //colocando os dados do user buscado no firestore para fazer a verificação no AsyncStorage
-                    await AsyncStorage.setItem('dadosUserLogin', JSON.stringify(asyncStorageUser));
-
-                    //logando usuário com a função abaixo
-                    const userCredentialLoginUser = await signInWithEmailAndPassword(auth, emailLogin, passLogin)
-                    const userDadosLogado = userCredentialLoginUser.user.uid
-
-                    //depois de logar, vai mostrar esse alerta e levar para a página de candidato
-                    Alert.alert('Sucesso!', 'Usuário logado com sucesso')
-                } else {
-                    console.log('Nenhum usuário encontrado com essas credenciais.');
-                }
+                Alert.alert('Erro', 'Usuário não encontrado em nosso banco de dados');
+                console.log('UID do usuário:', userUID);
+                console.log('Usuários encontrados:', querySnapshot.docs.map(doc => doc.data()));
             }
-        } catch (e) {
-            console.log(e)
+        } catch (error: any) {
+            console.log('Erro ao logar:', error);
+    
+            if (error.code === 'auth/invalid-email') {
+                Alert.alert('Erro', 'Email inválido.');
+            } else if (error.code === 'auth/missing-password') {
+                Alert.alert('Erro', 'Digite sua senha.');
+            } else if (error.code === 'auth/wrong-password') {
+                Alert.alert('Erro', 'Senha incorreta.');
+            } else if (error.code === 'auth/user-not-found') {
+                Alert.alert('Erro', 'Usuário não encontrado.');
+            } else {
+                Alert.alert('Erro', 'Falha ao realizar login. Verifique suas credenciais.');
+            }
         }
     }
+    
+    
+    
 
     useFocusEffect(
         React.useCallback(() => {
