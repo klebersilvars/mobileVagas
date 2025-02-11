@@ -23,59 +23,34 @@ export default function PageLogin() {
     const [IsLoadingIndicator, setIsLoadingIndicator] = useState<boolean>(true);
     const user_candidato_db = collection(db, 'user_candidato')
     const navigation = useNavigation<createTabNavigatorProp>();
+    const [isLoading, setIsLoading] = useState(false);
 
     function esquecerSenha() {
         Alert.alert('AVISO!', 'Implementação em andamento, peço que aguarde a próxima atualização.')
     }
 
     async function logarUser() {
-        console.log("Email digitado:", emailLogin);
-        console.log("Senha digitada:", passLogin);
-    
         if (!emailLogin.trim() || !passLogin.trim()) {
             Alert.alert('ERRO', 'Você precisa preencher todos os campos corretamente');
             return;
         }
-    
+        setIsLoading(true);
         try {
-            // Logando usuário no Firebase Authentication
             const userCredential = await signInWithEmailAndPassword(auth, emailLogin.trim(), passLogin.trim());
-            const userUID = userCredential.user.uid; // Obtendo UID do usuário
-            console.log(userCredential)
-    
-            // Buscar os dados do usuário no Firestore usando o UID
-            const queryVerificarUserBD = query(user_candidato_db, where('email', '==', emailLogin.trim()));
-            const querySnapshot = await getDocs(queryVerificarUserBD);
-    
-            if (!querySnapshot.empty) {
-                const asyncStorageUser = querySnapshot.docs.map(doc => doc.data());
-    
-                await AsyncStorage.setItem('dadosUserLogin', JSON.stringify(asyncStorageUser));
-    
-                Alert.alert('Sucesso!', 'Usuário logado com sucesso');
-                console.log('UID do usuário:', userUID);
-                console.log('Usuários encontrados:', querySnapshot.docs.map(doc => doc.data()));
-    
-                navigation.navigate("BottomTabs", { screen: "homeUsuario" });
-            } else {
-                Alert.alert('Erro', 'Usuário não encontrado em nosso banco de dados');
-                console.log('UID do usuário:', userUID);
-                console.log('Usuários encontrados:', querySnapshot.docs.map(doc => doc.data()));
-            }
-        } catch (error: any) {
-            console.log('Erro ao logar:', error);
-    
-            if (error.code === 'auth/invalid-email') {
-                Alert.alert('Erro', 'Email inválido.');
-            } else if (error.code === 'auth/missing-password') {
-                Alert.alert('Erro', 'Digite sua senha.');
-            } else if (error.code === 'auth/wrong-password') {
-                Alert.alert('Erro', 'Senha incorreta.');
-            } else if (error.code === 'auth/user-not-found') {
-                Alert.alert('Erro', 'Usuário não encontrado.');
-            } else {
-                Alert.alert('Erro', 'Falha ao realizar login. Verifique suas credenciais.');
-            }
+
+            const userEmail = userCredential.user.email
+            
+            const storageEmail = await AsyncStorage.setItem('emailCandidadoLogado', JSON.stringify(userEmail))
+            navigation.navigate('BottomTabs', { screen: 'homeUsuario' });
+            console.log(userEmail)
+
+
+
+        } catch (error) {
+            console.log("Erro ao logar:", error);
+            Alert.alert('Erro', 'Email ou senha incorretos');
+        } finally {
+            setIsLoading(false);
         }
     }
     

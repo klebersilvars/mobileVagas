@@ -11,6 +11,7 @@ export default function LoginUser() {
         <>
             <View>
                 <Text>Página de usuário logada</Text>
+                
             </View>
         </>
     )
