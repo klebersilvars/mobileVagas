@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput, Switch, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { query, where, collection } from 'firebase/firestore';
+import { db } from '../firebase/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebase/firebase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function PageEntrarEmpresa() {
 
@@ -9,6 +14,7 @@ export default function PageEntrarEmpresa() {
     const [emailLogin, setEmailLogin] = useState<string>('')
     const [PassLogin, setPassLogin] = useState<string|number>('')
     const [IsLoadingIndicator, setIsLoadingIndicator] = useState<boolean>(true);
+    const empresa_db = collection(db, 'user_empresa'); //verificar se é o banco de dados correto
 
     function esquecerSenha() {
         Alert.alert('AVISO!', 'Implementação em andamento, peço que aguarde a próxima atualização.')
@@ -24,6 +30,27 @@ export default function PageEntrarEmpresa() {
             return () => clearTimeout(timer); // Limpa o timeout ao sair da tela
         }, [])   
     )
+
+    async function logarEmpresa() {
+        if(emailLogin == '' || PassLogin == ''){
+            Alert.alert('ERRO!', 'Os campos de E-MAIL ou senha estão vazios, tente novamente!');
+            return;
+        }
+        try {
+
+            
+            
+            // const userCredential = await signInWithEmailAndPassword(auth, emailLogin.trim(), passLogin.trim());
+            // const userEmail = userCredential.user.email
+            // const storageEmail = await AsyncStorage.setItem('emailCandidadoLogado', JSON.stringify(userEmail))
+            
+            // 1º Vou verificar qual é o e-mail que foi digitado e o type da conta do usuário, se for igual empresa o type, vai fazer o login usando o método o AUTH
+
+
+        }catch(e) {
+            console.log(e)
+        }
+    }
 
     return (
         <>
@@ -81,7 +108,7 @@ export default function PageEntrarEmpresa() {
 
                     </View>
 
-                    <TouchableOpacity style={styles.buttonFazerLogin}>
+                    <TouchableOpacity onPress={logarEmpresa} style={styles.buttonFazerLogin}>
                         <Text allowFontScaling= {false} style={{textAlign: 'center', color: 'white', fontSize: 18, textTransform: 'uppercase', fontWeight: 'bold'}}>Entrar</Text>
                     </TouchableOpacity>
                 </View>
