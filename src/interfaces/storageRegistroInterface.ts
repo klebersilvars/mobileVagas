@@ -21,6 +21,7 @@ export interface RegistroEmpresaFirebase {
     email_empresa: string,
     cnpj_empresa: string,
     password_empresa: string,
+    type_conta: string,
 }
 
 export interface RegistroUserGeral extends RegistroUserOne, RegistroUserTwo {}

@@ -158,7 +158,8 @@ export default function PageRegistroOne() {
                     nome_empresa: nomeEmpresa,
                     email_empresa: emailEmpresa,
                     cnpj_empresa: cnpjEmpresa,
-                    password_empresa: passwordEmpresa
+                    password_empresa: passwordEmpresa,
+                    type_conta: typeConta
                 }
 
                 await setDoc(doc(db, 'user_empresa', uidEmpresa), empresaData)

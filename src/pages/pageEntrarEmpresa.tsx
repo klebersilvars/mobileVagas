@@ -1,121 +1,147 @@
 import React, { useState } from 'react';
 import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput, Switch, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { query, where, collection } from 'firebase/firestore';
+import { query, where, collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase/firebase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import {  BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { RootTabParamList } from '../../routes/RootTabParamList';
+
+type createTabNavigatorProp = BottomTabNavigationProp<RootTabParamList>;
 
 export default function PageEntrarEmpresa() {
 
     //useState
     const [SwitchPassowrd, setSwitchPassword] = useState<boolean>(false)
     const [emailLogin, setEmailLogin] = useState<string>('')
-    const [PassLogin, setPassLogin] = useState<string|number>('')
+    const [PassLogin, setPassLogin] = useState<string>('')
     const [IsLoadingIndicator, setIsLoadingIndicator] = useState<boolean>(true);
     const empresa_db = collection(db, 'user_empresa'); //verificar se é o banco de dados correto
+    const [typeConta, setTypeConta] = useState<string>('empresa')
+    const navigation = useNavigation<createTabNavigatorProp>()
 
     function esquecerSenha() {
         Alert.alert('AVISO!', 'Implementação em andamento, peço que aguarde a próxima atualização.')
     }
 
     useFocusEffect(
-        React.useCallback(()=> {
+        React.useCallback(() => {
             setIsLoadingIndicator(true) // ativa o carregamento
             const timer = setTimeout(() => {
                 setIsLoadingIndicator(false) //desativa o carregamento
             }, 2000);
 
             return () => clearTimeout(timer); // Limpa o timeout ao sair da tela
-        }, [])   
+        }, [])
     )
 
     async function logarEmpresa() {
-        if(emailLogin == '' || PassLogin == ''){
+        if (emailLogin == '' || PassLogin == '') {
             Alert.alert('ERRO!', 'Os campos de E-MAIL ou senha estão vazios, tente novamente!');
             return;
         }
         try {
 
-            
-            
-            // const userCredential = await signInWithEmailAndPassword(auth, emailLogin.trim(), passLogin.trim());
-            // const userEmail = userCredential.user.email
-            // const storageEmail = await AsyncStorage.setItem('emailCandidadoLogado', JSON.stringify(userEmail))
-            
-            // 1º Vou verificar qual é o e-mail que foi digitado e o type da conta do usuário, se for igual empresa o type, vai fazer o login usando o método o AUTH
+            const queryEmailEmpresa = query(empresa_db, where('email_empresa', '==', emailLogin), where('type_conta', '==', typeConta))
+            const rUserEmpresa = await getDocs(queryEmailEmpresa);
+
+            if (!rUserEmpresa.empty) {
+                //variável que vai armazenar o email que foi buscado no banco de dados
+                const emailEmpresaDB = rUserEmpresa.docs.map((doc) => {
+                    return doc.data().email_empresa; // Retorna o campo "email_empresa" de cada documento encontrado
+                });
+
+                //vou fazer o login do Usuário agora e levar para a página de empresa
+                const userCredentialEmpresa = await signInWithEmailAndPassword(auth, String(emailEmpresaDB), PassLogin)
+                const uidUserCredentialEmpresa = userCredentialEmpresa.user.uid
+                const userLogadoObject = {
+                    uid: uidUserCredentialEmpresa,
+                    email: String(emailEmpresaDB),
+                }
+
+                const valueUserTwo = await AsyncStorage.setItem('userEmpresaLogado', JSON.stringify(userLogadoObject))
+
+                Alert.alert('Sucesso', 'Usuário logado com sucesso')
+                navigation.navigate('BottomTabs', { screen: 'homeEmpresa' });
+            } else {
+                console.log('não encontrei')
+            }
 
 
-        }catch(e) {
+
+        } catch (e) {
             console.log(e)
         }
     }
 
     return (
         <>
-            { IsLoadingIndicator ? (
-                <View style={{flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center'
+            {IsLoadingIndicator ? (
+                <View style={{
+                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                    <ActivityIndicator size={80} color="black"/>
+                    <ActivityIndicator size={80} color="black" />
                 </View>
-            ): (
+            ) : (
 
                 <SafeAreaView style={styles.container}>
-                <StatusBar backgroundColor="#ECF0F1" barStyle="dark-content" />
-                <View style={styles.containerLogo}>
-                    {/* <Text style={styles.textLogo}>NOVOS TALENTOS</Text> */}
-                    <Image style={{height: '80%', width: '80%'}} source={require('../../assets/novos_talentos_logo_fundo.png')}/>
-                    <Text allowFontScaling= {false} style={styles.textDescricaoLogo}>
-                        Publique as melhores vagas e atraia os melhores candidatos!
-                    </Text>
-                </View>
-
-                <View style={styles.formLoginContainer}>
-                    <View style={styles.inputContainer}>
-                        <Text allowFontScaling= {false} style={styles.textLabel}>E-mail</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Ex: teste.500@gmail.com"
-                            keyboardType="email-address"
-                            onChangeText={value => setEmailLogin(value)}
-                        />
-                    </View>
-                    <View style={styles.inputContainer}>
-                        <Text allowFontScaling= {false} style={styles.textLabel}>Senha</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="********"
-                            onChangeText={value => setPassLogin(value)}
-                            secureTextEntry={SwitchPassowrd ? false : true}
-                        />
+                    <StatusBar backgroundColor="#ECF0F1" barStyle="dark-content" />
+                    <View style={styles.containerLogo}>
+                        {/* <Text style={styles.textLogo}>NOVOS TALENTOS</Text> */}
+                        <Image style={{ height: '80%', width: '80%' }} source={require('../../assets/novos_talentos_logo_fundo.png')} />
+                        <Text allowFontScaling={false} style={styles.textDescricaoLogo}>
+                            Publique as melhores vagas e atraia os melhores candidatos!
+                        </Text>
                     </View>
 
-                    <View style={styles.acoesFormContainer}>
-                        <View style={styles.containerMostrarSenha}>
-                            <Text allowFontScaling= {false} style={{fontWeight: 'bold', color: '#777777'}}>Mostrar senha</Text>
-                            <Switch
-                                value={SwitchPassowrd}
-                                thumbColor={SwitchPassowrd ? 'green' : 'red'}
-                                onValueChange={value => setSwitchPassword(value)}
+                    <View style={styles.formLoginContainer}>
+                        <View style={styles.inputContainer}>
+                            <Text allowFontScaling={false} style={styles.textLabel}>E-mail</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Ex: teste.500@gmail.com"
+                                keyboardType="email-address"
+                                onChangeText={value => setEmailLogin(value)}
                             />
                         </View>
-                        <View style={styles.ContainerEsqueciSenha}>
-                            <TouchableOpacity onPress={esquecerSenha}>
-                                <Text allowFontScaling= {false} style={styles.textEsqueciSenha}>Esqueci minha senha</Text>
-                            </TouchableOpacity>
+                        <View style={styles.inputContainer}>
+                            <Text allowFontScaling={false} style={styles.textLabel}>Senha</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="********"
+                                onChangeText={value => setPassLogin(value)}
+                                secureTextEntry={SwitchPassowrd ? false : true}
+                            />
                         </View>
 
-                    </View>
+                        <View style={styles.acoesFormContainer}>
+                            <View style={styles.containerMostrarSenha}>
+                                <Text allowFontScaling={false} style={{ fontWeight: 'bold', color: '#777777' }}>Mostrar senha</Text>
+                                <Switch
+                                    value={SwitchPassowrd}
+                                    thumbColor={SwitchPassowrd ? 'green' : 'red'}
+                                    onValueChange={value => setSwitchPassword(value)}
+                                />
+                            </View>
+                            <View style={styles.ContainerEsqueciSenha}>
+                                <TouchableOpacity onPress={esquecerSenha}>
+                                    <Text allowFontScaling={false} style={styles.textEsqueciSenha}>Esqueci minha senha</Text>
+                                </TouchableOpacity>
+                            </View>
 
-                    <TouchableOpacity onPress={logarEmpresa} style={styles.buttonFazerLogin}>
-                        <Text allowFontScaling= {false} style={{textAlign: 'center', color: 'white', fontSize: 18, textTransform: 'uppercase', fontWeight: 'bold'}}>Entrar</Text>
-                    </TouchableOpacity>
-                </View>
-            </SafeAreaView>
+                        </View>
+
+                        <TouchableOpacity onPress={logarEmpresa} style={styles.buttonFazerLogin}>
+                            <Text allowFontScaling={false} style={{ textAlign: 'center', color: 'white', fontSize: 18, textTransform: 'uppercase', fontWeight: 'bold' }}>Entrar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </SafeAreaView>
             )
-        
-        }
+
+            }
         </>
     );
 }
