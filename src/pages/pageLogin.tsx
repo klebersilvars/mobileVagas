@@ -57,11 +57,10 @@ export default function PageLogin() {
                     email: String(emailUserDB),
                 }
 
-                console.log(`Usuário logado ${userLogadoObject.email} e o uid é ${userLogadoObject.uid}`)
                 const valueUserTwo = await AsyncStorage.setItem('userCandidatoLogado', JSON.stringify(userLogadoObject))
 
                 Alert.alert('Sucesso', 'Usuário logado com sucesso')
-                // navigation.navigate('BottomTabs', { screen: 'homeEmpresa' });
+                 navigation.navigate('BottomTabsCandidato', { screen: 'HomeUsuario'});
             } else {
                 console.log('não encontrei')
             }

@@ -1,3 +1,4 @@
 export type RootTabParamList = {
-    homeUsuario: undefined;
+    HomeUsuario: undefined;
+    PerfilUsuario: undefined;
 };
