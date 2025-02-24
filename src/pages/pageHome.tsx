@@ -3,6 +3,8 @@ import { View, StyleSheet, StatusBar, Text, TouchableOpacity, Dimensions, Activi
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../routes/RootStackParamList'; // Certifique-se de que este caminho está correto
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
 
 
 const windowWidth = Dimensions.get('window').width;
@@ -48,20 +50,38 @@ export default function PageHome() {
             ) : (
                 <View style={styles.container}>
                     <StatusBar barStyle='light-content' />
-                    <Text allowFontScaling= {false} style={styles.titleNovosTalentos}>Novos Talentos</Text>
-                    <Text allowFontScaling= {false} style={styles.textSlogan}>O melhor aplicativo para iniciantes encontrarem oportunidades de emprego</Text>
+                    <Text allowFontScaling={false} style={styles.titleNovosTalentos}>Novos Talentos</Text>
+                    <Text allowFontScaling={false} style={styles.textSlogan}>O melhor aplicativo para iniciantes encontrarem oportunidades de emprego</Text>
                     <View style={styles.ContainerButtons}>
 
                         <TouchableOpacity onPress={irPageLogin} style={styles.buttonEntrar}>
-                            <Text allowFontScaling= {false} style={styles.textButtonEntrar}>Entrar como candidato</Text>
+                            <MaterialCommunityIcons
+                                name="account-circle"
+                                size={25}
+                                color={'black'}
+                                style={styles.iconEntrarCandidato}
+                            />
+                            <Text allowFontScaling={false} style={styles.textButtonEntrar}>Entrar como candidato</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={irPageEntrarEmpresa} style={styles.buttonEntrarEmpresa}>
-                            <Text allowFontScaling= {false} style={styles.textButtonEntrar}>Entrar como empresa</Text>
+                        <MaterialCommunityIcons
+                                name="office-building"
+                                size={25}
+                                color={'black'}
+                                style={styles.iconEntrarCandidato}
+                            />
+                            <Text allowFontScaling={false} style={styles.textButtonEntrar}>Entrar como empresa</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={irPageRegistro} style={styles.buttonRegistrar}>
-                            <Text allowFontScaling= {false} style={styles.textButtonEntrar}>Registrar</Text>
+                        <MaterialCommunityIcons
+                                name="account-plus"
+                                size={25}
+                                color={'black'}
+                                style={styles.iconEntrarCandidato}
+                            />
+                            <Text allowFontScaling={false} style={styles.textButtonEntrar}>Registrar</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -141,10 +161,13 @@ const styles = StyleSheet.create({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        flexDirection: 'row',
         borderRadius: 10,
         position: 'absolute',
-        top: windowHeight / 4.2,
-        borderWidth: 1
+        top: windowHeight / 4.7,
+        borderWidth: 1,
+        textAlign: 'center',
+        
     },
     buttonEntrarEmpresa: {
         width: '70%',
@@ -152,10 +175,12 @@ const styles = StyleSheet.create({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        flexDirection: 'row',
         borderRadius: 10,
         position: 'absolute',
-        top: windowHeight / 3.3,
-        borderWidth: 1
+        top: windowHeight / 3.4,
+        borderWidth: 1,
+        textAlign: 'center'
     },
     buttonRegistrar: {
         width: '70%',
@@ -179,6 +204,14 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         width: '75%',
         textAlign: 'justify'
+    },
+    iconEntrarCandidato: {
+        position: 'absolute',
+        display:'flex',
+        left: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        top: 12,
     }
 
 });
