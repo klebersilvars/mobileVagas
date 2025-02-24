@@ -24,6 +24,9 @@ export default function PageLogin() {
     const user_candidato_db = collection(db, 'user_candidato')
     const navigation = useNavigation<createTabNavigatorProp>();
     const [isLoading, setIsLoading] = useState(false);
+    const [typeConta, setTypeConta] = useState('candidato')
+
+
 
     function esquecerSenha() {
         Alert.alert('AVISO!', 'Implementação em andamento, peço que aguarde a próxima atualização.')
@@ -36,13 +39,32 @@ export default function PageLogin() {
         }
         setIsLoading(true);
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, emailLogin.trim(), passLogin.trim());
 
-            const userEmail = userCredential.user.email
-            
-            const storageEmail = await AsyncStorage.setItem('emailCandidadoLogado', JSON.stringify(userEmail))
-            navigation.navigate('BottomTabs', { screen: 'homeUsuario' });
-            console.log(userEmail)
+            const queryEmailUser = query(user_candidato_db, where('email', '==', emailLogin), where('type_conta', '==', typeConta))
+            const rUserCandidato = await getDocs(queryEmailUser);
+
+            if (!rUserCandidato.empty) {
+                //variável que vai armazenar o email que foi buscado no banco de dados
+                const emailUserDB = rUserCandidato.docs.map((doc) => {
+                    return doc.data().email; // Retorna o campo "email_empresa" de cada documento encontrado
+                });
+
+                //vou fazer o login do Usuário agora e levar para a página de empresa
+                const userCredentialEmpresa = await signInWithEmailAndPassword(auth, String(emailUserDB), passLogin)
+                const uidUserCredentialEmpresa = userCredentialEmpresa.user.uid
+                const userLogadoObject = {
+                    uid: uidUserCredentialEmpresa,
+                    email: String(emailUserDB),
+                }
+
+                console.log(`Usuário logado ${userLogadoObject.email} e o uid é ${userLogadoObject.uid}`)
+                const valueUserTwo = await AsyncStorage.setItem('userCandidatoLogado', JSON.stringify(userLogadoObject))
+
+                Alert.alert('Sucesso', 'Usuário logado com sucesso')
+                // navigation.navigate('BottomTabs', { screen: 'homeEmpresa' });
+            } else {
+                console.log('não encontrei')
+            }
 
 
 
