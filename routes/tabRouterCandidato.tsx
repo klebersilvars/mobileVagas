@@ -10,13 +10,13 @@ export default function TabRouterCandidato() {
     return (
         <Tab.Navigator
             screenOptions={{
-                tabBarStyle: { backgroundColor: '#fff', height: 60, paddingBottom: 10, paddingTop:5 },
+                tabBarStyle: { backgroundColor: '#fff', height: 60, paddingBottom: 10, paddingTop: 5 },
                 tabBarLabelStyle: {
                     fontSize: 14, // Ajusta o tamanho do texto da aba
-                  }, // Personalize conforme necessário
+                }, // Personalize conforme necessário
                 tabBarActiveTintColor: 'black', // Cor do ícone ativo
                 tabBarInactiveTintColor: '#8e8e93', // Cor do ícone inativo,
-                
+
             }}>
             <Tab.Screen
                 name='Home'
@@ -25,7 +25,7 @@ export default function TabRouterCandidato() {
                     headerShown: false,
                     tabBarIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="home" color={color} size={size} />
-                      ),
+                    ),
                 }}
             />
 
@@ -36,9 +36,11 @@ export default function TabRouterCandidato() {
                     headerShown: false,
                     tabBarIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="cog" color={color} size={size} />
-                      ),
+                    ),
                 }}
             />
+
+
         </Tab.Navigator>
     )
 }

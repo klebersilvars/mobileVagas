@@ -18,4 +18,14 @@ const HeaderLeft = () => {
     );
 };
 
-export default HeaderLeft;
+const HeaderLeftPageLogin = () => {
+    const navigation = useNavigation<NavigationRouteStep>();  // Usando useNavigation dentro de um componente de tela
+
+    return (
+        <TouchableOpacity style={{paddingLeft: 10}} onPress={() => navigation.navigate('PageHome')}>
+            <Icon name="arrow-back" size={40} color="black" />
+        </TouchableOpacity>
+    );
+};
+
+export {HeaderLeft, HeaderLeftPageLogin};

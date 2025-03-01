@@ -6,10 +6,9 @@ import PageLogin from '../src/pages/pageLogin';
 import PageRegistroOne from '../src/pages/pageRegistroOne';
 import PageRegistroTwo from '../src/pages/pageRegistroTwo';
 import PageRegistroThree from '../src/pages/pageRegistroThree'
-import HeaderLeft from '../src/components/HeaderLeft/HeaderLeft';
 import PageEntrarEmpresa from '../src/pages/pageEntrarEmpresa';
 import TabRouterCandidato from './tabRouterCandidato';
-
+import { HeaderLeft, HeaderLeftPageLogin } from '../src/components/HeaderLeft/HeaderLeft';
 const Stack = createStackNavigator();
 
 export default function Routes() {
@@ -35,7 +34,7 @@ export default function Routes() {
                         headerTransparent: true,     // Torna o cabeçalho transparente
                         headerLeft: () => (
                             // Use navigation dentro de um componente de tela
-                            <HeaderLeft />
+                            <HeaderLeftPageLogin />
                         ),
                     }} />
 

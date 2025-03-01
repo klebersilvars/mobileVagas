@@ -2,6 +2,13 @@ import React from 'react'
 import { SafeAreaView, TouchableOpacity, Text, View, StyleSheet, Alert } from 'react-native'
 import NavBarConfigs from '../../../components/NavBarConfigs/NavBarConfigs'
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { auth } from '../../../firebase/firebase';
+import { signOut } from 'firebase/auth';
+import { useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from '../../../../routes/RootStackParamList';
+import { StackNavigationProp } from '@react-navigation/stack';
+
+type RouterHomeExit = StackNavigationProp<RootStackParamList>;
 
 export default function ConfiguracoesUser() {
 
@@ -11,6 +18,18 @@ export default function ConfiguracoesUser() {
 
     function assinaturaAviso() {
         Alert.alert('AVISO!', 'Disponível em atualizações futuras!')
+    }
+
+    const navigation = useNavigation<RouterHomeExit>()
+
+    async function deslogarConta() {
+        try {
+            await signOut(auth)
+            Alert.alert('Aviso!', 'Usuário deslogado!')
+            navigation.navigate('PageLogin')
+        }catch {
+            Alert.alert('Erro!', 'Tente novamente mais tarde!')
+        }
     }
     return (
         <SafeAreaView>
@@ -39,7 +58,7 @@ export default function ConfiguracoesUser() {
                             />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.buttonDeslogarConta}>
+                <TouchableOpacity onPress={deslogarConta} style={styles.buttonDeslogarConta}>
                     <Text style={styles.textDeslogarConta}>Deslogar conta</Text>
                     <MaterialCommunityIcons
                                 name="exit-to-app"
