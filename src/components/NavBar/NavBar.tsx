@@ -1,5 +1,5 @@
 import React, {useState} from 'react'
-import {View, Text, SafeAreaView, TouchableOpacity} from 'react-native'
+import {View, Text, SafeAreaView, TouchableOpacity, Image} from 'react-native'
 import { db } from '../../firebase/firebase'
 import { auth } from '../../firebase/firebase'
 import { collection, where, query } from 'firebase/firestore'
@@ -14,7 +14,8 @@ export default function NavBar() {
                 <View style={StyleLoginNavBar.containerNavBar}>
                     <View> 
                         <TouchableOpacity>
-                            <Text>Foto</Text>
+                            
+                            <Image style={StyleLoginNavBar.imageHomemPerfil} source={require('../../../assets/homem.png')}/>
                         </TouchableOpacity>
                     </View>
                     <View>

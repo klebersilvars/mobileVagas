@@ -10,9 +10,13 @@ export default function TabRouterCandidato() {
     return (
         <Tab.Navigator
             screenOptions={{
-                tabBarStyle: { backgroundColor: '#fff' }, // Personalize conforme necessário
+                tabBarStyle: { backgroundColor: '#fff', height: 60, paddingBottom: 10, paddingTop:5 },
+                tabBarLabelStyle: {
+                    fontSize: 14, // Ajusta o tamanho do texto da aba
+                  }, // Personalize conforme necessário
                 tabBarActiveTintColor: 'black', // Cor do ícone ativo
-                tabBarInactiveTintColor: '#8e8e93', // Cor do ícone inativo
+                tabBarInactiveTintColor: '#8e8e93', // Cor do ícone inativo,
+                
             }}>
             <Tab.Screen
                 name='Home'

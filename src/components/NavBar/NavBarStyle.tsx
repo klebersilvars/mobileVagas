@@ -4,7 +4,7 @@ import { StyleSheet } from 'react-native'
 export const StyleLoginNavBar = StyleSheet.create({
     containerNavBar: {
         width: '100%',
-        height: 50,
+        height: 60,
         borderBottomWidth: 1,
         padding: 10,
         display: 'flex',
@@ -15,5 +15,15 @@ export const StyleLoginNavBar = StyleSheet.create({
     titleNavBar:{
         fontWeight: 'bold',
         fontSize: 20,
+    },
+    imageHomemPerfil: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 50,
+        width: 50,
+        position: 'absolute',
+        left: 20,
+        top: -30,
     }
 })
