@@ -1,11 +1,11 @@
 import React from 'react'
-import {View, StyleSheet, Text} from 'react-native'
+import {View, StyleSheet, Text, SafeAreaView} from 'react-native'
 
 export default function NavBarConfigs() {
     return(
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <Text style={styles.titleConfigs}>Configurações</Text>
-        </View>
+        </SafeAreaView>
     )
 }
 
@@ -16,10 +16,9 @@ export const styles = StyleSheet.create({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        borderBottomWidth: 1,
     },
     titleConfigs: {
-        fontSize: 20,
+        fontSize: 25,
         textAlign: 'center',
         fontWeight: 'bold'
     }
