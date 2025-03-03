@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import LoginEmpresa from '../src/pages/acessoEmpresa/acessoEmpresa'
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import PublicarVaga from '../src/pages/acessoEmpresa/publicarVagaEmpresa/publicarVaga';
+import ConfiguracoesEmpresa from '../src/pages/acessoEmpresa/ConfiguracoesPageEmpresa/ConfiguracoesEmpresa';
 
 export default function TabRouterEmpresa() {
     const Tab = createBottomTabNavigator();
@@ -40,16 +41,16 @@ export default function TabRouterEmpresa() {
                 }}
             />
 
-            {/* <Tab.Screen
+            <Tab.Screen
                 name='Configurações'
-                component={}
+                component={ConfiguracoesEmpresa}
                 options={{
                     headerShown: false,
                     tabBarIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="cog" color={color} size={size} />
                     ),
                 }}
-            /> */}
+            />
 
 
         </Tab.Navigator>
