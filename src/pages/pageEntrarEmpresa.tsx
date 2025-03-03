@@ -65,9 +65,9 @@ export default function PageEntrarEmpresa() {
                 const valueUserTwo = await AsyncStorage.setItem('userEmpresaLogado', JSON.stringify(userLogadoObject))
 
                 Alert.alert('Sucesso', 'Usuário logado com sucesso')
-                navigation.navigate('BottomTabs', { screen: 'homeEmpresa' });
+                navigation.navigate('BottomTabsEmpresa', { screen: 'homeEmpresa' });
             } else {
-                console.log('não encontrei')
+                Alert.alert('AVISO!', 'Este e-mail não está cadastrado como uma EMPRESA.')
             }
 
 

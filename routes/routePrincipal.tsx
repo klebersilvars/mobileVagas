@@ -9,6 +9,7 @@ import PageRegistroThree from '../src/pages/pageRegistroThree'
 import PageEntrarEmpresa from '../src/pages/pageEntrarEmpresa';
 import TabRouterCandidato from './tabRouterCandidato';
 import { HeaderLeft, HeaderLeftPageLogin } from '../src/components/HeaderLeft/HeaderLeft';
+import TabRouterEmpresa from './tabRouterEmpresa';
 const Stack = createStackNavigator();
 
 export default function Routes() {
@@ -92,13 +93,23 @@ export default function Routes() {
                 />
 
                 <Stack.Screen
-                   name='BottomTabsCandidato'
-                   component={TabRouterCandidato} 
-                   options={{
-                    headerShown: false,           // Exibe o cabeçalho
-                    title: '',                   // Remove o título da tela
-                    headerTransparent: true,     // Torna o cabeçalho transparente
-                }}
+                    name='BottomTabsCandidato'
+                    component={TabRouterCandidato}
+                    options={{
+                        headerShown: false,           // Exibe o cabeçalho
+                        title: '',                   // Remove o título da tela
+                        headerTransparent: true,     // Torna o cabeçalho transparente
+                    }}
+                />
+
+                <Stack.Screen
+                    name='BottomTabsEmpresa'
+                    component={TabRouterEmpresa}
+                    options={{
+                        headerShown: false,           // Exibe o cabeçalho
+                        title: '',                   // Remove o título da tela
+                        headerTransparent: true,     // Torna o cabeçalho transparente
+                    }}
                 />
             </Stack.Navigator>
         </NavigationContainer>
