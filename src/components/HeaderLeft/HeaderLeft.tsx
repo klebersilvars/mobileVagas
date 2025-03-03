@@ -12,7 +12,7 @@ const HeaderLeft = () => {
     const navigation = useNavigation<NavigationRouteStep>();  // Usando useNavigation dentro de um componente de tela
 
     return (
-        <TouchableOpacity style={{paddingLeft: 10}} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={{paddingLeft: 10}} onPress={() => navigation.navigate('PageHome')}>
             <Icon name="arrow-back" size={40} color="black" />
         </TouchableOpacity>
     );
