@@ -53,8 +53,8 @@ export default function PublicarVaga() {
             // Caso precise salvar o ID no próprio documento:
             await updateDoc(publicationRef, { id_doc: publicationId });
 
-            Alert.alert('Sucesso', 'Publicação feita com sucesso!')
-    
+            Alert.alert('Sucesso!', 'Publicação feita com sucesso!')
+            setPublicacao_texto('')
         } catch (error) {
             console.error("Erro ao publicar a vaga:", error);
         }
