@@ -47,9 +47,6 @@ export default function PublicarVaga() {
             // Agora você pode acessar o ID do documento usando `publicationRef.id`
             const publicationId = publicationRef.id;
     
-            // Caso você precise usar o ID em algum lugar
-            console.log('ID do documento publicado:', publicationId);
-    
             // Caso precise salvar o ID no próprio documento:
             await updateDoc(publicationRef, { id_doc: publicationId });
 
@@ -75,6 +72,7 @@ export default function PublicarVaga() {
                     numberOfLines={20}
                     style={{ fontSize: 18, }}
                     onChangeText={(text)=> {setPublicacao_texto(text)}}
+                    value={publicacao_texto} // Adicione isto para controlar o valor do campo
                 />
             </View>
         </SafeAreaView>
