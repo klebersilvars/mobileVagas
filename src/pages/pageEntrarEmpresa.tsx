@@ -105,6 +105,7 @@ export default function PageEntrarEmpresa() {
                                 placeholder="Ex: teste.500@gmail.com"
                                 keyboardType="email-address"
                                 onChangeText={value => setEmailLogin(value)}
+                                autoCapitalize='none'
                             />
                         </View>
                         <View style={styles.inputContainer}>
@@ -114,6 +115,7 @@ export default function PageEntrarEmpresa() {
                                 placeholder="********"
                                 onChangeText={value => setPassLogin(value)}
                                 secureTextEntry={SwitchPassowrd ? false : true}
+                                autoCapitalize='none'
                             />
                         </View>
 
