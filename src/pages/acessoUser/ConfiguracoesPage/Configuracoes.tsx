@@ -7,6 +7,7 @@ import { signOut } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../../../routes/RootStackParamList';
 import { StackNavigationProp } from '@react-navigation/stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type RouterHomeExit = StackNavigationProp<RootStackParamList>;
 
@@ -27,6 +28,7 @@ export default function ConfiguracoesUser() {
             await signOut(auth)
             Alert.alert('Aviso!', 'Usuário deslogado!')
             navigation.navigate('PageLogin')
+            await AsyncStorage.removeItem('userCandidatoLogado')
         }catch {
             Alert.alert('Erro!', 'Tente novamente mais tarde!')
         }
