@@ -9,7 +9,7 @@ export default function TabRouterEmpresa() {
     const Tab = createBottomTabNavigator();
     return (
         <Tab.Navigator
-        initialRouteName='Home'
+            initialRouteName='Home'
             screenOptions={{
                 tabBarStyle: { backgroundColor: '#fff', height: 60, paddingBottom: 10, paddingTop: 5 },
                 tabBarLabelStyle: {
@@ -32,6 +32,17 @@ export default function TabRouterEmpresa() {
 
             <Tab.Screen
                 name='Publicar Vaga'
+                component={PublicarVaga}
+                options={{
+                    headerShown: false,
+                    tabBarIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="plus" color={color} size={size} />
+                    ),
+                }}
+            />
+
+            <Tab.Screen
+                name='Vagas Publicadas'
                 component={PublicarVaga}
                 options={{
                     headerShown: false,
