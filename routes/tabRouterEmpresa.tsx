@@ -4,6 +4,7 @@ import LoginEmpresa from '../src/pages/acessoEmpresa/acessoEmpresa'
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import PublicarVaga from '../src/pages/acessoEmpresa/publicarVagaEmpresa/publicarVaga';
 import ConfiguracoesEmpresa from '../src/pages/acessoEmpresa/ConfiguracoesPageEmpresa/ConfiguracoesEmpresa';
+import VagasPublicadas from '../src/pages/acessoEmpresa/VagasCriadasEmpresa/VagasPublicadas';
 
 export default function TabRouterEmpresa() {
     const Tab = createBottomTabNavigator();
@@ -42,12 +43,12 @@ export default function TabRouterEmpresa() {
             />
 
             <Tab.Screen
-                name='Vagas Publicadas'
-                component={PublicarVaga}
+                name='Publicações'
+                component={VagasPublicadas}
                 options={{
                     headerShown: false,
                     tabBarIcon: ({ color, size }) => (
-                        <MaterialCommunityIcons name="plus" color={color} size={size} />
+                        <MaterialCommunityIcons name="book-account-outline" color={color} size={size} />
                     ),
                 }}
             />
