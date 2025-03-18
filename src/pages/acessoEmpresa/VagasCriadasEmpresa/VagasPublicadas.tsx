@@ -6,10 +6,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Vaga = {
     id: string;
-    publicacao_text: string; // Adicione outros campos conforme necessário
-    data: string, 
-    hora: string,
-    quem_publicou:string
+    publicacao_text: string;
+    data: string;
+    hora: string;
+    quem_publicou: string;
+};
+
+// Função para formatar a data no formato dd/MM/yyyy
+const formatarData = (data: string) => {
+    const partes = data.split('-'); // Supondo que a data venha como "2025-03-25"
+    if (partes.length === 3) {
+        return `${partes[2]}/${partes[1]}/${partes[0]}`; // Retorna "25/03/2025"
+    }
+    return data; // Retorna a data original se o formato for inesperado
 };
 
 export default function VagasPublicadas() {
@@ -45,7 +54,7 @@ export default function VagasPublicadas() {
                 id: doc.id,
                 publicacao_text: doc.data().publicacao_text,
                 quem_publicou: doc.data().quem_publicou.email,
-                data: doc.data().data,
+                data: formatarData(doc.data().data), // Aplicando a formatação
                 hora: doc.data().hora,
             }));
 
@@ -70,32 +79,28 @@ export default function VagasPublicadas() {
             </View>
 
             <FlatList
+                showsVerticalScrollIndicator={false}
                 data={vagasPublicadas}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                     <View style={styles.containerBox}>
                         <View style={styles.containerText}>
                             <TextInput
-                                value={item.publicacao_text} // Inicializa com o valor vindo do banco de dados
-                                onChangeText={(value) => handleTextInputChange(item.id, value)} // Atualiza o estado para esse item
+                                value={item.publicacao_text}
+                                onChangeText={(value) => handleTextInputChange(item.id, value)}
                             />
                         </View>
 
                         <View style={styles.containerActionsPubli}>
                             <View>
                                 <Text>
-                                    <Text style={{fontWeight: 'bold'}}>Publicado por:</Text>  {item.quem_publicou}
+                                    <Text style={{ fontWeight: 'bold' }}>Publicado por:</Text> {item.quem_publicou}
                                 </Text>
                                 <Text>
-                                    
-                                    <Text style={{fontWeight: 'bold'}}>Data:</Text> {item.data}
-
-
+                                    <Text style={{ fontWeight: 'bold' }}>Data:</Text> {item.data}
                                 </Text>
                                 <Text>
-
-                                    <Text style={{fontWeight: 'bold'}}>Hora:</Text> {item.hora}
-                                    
+                                    <Text style={{ fontWeight: 'bold' }}>Hora:</Text> {item.hora}
                                 </Text>
                             </View>
 
@@ -138,6 +143,8 @@ const styles = StyleSheet.create({
         height: 330,
         maxHeight: 350,
         borderWidth: 1,
+        marginTop: 10,
+        
     },
     containerText: {
         height: 250,
