@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, SafeAreaView, StyleSheet, Text, FlatList, TouchableOpacity, TextInput } from 'react-native';
+import { View, SafeAreaView, StyleSheet, Text, FlatList, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { db } from '../../../firebase/firebase';
-import { where, query, collection, getDocs } from 'firebase/firestore';
+import { where, query, collection, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Vaga = {
@@ -21,6 +21,23 @@ const formatarData = (data: string) => {
     return data; // Retorna a data original se o formato for inesperado
 };
 
+async function deletarPublicacao(item: Vaga) {
+    try {
+        console.log(`Publicação identificada para deletar: ${item.id}`);
+
+        // Referência ao documento no Firestore
+        const vagaRef = doc(db, 'publicar_vaga_empresa', item.id);
+
+        // Deletando do Firestore
+        await deleteDoc(vagaRef);
+
+        Alert.alert('Sucesso', 'Publicação deletada com sucesso!');
+    } catch (error) {
+        console.error('Erro ao deletar a publicação:', error);
+        Alert.alert('Erro', 'Não foi possível deletar a publicação.');
+    }
+}
+
 export default function VagasPublicadas() {
     const [userEmpresaLogadoState, setUserEmpresaLogadoState] = useState<string>('');
     const [vagasPublicadas, setVagasPublicadas] = useState<Vaga[]>([]);
@@ -34,7 +51,7 @@ export default function VagasPublicadas() {
                 console.log('Usuário logado:', userEmpresa);
                 setUserEmpresaLogadoState(userEmpresa.email);
 
-                // Chamando a função para buscar as vagas publicadas
+                // Ativa a escuta em tempo real das vagas publicadas
                 buscarVagas(userEmpresa.email);
             } else {
                 console.log('Não há dados no AsyncStorage para "userEmpresaLogado"');
@@ -44,21 +61,25 @@ export default function VagasPublicadas() {
         fetchData();
     }, []);
 
-    const buscarVagas = async (emailEmpresa: string) => {
+    const buscarVagas = (emailEmpresa: string) => {
         try {
             const vagasPublicadasRef = collection(db, 'publicar_vaga_empresa');
             const q = query(vagasPublicadasRef, where('quem_publicou.email', '==', emailEmpresa));
-            const querySnapshot = await getDocs(q);
 
-            const vagas = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                publicacao_text: doc.data().publicacao_text,
-                quem_publicou: doc.data().quem_publicou.email,
-                data: formatarData(doc.data().data), // Aplicando a formatação
-                hora: doc.data().hora,
-            }));
+            // Usando onSnapshot para escuta em tempo real
+            const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                const vagas = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    publicacao_text: doc.data().publicacao_text,
+                    quem_publicou: doc.data().quem_publicou.email,
+                    data: formatarData(doc.data().data), // Aplicando a formatação
+                    hora: doc.data().hora,
+                }));
 
-            setVagasPublicadas(vagas);
+                setVagasPublicadas(vagas);
+            });
+
+            return () => unsubscribe(); // Para parar a escuta quando o componente desmontar
         } catch (error) {
             console.error('Erro ao buscar vagas:', error);
         }
@@ -74,7 +95,7 @@ export default function VagasPublicadas() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.containerTitlePage} >
+            <View style={styles.containerTitlePage}>
                 <Text style={styles.titleContainerPage}>Novos Talentos</Text>
             </View>
 
@@ -105,7 +126,10 @@ export default function VagasPublicadas() {
                             </View>
 
                             <View>
-                                <TouchableOpacity style={styles.deletarPubli}>
+                                <TouchableOpacity 
+                                    onPress={() => deletarPublicacao(item)} 
+                                    style={styles.deletarPubli}
+                                >
                                     <Text style={styles.textBtnDeletar}>Deletar</Text>
                                 </TouchableOpacity>
                             </View>
@@ -116,7 +140,6 @@ export default function VagasPublicadas() {
         </SafeAreaView>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
