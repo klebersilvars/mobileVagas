@@ -12,25 +12,19 @@ type Vaga = {
     quem_publicou: string;
 };
 
-// Função para formatar a data no formato dd/MM/yyyy
 const formatarData = (data: string) => {
-    const partes = data.split('-'); // Supondo que a data venha como "2025-03-25"
+    const partes = data.split('-');
     if (partes.length === 3) {
-        return `${partes[2]}/${partes[1]}/${partes[0]}`; // Retorna "25/03/2025"
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
     }
-    return data; // Retorna a data original se o formato for inesperado
+    return data;
 };
 
 async function deletarPublicacao(item: Vaga) {
     try {
         console.log(`Publicação identificada para deletar: ${item.id}`);
-
-        // Referência ao documento no Firestore
         const vagaRef = doc(db, 'publicar_vaga_empresa', item.id);
-
-        // Deletando do Firestore
         await deleteDoc(vagaRef);
-
         Alert.alert('Sucesso', 'Publicação deletada com sucesso!');
     } catch (error) {
         console.error('Erro ao deletar a publicação:', error);
@@ -41,6 +35,7 @@ async function deletarPublicacao(item: Vaga) {
 export default function VagasPublicadas() {
     const [userEmpresaLogadoState, setUserEmpresaLogadoState] = useState<string>('');
     const [vagasPublicadas, setVagasPublicadas] = useState<Vaga[]>([]);
+    const [publicacaoEditando, setPublicacaoEditando] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -50,8 +45,6 @@ export default function VagasPublicadas() {
                 const userEmpresa = JSON.parse(userEmpresaLogado);
                 console.log('Usuário logado:', userEmpresa);
                 setUserEmpresaLogadoState(userEmpresa.email);
-
-                // Ativa a escuta em tempo real das vagas publicadas
                 buscarVagas(userEmpresa.email);
             } else {
                 console.log('Não há dados no AsyncStorage para "userEmpresaLogado"');
@@ -66,20 +59,19 @@ export default function VagasPublicadas() {
             const vagasPublicadasRef = collection(db, 'publicar_vaga_empresa');
             const q = query(vagasPublicadasRef, where('quem_publicou.email', '==', emailEmpresa));
 
-            // Usando onSnapshot para escuta em tempo real
             const unsubscribe = onSnapshot(q, (querySnapshot) => {
                 const vagas = querySnapshot.docs.map(doc => ({
                     id: doc.id,
                     publicacao_text: doc.data().publicacao_text,
                     quem_publicou: doc.data().quem_publicou.email,
-                    data: formatarData(doc.data().data), // Aplicando a formatação
+                    data: formatarData(doc.data().data),
                     hora: doc.data().hora,
                 }));
 
                 setVagasPublicadas(vagas);
             });
 
-            return () => unsubscribe(); // Para parar a escuta quando o componente desmontar
+            return () => unsubscribe();
         } catch (error) {
             console.error('Erro ao buscar vagas:', error);
         }
@@ -92,6 +84,16 @@ export default function VagasPublicadas() {
             )
         );
     };
+
+    function functionEditarPubli(item: Vaga) {
+        console.log(`Editando publicação ID: ${item.id}`);
+        setPublicacaoEditando(item.id); // Define o ID da publicação que está sendo editada
+    }
+
+    function functionSalvarPubliEditada(item: Vaga) {
+        console.log(`Salvando publicação editada ID: ${item.id}`);
+        setPublicacaoEditando(null); // Sai do modo de edição
+    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -109,6 +111,7 @@ export default function VagasPublicadas() {
                             <TextInput
                                 value={item.publicacao_text}
                                 onChangeText={(value) => handleTextInputChange(item.id, value)}
+                                editable={publicacaoEditando === item.id}
                             />
                         </View>
 
@@ -125,13 +128,29 @@ export default function VagasPublicadas() {
                                 </Text>
                             </View>
 
-                            <View>
-                                <TouchableOpacity 
-                                    onPress={() => deletarPublicacao(item)} 
+                            <View style={{ gap: 10 }}>
+                                <TouchableOpacity
+                                    onPress={() => deletarPublicacao(item)}
                                     style={styles.deletarPubli}
                                 >
                                     <Text style={styles.textBtnDeletar}>Deletar</Text>
                                 </TouchableOpacity>
+
+                                {publicacaoEditando === item.id ? (
+                                    <TouchableOpacity
+                                        onPress={() => functionSalvarPubliEditada(item)}
+                                        style={styles.salvarPubli}
+                                    >
+                                        <Text style={styles.textBtnEditar}>Salvar</Text>
+                                    </TouchableOpacity>
+                                ) : (
+                                    <TouchableOpacity
+                                        onPress={() => functionEditarPubli(item)}
+                                        style={styles.editarPubli}
+                                    >
+                                        <Text style={styles.textBtnEditar}>Editar</Text>
+                                    </TouchableOpacity>
+                                )}
                             </View>
                         </View>
                     </View>
@@ -163,14 +182,14 @@ const styles = StyleSheet.create({
     containerBox: {
         width: '100%',
         padding: 10,
-        height: 330,
+        height: 340,
         maxHeight: 350,
         borderWidth: 1,
         marginTop: 10,
-        
+
     },
     containerText: {
-        height: 250,
+        height: 230,
         maxHeight: 251,
         width: '100%'
     },
@@ -190,7 +209,29 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderRadius: 7,
     },
+    editarPubli: {
+        backgroundColor: '#FFB300',
+        width: 100,
+        height: 30,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 7,
+    },
+    salvarPubli: {
+        backgroundColor: 'green',
+        width: 100,
+        height: 30,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 7,
+    },
     textBtnDeletar: {
+        color: 'white',
+        fontWeight: 'bold'
+    },
+    textBtnEditar: {
         color: 'white',
         fontWeight: 'bold'
     }
