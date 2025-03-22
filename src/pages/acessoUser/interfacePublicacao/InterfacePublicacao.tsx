@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, SafeAreaView, StyleSheet, Text, FlatList, TextInput } from 'react-native';
 import { db } from '../../../firebase/firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
+import moment from 'moment';  // Importando a biblioteca Moment.js
 
 type Vaga = {
     id: string;
@@ -13,6 +14,11 @@ type Vaga = {
 
 export default function InterfacePublicacao() {
     const [vagasPublicadas, setVagasPublicadas] = useState<Vaga[]>([]);
+
+    // Função para formatar a data usando o Moment.js
+    const formatarData = (data: string) => {
+        return moment(data).format('DD/MM/YYYY'); // Formato brasileiro
+    };
 
     useEffect(() => {
         const refVagas = collection(db, 'publicar_vaga_empresa');
@@ -31,7 +37,7 @@ export default function InterfacePublicacao() {
                 return {
                     id: doc.id,
                     publicacao_text: data.publicacao_text || 'Sem descrição',
-                    data: data.data || 'Data não informada',
+                    data: formatarData(data.data || 'Data não informada'),
                     hora: data.hora || 'Hora não informada',
                     quem_publicou: data.quem_publicou || { email: 'Desconhecido' },
                 };
@@ -99,7 +105,7 @@ const styles = StyleSheet.create({
         display: 'flex',
         borderWidth: 1,
         width: '100%',
-        height: 300,
+        maxHeight: 200,
         marginTop: 10,
     },
     container_nome_data: {
