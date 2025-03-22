@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, SafeAreaView, StyleSheet, Text, FlatList, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { db } from '../../../firebase/firebase';
-import { where, query, collection, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
+import { where, query, collection, onSnapshot, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Vaga = {
@@ -14,17 +14,13 @@ type Vaga = {
 
 const formatarData = (data: string) => {
     const partes = data.split('-');
-    if (partes.length === 3) {
-        return `${partes[2]}/${partes[1]}/${partes[0]}`;
-    }
-    return data;
+    return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : data;
 };
 
 async function deletarPublicacao(item: Vaga) {
     try {
         console.log(`Publicação identificada para deletar: ${item.id}`);
-        const vagaRef = doc(db, 'publicar_vaga_empresa', item.id);
-        await deleteDoc(vagaRef);
+        await deleteDoc(doc(db, 'publicar_vaga_empresa', item.id));
         Alert.alert('Sucesso', 'Publicação deletada com sucesso!');
     } catch (error) {
         console.error('Erro ao deletar a publicação:', error);
@@ -40,17 +36,14 @@ export default function VagasPublicadas() {
     useEffect(() => {
         const fetchData = async () => {
             const userEmpresaLogado = await AsyncStorage.getItem('userEmpresaLogado');
-
-            if (userEmpresaLogado !== null) {
+            if (userEmpresaLogado) {
                 const userEmpresa = JSON.parse(userEmpresaLogado);
-                console.log('Usuário logado:', userEmpresa);
                 setUserEmpresaLogadoState(userEmpresa.email);
                 buscarVagas(userEmpresa.email);
             } else {
-                console.log('Não há dados no AsyncStorage para "userEmpresaLogado"');
+                console.log('Nenhum usuário logado encontrado.');
             }
         };
-
         fetchData();
     }, []);
 
@@ -59,7 +52,7 @@ export default function VagasPublicadas() {
             const vagasPublicadasRef = collection(db, 'publicar_vaga_empresa');
             const q = query(vagasPublicadasRef, where('quem_publicou.email', '==', emailEmpresa));
 
-            const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            return onSnapshot(q, (querySnapshot) => {
                 const vagas = querySnapshot.docs.map(doc => ({
                     id: doc.id,
                     publicacao_text: doc.data().publicacao_text,
@@ -67,33 +60,43 @@ export default function VagasPublicadas() {
                     data: formatarData(doc.data().data),
                     hora: doc.data().hora,
                 }));
-
                 setVagasPublicadas(vagas);
             });
-
-            return () => unsubscribe();
         } catch (error) {
             console.error('Erro ao buscar vagas:', error);
         }
     };
 
     const handleTextInputChange = (id: string, value: string) => {
-        setVagasPublicadas((prevVagas) =>
-            prevVagas.map((vaga) =>
-                vaga.id === id ? { ...vaga, publicacao_text: value } : vaga
-            )
+        setVagasPublicadas(prevVagas =>
+            prevVagas.map(vaga => (vaga.id === id ? { ...vaga, publicacao_text: value } : vaga))
         );
     };
 
-    function functionEditarPubli(item: Vaga) {
-        console.log(`Editando publicação ID: ${item.id}`);
-        setPublicacaoEditando(item.id); // Define o ID da publicação que está sendo editada
-    }
+    const functionEditarPubli = (item: Vaga) => {
+        setPublicacaoEditando(item.id);
+    };
 
-    function functionSalvarPubliEditada(item: Vaga) {
-        console.log(`Salvando publicação editada ID: ${item.id}`);
-        setPublicacaoEditando(null); // Sai do modo de edição
-    }
+    const functionSalvarPubliEditada = async (item: Vaga) => {
+        try {
+            const vagaRef = doc(db, 'publicar_vaga_empresa', item.id);
+
+            if (!item.publicacao_text.trim()) {
+                Alert.alert('Erro', 'O texto da publicação não pode estar vazio.');
+                return;
+            }
+
+            await updateDoc(vagaRef, {
+                publicacao_text: item.publicacao_text
+            });
+
+            Alert.alert('Sucesso', 'Publicação atualizada com sucesso!');
+            setPublicacaoEditando(null);
+        } catch (error) {
+            console.error('Erro ao atualizar publicação:', error);
+            Alert.alert('Erro', 'Não foi possível atualizar a publicação.');
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -112,20 +115,17 @@ export default function VagasPublicadas() {
                                 value={item.publicacao_text}
                                 onChangeText={(value) => handleTextInputChange(item.id, value)}
                                 editable={publicacaoEditando === item.id}
+                                style={styles.input}
+                                numberOfLines={20}
+                                multiline
                             />
                         </View>
 
                         <View style={styles.containerActionsPubli}>
                             <View>
-                                <Text>
-                                    <Text style={{ fontWeight: 'bold' }}>Publicado por:</Text> {item.quem_publicou}
-                                </Text>
-                                <Text>
-                                    <Text style={{ fontWeight: 'bold' }}>Data:</Text> {item.data}
-                                </Text>
-                                <Text>
-                                    <Text style={{ fontWeight: 'bold' }}>Hora:</Text> {item.hora}
-                                </Text>
+                                <Text><Text style={{ fontWeight: 'bold' }}>Publicado por:</Text> {item.quem_publicou}</Text>
+                                <Text><Text style={{ fontWeight: 'bold' }}>Data:</Text> {item.data}</Text>
+                                <Text><Text style={{ fontWeight: 'bold' }}>Hora:</Text> {item.hora}</Text>
                             </View>
 
                             <View style={{ gap: 10 }}>
@@ -159,6 +159,7 @@ export default function VagasPublicadas() {
         </SafeAreaView>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -234,5 +235,6 @@ const styles = StyleSheet.create({
     textBtnEditar: {
         color: 'white',
         fontWeight: 'bold'
-    }
+    },
+    input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 5, padding: 8, fontSize: 16 },
 })
