@@ -10,6 +10,10 @@ type Vaga = {
     data: string;
     hora: string;
     quem_publicou: string;
+    area_contato_vaga: string;
+    requisito_vaga: string;
+    salarioVaga: string;
+    titulo_vaga: string;
 };
 
 const formatarData = (data: string) => {
@@ -59,6 +63,11 @@ export default function VagasPublicadas() {
                     quem_publicou: doc.data().quem_publicou.email,
                     data: formatarData(doc.data().data),
                     hora: doc.data().hora,
+                    titulo_vaga: doc.data().titulo_vaga,
+                    salarioVaga: doc.data().salarioVaga,
+                    requisito_vaga: doc.data().requisito_vaga,
+                    area_contato_vaga: doc.data().area_contato_vaga
+
                 }));
                 setVagasPublicadas(vagas);
             });
@@ -69,7 +78,7 @@ export default function VagasPublicadas() {
 
     const handleTextInputChange = (id: string, value: string) => {
         setVagasPublicadas(prevVagas =>
-            prevVagas.map(vaga => (vaga.id === id ? { ...vaga, publicacao_text: value } : vaga))
+            prevVagas.map(vaga => (vaga.id === id ? { ...vaga, publicacao_text: value, titulo_vaga: value, salarioVaga: value, area_contato_vaga: value, requisito_vaga: value, } : vaga))
         );
     };
 
@@ -112,7 +121,39 @@ export default function VagasPublicadas() {
                     <View style={styles.containerBox}>
                         <View style={styles.containerText}>
                             <TextInput
+                                value={item.titulo_vaga}
+                                onChangeText={(value) => handleTextInputChange(item.id, value)}
+                                editable={publicacaoEditando === item.id}
+                                style={styles.input}
+                                numberOfLines={20}
+                                multiline
+                            />
+                            <TextInput
                                 value={item.publicacao_text}
+                                onChangeText={(value) => handleTextInputChange(item.id, value)}
+                                editable={publicacaoEditando === item.id}
+                                style={styles.input}
+                                numberOfLines={20}
+                                multiline
+                            />
+                            <TextInput
+                                value={item.salarioVaga}
+                                onChangeText={(value) => handleTextInputChange(item.id, value)}
+                                editable={publicacaoEditando === item.id}
+                                style={styles.input}
+                                numberOfLines={20}
+                                multiline
+                            />
+                            <TextInput
+                                value={item.area_contato_vaga}
+                                onChangeText={(value) => handleTextInputChange(item.id, value)}
+                                editable={publicacaoEditando === item.id}
+                                style={styles.input}
+                                numberOfLines={20}
+                                multiline
+                            />
+                            <TextInput
+                                value={item.requisito_vaga}
                                 onChangeText={(value) => handleTextInputChange(item.id, value)}
                                 editable={publicacaoEditando === item.id}
                                 style={styles.input}
