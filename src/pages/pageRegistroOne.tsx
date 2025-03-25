@@ -1,5 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput, ScrollView, Alert, Dimensions } from 'react-native';
+import { 
+  View, 
+  StatusBar, 
+  SafeAreaView, 
+  StyleSheet, 
+  Text, 
+  TextInput, 
+  ScrollView, 
+  Alert, 
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+  TouchableOpacity
+} from 'react-native';
 import { ButtonStepOne } from '../components/ButtonStepOne';
 import { ButtonStepOneDisabled } from '../components/ButtonStepOne';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -14,15 +29,11 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { db } from '../firebase/firebase';
 import { setDoc, doc } from 'firebase/firestore';
 
-
-const width = Dimensions.get('window').width
-const height = Dimensions.get('window').height
-
+const { width, height } = Dimensions.get('window');
 
 type NavigationStep = StackNavigationProp<RootStackParamList>;
 
 export default function PageRegistroOne() {
-
     // useState
     const [nomeCompletoRegistro, setNomeCompletoRegistro] = useState<string>('');
     const [emailRegistro, setEmailRegitro] = useState<string>('');
@@ -41,9 +52,6 @@ export default function PageRegistroOne() {
     const [camposCandidatos, setCamposCandidatos] = useState<boolean>(false)
     const [camposEmpresa, setCamposEmpresa] = useState<boolean>(false);
     const [dadosUserInterface, setDadosUserInterface] = useState<RegistroUserOne | null>(null)
-
-
-    
 
     useEffect(() => {
         const date = new Date();
@@ -122,301 +130,435 @@ export default function PageRegistroOne() {
         validacaoCamposEmpresas(); // Chama validação sempre que os valores mudarem
     }, [nomeEmpresa, emailEmpresa, cnpjEmpresa, passwordEmpresa]);
 
-        useEffect(() => {
-            const novoUsuario: RegistroUserOne = {
-                nome_completo: nomeCompletoRegistro, // Preencha com o valor apropriado
-                email: emailRegistro,         // Preencha com o valor apropriado
-                data_nascimento: dataNascimentoRegistro,
-                type_conta: typeConta
-            };
-
-            setDadosUserInterface(novoUsuario)
-        }, [nomeCompletoRegistro, emailRegistro, dataNascimentoRegistro])
-
-
-        const dadosUserOne = async ()=> {
-            try{
-                const valueUserOne = await AsyncStorage.setItem('registroUserOne', JSON.stringify(dadosUserInterface))
-            }catch(e) {
-                console.log(e)
-            }
-        }
-
-        const salvarUserOneStepPage = async () => {
-            await dadosUserOne();  // Aguarda salvar os dados
-            irPageStepTwo();  // Só então vai para a próxima página
+    useEffect(() => {
+        const novoUsuario: RegistroUserOne = {
+            nome_completo: nomeCompletoRegistro, // Preencha com o valor apropriado
+            email: emailRegistro,         // Preencha com o valor apropriado
+            data_nascimento: dataNascimentoRegistro,
+            type_conta: typeConta
         };
 
-        //lógica abaixo feita para cadastrar empresa no authentication e no firestore
-        async function criarUserEmpresa() {
-            try{
-                const empresaUser = await createUserWithEmailAndPassword(auth, emailEmpresa, passwordEmpresa)
-                const uidEmpresa = empresaUser.user.uid
+        setDadosUserInterface(novoUsuario)
+    }, [nomeCompletoRegistro, emailRegistro, dataNascimentoRegistro])
 
-                //salvando os dados da empresa no firestore
-                const empresaData:RegistroEmpresaFirebase = {
-                    nome_empresa: nomeEmpresa,
-                    email_empresa: emailEmpresa,
-                    cnpj_empresa: cnpjEmpresa,
-                    password_empresa: passwordEmpresa,
-                    type_conta: typeConta
-                }
-
-                await setDoc(doc(db, 'user_empresa', uidEmpresa), empresaData)
-                Alert.alert('Sucesso', 'Conta da empresa foi criada com sucesso!');
-
-                setNomeEmpresa('');
-                setEmailEmpresa('');
-                setCnpjEmpresa('');
-                setPasswordEmpresa('');
-
-                navigation.navigate('PageHome');
-            }catch (e){
-                console.log(e)
-            }
+    const dadosUserOne = async ()=> {
+        try{
+            const valueUserOne = await AsyncStorage.setItem('registroUserOne', JSON.stringify(dadosUserInterface))
+        }catch(e) {
+            console.log(e)
         }
+    }
+
+    const salvarUserOneStepPage = async () => {
+        await dadosUserOne();  // Aguarda salvar os dados
+        irPageStepTwo();  // Só então vai para a próxima página
+    };
+
+    //lógica abaixo feita para cadastrar empresa no authentication e no firestore
+    async function criarUserEmpresa() {
+        try{
+            const empresaUser = await createUserWithEmailAndPassword(auth, emailEmpresa, passwordEmpresa)
+            const uidEmpresa = empresaUser.user.uid
+
+            //salvando os dados da empresa no firestore
+            const empresaData:RegistroEmpresaFirebase = {
+                nome_empresa: nomeEmpresa,
+                email_empresa: emailEmpresa,
+                cnpj_empresa: cnpjEmpresa,
+                password_empresa: passwordEmpresa,
+                type_conta: typeConta
+            }
+
+            await setDoc(doc(db, 'user_empresa', uidEmpresa), empresaData)
+            Alert.alert('Sucesso', 'Conta da empresa foi criada com sucesso!');
+
+            setNomeEmpresa('');
+            setEmailEmpresa('');
+            setCnpjEmpresa('');
+            setPasswordEmpresa('');
+
+            navigation.navigate('PageHome');
+        }catch (e){
+            console.log(e)
+        }
+    }
+
+    const dismissKeyboard = () => {
+        Keyboard.dismiss();
+    };
+
     return (
-        <>
-
-            <SafeAreaView style={{
-                backgroundColor: '#ECF0F1', display: 'flex',
-                justifyContent: 'center', flex: 0.3, alignItems: 'center',
-            }}>
-                <Text allowFontScaling= {false} style={{ marginTop: 10, }}>Escolha o tipo de conta que você deseja criar</Text>
-                <Picker
-                    style={{ backgroundColor: 'white', height: 60, width: '50%', marginTop: 10 }}
-                    selectedValue={typeConta}
-                    onValueChange={(itemValue, itemIndex) =>
-                        setTypeConta(itemValue)
-                    }>
-                    <Picker.Item label="Candidato" value="candidato" />
-                    <Picker.Item label="Empresa" value="empresa" />
-                </Picker>
-            </SafeAreaView>
-
-
-
-            {typeConta === 'candidato' ? (
-                <SafeAreaView style={styles.container}>
-                    <StatusBar backgroundColor="#ECF0F1" barStyle="dark-content" />
-                    <View style={styles.containerLogo}>
-                        <Text allowFontScaling= {false} style={styles.textLogo}>NOVOS TALENTOS</Text>
-                        <Text allowFontScaling= {false} style={styles.textDescricaoLogo}>
-                            Registre-se na melhor plataforma de empregos para iniciantes!
+        <TouchableWithoutFeedback onPress={dismissKeyboard}>
+            <KeyboardAvoidingView 
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={styles.mainContainer}
+            >
+                <StatusBar backgroundColor="white" barStyle="dark-content" />
+                
+                {/* Header with Logo */}
+                <View style={styles.header}>
+                    <Text allowFontScaling={false} style={styles.headerLogo}>NOVOS TALENTOS</Text>
+                </View>
+                
+                {/* Main Content */}
+                <ScrollView 
+                    contentContainerStyle={styles.scrollViewContent}
+                    showsVerticalScrollIndicator={false}
+                >
+                    {/* Account Type Selection Card */}
+                    <View style={styles.accountTypeCard}>
+                        <Text allowFontScaling={false} style={styles.accountTypeTitle}>
+                            Escolha o tipo de conta
                         </Text>
+                        
+                        <View style={styles.accountTypeOptions}>
+                            <TouchableOpacity 
+                                style={[
+                                    styles.accountTypeOption, 
+                                    typeConta === 'candidato' && styles.accountTypeOptionSelected
+                                ]}
+                                onPress={() => setTypeConta('candidato')}
+                            >
+                                <Text 
+                                    style={[
+                                        styles.accountTypeOptionText,
+                                        typeConta === 'candidato' && styles.accountTypeOptionTextSelected
+                                    ]}
+                                >
+                                    Candidato
+                                </Text>
+                            </TouchableOpacity>
+                            
+                            <TouchableOpacity 
+                                style={[
+                                    styles.accountTypeOption, 
+                                    typeConta === 'empresa' && styles.accountTypeOptionSelected
+                                ]}
+                                onPress={() => setTypeConta('empresa')}
+                            >
+                                <Text 
+                                    style={[
+                                        styles.accountTypeOptionText,
+                                        typeConta === 'empresa' && styles.accountTypeOptionTextSelected
+                                    ]}
+                                >
+                                    Empresa
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
+                    
+                    {/* Form Content */}
+                    <View style={styles.formCard}>
+                        <Text allowFontScaling={false} style={styles.formTitle}>
+                            {typeConta === 'candidato' 
+                                ? 'Crie sua conta de candidato' 
+                                : 'Registre sua empresa'}
+                        </Text>
+                        
+                        <Text allowFontScaling={false} style={styles.formSubtitle}>
+                            {typeConta === 'candidato'
+                                ? 'Registre-se na melhor plataforma de empregos para iniciantes!'
+                                : 'Encontre os melhores talentos para sua empresa!'}
+                        </Text>
+                        
+                        {typeConta === 'candidato' ? (
+                            // Candidate Form
+                            <View style={styles.formContainer}>
+                                <View style={styles.inputContainer}>
+                                    <Text allowFontScaling={false} style={styles.inputLabel}>Nome Completo</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Digite seu nome completo"
+                                        placeholderTextColor="#A0AEC0"
+                                        keyboardType="default"
+                                        onChangeText={(value: string) => setNomeCompletoRegistro(value)}
+                                    />
+                                </View>
+                                
+                                <View style={styles.inputContainer}>
+                                    <Text allowFontScaling={false} style={styles.inputLabel}>E-mail</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="seu.email@exemplo.com"
+                                        placeholderTextColor="#A0AEC0"
+                                        keyboardType='email-address'
+                                        onChangeText={(value: string) => setEmailRegitro(value)}
+                                        autoCapitalize="none"
+                                    />
+                                </View>
 
-                    <View style={styles.formLoginContainer}>
-                        <View style={styles.inputContainer}>
-                            <Text allowFontScaling= {false} style={styles.textLabel}>Nome Completo</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Arleuda da silva"
-                                keyboardType="default"
-                                onChangeText={(value: string) => setNomeCompletoRegistro(value)}
-                            />
-                        </View>
-                        <View style={styles.inputContainer}>
-                            <Text allowFontScaling= {false} style={styles.textLabel}>E-mail</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="teste@gmail.com"
-                                keyboardType='email-address'
-                                onChangeText={(value: string) => setEmailRegitro(value)}
-                                autoCapitalize="none" //desabilitar primeira letra maiúscula
-                            />
-                        </View>
+                                <View style={styles.inputContainer}>
+                                    <Text allowFontScaling={false} style={styles.inputLabel}>Data de nascimento</Text>
+                                    <TextInputMask
+                                        type={'custom'}
+                                        options={{
+                                            mask: '99/99/9999',
+                                        }}
+                                        value={dataNascimentoRegistro}
+                                        onChangeText={handleDateChange}
+                                        style={styles.input}
+                                        placeholder="DD/MM/AAAA"
+                                        placeholderTextColor="#A0AEC0"
+                                        keyboardType='numeric'
+                                    />
+                                    {mensagemIdade ? (
+                                        <Text allowFontScaling={false} style={styles.errorMessage}>
+                                            {mensagemIdade}
+                                        </Text>
+                                    ) : null}
+                                </View>
 
-                        <View style={styles.inputContainer}>
-                            <Text allowFontScaling= {false} style={styles.textLabel}>Data de nascimento</Text>
-                            <TextInputMask
-                                type={'custom'}
-                                options={{
-                                    mask: '99/99/9999',
-                                }}
-                                value={dataNascimentoRegistro}
-                                onChangeText={handleDateChange}
-                                style={styles.input}
-                                placeholder="00/00/2000"
-                                keyboardType='numeric'
-                            />
-                            {/* Exibe a mensagem de menor de idade se necessário */}
-                            {mensagemIdade ? (
-                                <Text allowFontScaling= {false} style={styles.mensagemIdade}>{mensagemIdade}</Text>
-                            ) : null}
-                        </View>
-
-                        {/* Lógica para habilitar/desabilitar o botão baseado na maioridade */}
-                        {maiorIdade && !camposCandidatos ? (
-                            <View style={styles.containerButtonStepOne}>
-                                <ButtonStepOne disabled={false} onPress={salvarUserOneStepPage} />
+                                <View style={styles.buttonContainer}>
+                                    {maiorIdade && !camposCandidatos ? (
+                                        <TouchableOpacity 
+                                            style={styles.primaryButton}
+                                            onPress={salvarUserOneStepPage}
+                                        >
+                                            <Text style={styles.primaryButtonText}>Continuar</Text>
+                                        </TouchableOpacity>
+                                    ) : (
+                                        <TouchableOpacity 
+                                            style={styles.disabledButton}
+                                            disabled={true}
+                                        >
+                                            <Text style={styles.disabledButtonText}>Continuar</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
                             </View>
                         ) : (
-                            <View style={styles.containerButtonStepOne}>
-                                <ButtonStepOneDisabled onPress={irPageStepTwo} disabled={true} />
+                            // Company Form
+                            <View style={styles.formContainer}>
+                                <View style={styles.inputContainer}>
+                                    <Text allowFontScaling={false} style={styles.inputLabel}>Nome da empresa*</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Nome da sua empresa"
+                                        placeholderTextColor="#A0AEC0"
+                                        keyboardType="default"
+                                        onChangeText={(value: string) => setNomeEmpresa(value)}
+                                    />
+                                </View>
+                                
+                                <View style={styles.inputContainer}>
+                                    <Text allowFontScaling={false} style={styles.inputLabel}>E-mail da empresa*</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="empresa@exemplo.com"
+                                        placeholderTextColor="#A0AEC0"
+                                        keyboardType='email-address'
+                                        onChangeText={(value: string) => setEmailEmpresa(value)}
+                                        autoCapitalize="none"
+                                    />
+                                </View>
+                                
+                                <View style={styles.inputContainer}>
+                                    <Text allowFontScaling={false} style={styles.inputLabel}>CNPJ da empresa*</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="00.000.000/0000-00"
+                                        placeholderTextColor="#A0AEC0"
+                                        keyboardType='numeric'
+                                        value={cnpjEmpresa}
+                                        maxLength={18}
+                                        onChangeText={handleCnpjChange}
+                                    />
+                                </View>
+                                
+                                <View style={styles.inputContainer}>
+                                    <Text allowFontScaling={false} style={styles.inputLabel}>Senha*</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Crie uma senha segura"
+                                        placeholderTextColor="#A0AEC0"
+                                        keyboardType='default'
+                                        onChangeText={(value: string) => setPasswordEmpresa(value)}
+                                        secureTextEntry={true}
+                                        autoCapitalize="none"
+                                    />
+                                </View>
+
+                                <View style={styles.buttonContainer}>
+                                    {camposEmpresa ? (
+                                        <TouchableOpacity 
+                                            style={styles.primaryButton}
+                                            onPress={criarUserEmpresa}
+                                        >
+                                            <Text style={styles.primaryButtonText}>Criar Conta</Text>
+                                        </TouchableOpacity>
+                                    ) : (
+                                        <TouchableOpacity 
+                                            style={styles.disabledButton}
+                                            disabled={true}
+                                        >
+                                            <Text style={styles.disabledButtonText}>Criar Conta</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
                             </View>
                         )}
                     </View>
-                </SafeAreaView>
-            ) : (
-                <SafeAreaView style={styles.container}>
-                    <StatusBar backgroundColor="#ECF0F1" barStyle="dark-content" />
-                    <ScrollView>
-                        <View style={styles.containerLogo}>
-                            <Text allowFontScaling= {false} style={styles.textLogo}>NOVOS TALENTOS</Text>
-                            <Text allowFontScaling= {false} style={styles.textDescricaoLogo}>
-                                Registre sua empresa na melhor plataforma de empregos para iniciantes!
-                            </Text>
-                        </View>
-                        <View style={styles.formLoginContainer}>
-                            <View style={styles.inputContainer}>
-                                <Text allowFontScaling= {false} style={styles.textLabel}>Nome da empresa*</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Empresa LTDA"
-                                    keyboardType="default"
-                                    onChangeText={(value: string) => setNomeEmpresa(value)}
-                                />
-                            </View>
-                            <View style={styles.inputContainer}>
-                                <Text allowFontScaling= {false} style={styles.textLabel}>E-mail da empresa*</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="empresa@ltda.com"
-                                    keyboardType='email-address'
-                                    onChangeText={(value: string) => setEmailEmpresa(value)}
-                                    autoCapitalize="none" //desabilitar primeira letra maiúscula
-                                />
-                            </View>
-                            <View style={styles.inputContainer}>
-                                <Text allowFontScaling= {false} style={styles.textLabel}>CNPJ da empresa*</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Somente números"
-                                    keyboardType='numeric'
-                                    value={cnpjEmpresa}
-                                    maxLength={18}
-                                    onChangeText={handleCnpjChange}
-                                />
-                            </View>
-                            <View style={styles.inputContainer}>
-                                <Text allowFontScaling= {false} style={styles.textLabel}>Senha*</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="********"
-                                    keyboardType='default'
-                                    onChangeText={(value: string) => setPasswordEmpresa(value)}
-                                    secureTextEntry={true}
-                                    autoCapitalize="none" //desabilitar primeira letra maiúscula
-                                />
-                            </View>
-
-                            {camposEmpresa ? (
-                                <View style={styles.containerButtonStepOne}>
-                                    <ButtonStepOne disabled={false} onPress={criarUserEmpresa } />
-                                </View>
-                            ) : (
-                                <View style={styles.containerButtonStepOne}>
-                                    <ButtonStepOneDisabled onPress={criarUserEmpresa} disabled={true} />
-                                </View>
-                            )}
-                        </View>
-                    </ScrollView>
-                </SafeAreaView>
-            )}
-
-        </>
+                </ScrollView>
+            </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
+    mainContainer: {
         flex: 1,
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#ECF0F1',
+        backgroundColor: '#F7FAFC',
     },
-    containerLogo: {
-        width: '100%',
-        height: 100,
-        display: 'flex',
+    header: {
+        backgroundColor: 'white',
+        paddingVertical: 16,
+        paddingHorizontal: 20,
         alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'column',
-        marginBottom: 50,
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
     },
-    textLogo: {
-        textAlign: 'center',
+    headerLogo: {
+        color: 'black',
+        fontSize: 22,
         fontWeight: 'bold',
-        fontSize: 40,
+        letterSpacing: 1,
     },
-    textDescricaoLogo: {
-        fontSize: 13,
-        color: '#777777',
-        fontWeight: 'bold',
+    scrollViewContent: {
+        flexGrow: 1,
+        paddingHorizontal: 16,
+        paddingBottom: 40,
     },
-    formLoginContainer: {
-        height: 'auto',
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+    accountTypeCard: {
+        backgroundColor: 'white',
+        borderRadius: 12,
         padding: 20,
-        position: 'relative',
-        gap: 40,
+        marginTop: 24,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+    },
+    accountTypeTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#2D3748',
+        textAlign: 'center',
+        marginBottom: 16,
+    },
+    accountTypeOptions: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 8,
+    },
+    accountTypeOption: {
+        flex: 1,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        marginHorizontal: 6,
+        alignItems: 'center',
+    },
+    accountTypeOptionSelected: {
+        backgroundColor: '#EBF8FF',
+        borderColor: '#3498DB',
+    },
+    accountTypeOptionText: {
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#718096',
+    },
+    accountTypeOptionTextSelected: {
+        color: '#3498DB',
+        fontWeight: '600',
+    },
+    formCard: {
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 24,
+        marginTop: 24,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+    },
+    formTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: '#2D3748',
+        textAlign: 'center',
+    },
+    formSubtitle: {
+        fontSize: 14,
+        color: '#718096',
+        textAlign: 'center',
+        marginTop: 8,
+        marginBottom: 24,
+    },
+    formContainer: {
+        width: '100%',
     },
     inputContainer: {
-        width: '100%',
-        height: 'auto',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        marginBottom: 20,
     },
-    textLabel: {
-        fontWeight: 'bold',
-        fontSize: 19,
-        textAlign: 'left',
-        position: 'absolute',
-        top: -27,
-        left: 37,
+    inputLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#4A5568',
+        marginBottom: 8,
     },
     input: {
+        backgroundColor: '#F7FAFC',
         borderWidth: 1,
-        height: 46,
-        width: '80%',
-        borderRadius: 5,
-        marginTop: 5,
-        borderColor: 'gray',
-        paddingHorizontal: 10,
-    },
-    containerButtonStepOne: {
-        width: '100%',
+        borderColor: '#E2E8F0',
+        borderRadius: 8,
         height: 50,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        paddingHorizontal: 16,
+        fontSize: 16,
+        color: '#2D3748',
     },
-    mensagemIdade: {
-        color: 'red',
-        marginTop: 10,
-        width: '70%',
+    errorMessage: {
+        color: '#E53E3E',
         fontSize: 14,
-        textAlign: 'center'
+        marginTop: 8,
     },
-    ButtonCriarEmpresa: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'black',
-        width: width * 0.73, // tentando responsividade
+    buttonContainer: {
+        marginTop: 16,
+    },
+    primaryButton: {
+        backgroundColor: '#3498DB',
+        borderRadius: 8,
         height: 50,
-        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
     },
-    textButtonCriarEmpresa: {
+    primaryButtonText: {
         color: 'white',
         fontSize: 16,
-        fontWeight: 'bold'
-    }
+        fontWeight: '600',
+    },
+    disabledButton: {
+        backgroundColor: '#CBD5E0',
+        borderRadius: 8,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    disabledButtonText: {
+        color: '#718096',
+        fontSize: 16,
+        fontWeight: '600',
+    },
 });
