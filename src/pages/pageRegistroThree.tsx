@@ -1,5 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, SafeAreaView, StatusBar, ScrollView, Text, TextInput, Alert } from 'react-native';
+import { 
+  View, 
+  StyleSheet, 
+  SafeAreaView, 
+  StatusBar, 
+  ScrollView, 
+  Text, 
+  TextInput, 
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+  TouchableOpacity,
+  Dimensions
+} from 'react-native';
 import { ButtonPasswordFalse, ButtonPasswordTrue } from '../components/ButtonStepOne';
 import { RegistroUserGeral } from '../interfaces/storageRegistroInterface';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -11,10 +26,11 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../routes/RootStackParamList';
 
+const { width, height } = Dimensions.get('window');
+
 type navigationRegistroThree = StackNavigationProp<RootStackParamList>
 
 export default function PageRegistroThree() {
-
     const [password, setPassword] = useState<string>('');
     const [passwordSecondary, setPasswordSecondary] = useState<string>('');
     const [passwordsMatch, setPasswordsMatch] = useState<boolean>(false);
@@ -34,7 +50,6 @@ export default function PageRegistroThree() {
         }
     }, [passwordSecondary, password]);
 
-
     //vai trazer os dados que foram guardados nas últimas telas e armazenar tudo junto
     useEffect(() => {
         const dadosUserStorage = async () => {
@@ -50,8 +65,6 @@ export default function PageRegistroThree() {
                     // Mesclando os dados e atualizando o estado
                     setDadosUserGeral({ ...dadosOne, ...dadosTwo, password });
                 }
-
-                
             } catch (e) {
                 console.log(e);
             }
@@ -59,7 +72,6 @@ export default function PageRegistroThree() {
 
         dadosUserStorage();
     }, [password]);
-
 
     //função para executar o clique do botão e efetuar o cadastro do usuário enviando os dados para o banco de dados
     const criarUser = async () => {
@@ -80,28 +92,48 @@ export default function PageRegistroThree() {
             console.log('O email não foi encontrado!');
         }
     };
-    
 
+    const dismissKeyboard = () => {
+        Keyboard.dismiss();
+    };
 
-
-        return (
-            <>
-                <SafeAreaView style={styles.container}>
-                    <StatusBar backgroundColor="#ECF0F1" barStyle="dark-content" />
-                    <ScrollView showsVerticalScrollIndicator={false}>
-                        <View style={styles.containerLogo}>
-                            <Text style={styles.textLogo}>Finalização de cadastro</Text>
-                            <Text style={styles.textDescricaoLogo}>
-                                Use a plataforma a seu favor, encontre os melhores empregos!
-                            </Text>
-                        </View>
-
-                        <View style={styles.formLoginContainer}>
+    return (
+        <SafeAreaView style={styles.safeArea}>
+            <StatusBar backgroundColor="white" barStyle="dark-content" />
+            
+            {/* Header with Logo */}
+            <View style={styles.header}>
+                <Text allowFontScaling={false} style={styles.headerLogo}>NOVOS TALENTOS</Text>
+            </View>
+            
+            {/* Main Content */}
+            <KeyboardAvoidingView 
+                behavior={Platform.OS === "ios" ? "padding" : undefined}
+                style={styles.keyboardAvoidView}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+            >
+                <ScrollView 
+                    contentContainerStyle={styles.scrollViewContent}
+                    showsVerticalScrollIndicator={true}
+                    bounces={true}
+                >
+                    {/* Form Content */}
+                    <View style={styles.formCard}>
+                        <Text allowFontScaling={false} style={styles.formTitle}>
+                            Finalização de cadastro
+                        </Text>
+                        
+                        <Text allowFontScaling={false} style={styles.formSubtitle}>
+                            Use a plataforma a seu favor, encontre os melhores empregos!
+                        </Text>
+                        
+                        <View style={styles.formContainer}>
                             <View style={styles.inputContainer}>
-                                <Text style={styles.textLabel}>Senha</Text>
+                                <Text allowFontScaling={false} style={styles.inputLabel}>Senha</Text>
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="***********"
+                                    placeholder="Digite sua senha"
+                                    placeholderTextColor="#A0AEC0"
                                     keyboardType="default"
                                     onChangeText={(value: string) => setPassword(value)}
                                     secureTextEntry
@@ -110,106 +142,168 @@ export default function PageRegistroThree() {
                             </View>
 
                             <View style={styles.inputContainer}>
-                                <Text style={styles.textLabel}>Confirme sua senha</Text>
+                                <Text allowFontScaling={false} style={styles.inputLabel}>Confirme sua senha</Text>
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="***********"
+                                    placeholder="Digite novamente sua senha"
+                                    placeholderTextColor="#A0AEC0"
                                     keyboardType="default"
                                     onChangeText={(value: string) => setPasswordSecondary(value)}
                                     secureTextEntry
                                     autoCapitalize="none"
                                 />
+                                {passwordLength && (
+                                    <Text style={styles.errorMessage}>
+                                        Sua senha precisa ter 6 caracteres ou mais!
+                                    </Text>
+                                )}
                             </View>
 
-                            {passwordsMatch ? (
-                                <View style={styles.containerButtonStepOne}>
-                                    <ButtonPasswordTrue disabled={!passwordsMatch} onPress={criarUser} />
-                                </View>
-                            ) : (
-                                <View style={styles.containerButtonStepOne}>
-                                    <ButtonPasswordFalse disabled={!passwordsMatch} onPress={criarUser} />
-                                    {passwordLength ? <Text style={{ color: 'red', marginTop: 10, }}>Sua senha precisa ter 6 caracteres ou mais!</Text> : <></>}
-                                </View>
-                            )
-
-                            }
+                            <View style={styles.buttonContainer}>
+                                {passwordsMatch ? (
+                                    <TouchableOpacity 
+                                        style={styles.primaryButton}
+                                        onPress={criarUser}
+                                    >
+                                        <Text style={styles.primaryButtonText}>Criar Conta</Text>
+                                    </TouchableOpacity>
+                                ) : (
+                                    <TouchableOpacity 
+                                        style={styles.disabledButton}
+                                        disabled={true}
+                                    >
+                                        <Text style={styles.disabledButtonText}>Criar Conta</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
                         </View>
-                    </ScrollView>
-                </SafeAreaView>
-            </>
-        );
-    }
+                    </View>
+                    
+                    {/* Extra padding view to ensure scrolling works */}
+                    <View style={styles.extraPadding} />
+                </ScrollView>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
+    );
+}
 
-    const styles = StyleSheet.create({
-        container: {
-            flex: 1,
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#ECF0F1',
-            position: 'relative',
-        },
-        containerLogo: {
-            width: '100%',
-            height: 100,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'column',
-            marginTop: '40%',
-        },
-        textLogo: {
-            textAlign: 'center',
-            fontWeight: 'bold',
-            fontSize: 35,
-        },
-        textDescricaoLogo: {
-            fontSize: 13,
-            color: '#777777',
-            fontWeight: 'bold',
-            width: '70%',
-            textAlign: 'center',
-        },
-        formLoginContainer: {
-            height: '100%',
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 20,
-            position: 'relative',
-            gap: 40,
-        },
-        inputContainer: {
-            width: '100%',
-            height: 'auto',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        textLabel: {
-            fontWeight: 'bold',
-            fontSize: 19,
-            textAlign: 'left',
-            position: 'absolute',
-            top: -27,
-            left: 37,
-        },
-        input: {
-            borderWidth: 1,
-            height: 46,
-            width: '80%',
-            borderRadius: 3,
-            marginTop: 5,
-            borderColor: 'gray',
-            paddingHorizontal: 10,
-        },
-        containerButtonStepOne: {
-            width: '100%',
-            height: 50,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-        }
-    });
+const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1,
+        backgroundColor: '#F7FAFC',
+    },
+    keyboardAvoidView: {
+        flex: 1,
+    },
+    header: {
+        backgroundColor: 'white',
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        alignItems: 'center',
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+    },
+    headerLogo: {
+        color: 'black',
+        fontSize: 22,
+        fontWeight: 'bold',
+        letterSpacing: 1,
+    },
+    scrollViewContent: {
+        paddingHorizontal: 16,
+        paddingBottom: 120, // Extra padding at the bottom to ensure scrolling works
+    },
+    formCard: {
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 24,
+        marginTop: 24,
+        marginBottom: 24,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+    },
+    formTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: '#2D3748',
+        textAlign: 'center',
+    },
+    formSubtitle: {
+        fontSize: 14,
+        color: '#718096',
+        textAlign: 'center',
+        marginTop: 8,
+        marginBottom: 24,
+    },
+    formContainer: {
+        width: '100%',
+    },
+    inputContainer: {
+        marginBottom: 20,
+    },
+    inputLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#4A5568',
+        marginBottom: 8,
+    },
+    input: {
+        backgroundColor: '#F7FAFC',
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        borderRadius: 8,
+        height: 50,
+        paddingHorizontal: 16,
+        fontSize: 16,
+        color: '#2D3748',
+    },
+    errorMessage: {
+        color: '#E53E3E',
+        fontSize: 14,
+        marginTop: 8,
+    },
+    buttonContainer: {
+        marginTop: 16,
+        alignItems: 'center',
+    },
+    primaryButton: {
+        backgroundColor: '#3498DB',
+        borderRadius: 8,
+        height: 50,
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+    },
+    primaryButtonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    disabledButton: {
+        backgroundColor: '#CBD5E0',
+        borderRadius: 8,
+        height: 50,
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    disabledButtonText: {
+        color: '#718096',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    extraPadding: {
+        height: 50, // Extra space at the bottom of the form
+    }
+});
