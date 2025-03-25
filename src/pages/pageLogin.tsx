@@ -1,5 +1,23 @@
 import React, { useState } from 'react';
-import { View, StatusBar, SafeAreaView, StyleSheet, Text, TextInput, Switch, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
+import { 
+  View, 
+  StatusBar, 
+  SafeAreaView, 
+  StyleSheet, 
+  Text, 
+  TextInput, 
+  Switch, 
+  TouchableOpacity, 
+  Alert, 
+  ActivityIndicator, 
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Dimensions,
+  ScrollView
+} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { db } from '../firebase/firebase';
 import { collection, where, query, getDocs} from 'firebase/firestore';
@@ -7,15 +25,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase/firebase';
 import { useNavigation } from '@react-navigation/native';
-import {  BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootTabParamList } from '../../routes/RootTabParamList';
+
+const { width, height } = Dimensions.get('window');
 
 type createTabNavigatorProp = BottomTabNavigationProp<RootTabParamList>;
 
-
 export default function PageLogin() {
-
     //useState
     const [SwitchPassowrd, setSwitchPassword] = useState<boolean>(false)
     const [emailLogin, setEmailLogin] = useState<string>('')
@@ -25,8 +42,6 @@ export default function PageLogin() {
     const navigation = useNavigation<createTabNavigatorProp>();
     const [isLoading, setIsLoading] = useState(false);
     const [typeConta, setTypeConta] = useState('candidato')
-
-
 
     function esquecerSenha() {
         Alert.alert('AVISO!', 'Implementação em andamento, peço que aguarde a próxima atualização.')
@@ -39,7 +54,6 @@ export default function PageLogin() {
         }
         setIsLoading(true);
         try {
-
             const queryEmailUser = query(user_candidato_db, where('email', '==', emailLogin), where('type_conta', '==', typeConta))
             const rUserCandidato = await getDocs(queryEmailUser);
 
@@ -60,13 +74,10 @@ export default function PageLogin() {
                 const valueUserTwo = await AsyncStorage.setItem('userCandidatoLogado', JSON.stringify(userLogadoObject))
 
                 Alert.alert('Sucesso', 'Usuário logado com sucesso')
-                 navigation.navigate('BottomTabsCandidato', { screen: 'HomeUsuario'});
+                navigation.navigate('BottomTabsCandidato', { screen: 'HomeUsuario'});
             } else {
                 console.log('não encontrei')
             }
-
-
-
         } catch (error) {
             console.log("Erro ao logar:", error);
             Alert.alert('Erro', 'Email ou senha incorretos');
@@ -74,9 +85,6 @@ export default function PageLogin() {
             setIsLoading(false);
         }
     }
-    
-    
-    
 
     useFocusEffect(
         React.useCallback(() => {
@@ -89,181 +97,272 @@ export default function PageLogin() {
         }, [])
     )
 
+    const dismissKeyboard = () => {
+        Keyboard.dismiss();
+    };
+
     return (
         <>
             {IsLoadingIndicator ? (
-                <View style={{
-                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}>
-                    <ActivityIndicator size={80} color="black" />
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size={80} color="#000000" />
                 </View>
             ) : (
-
-                <SafeAreaView style={styles.container}>
-                    <StatusBar backgroundColor="#ECF0F1" barStyle="dark-content" />
-                    <View style={styles.containerLogo}>
-                        {/* <Text style={styles.textLogo}>NOVOS TALENTOS</Text> */}
-                        <Image style={{ height: '80%', width: '80%' }} source={require('../../assets/novos_talentos_logo_fundo.png')} />
-                        <Text allowFontScaling={false} style={styles.textDescricaoLogo}>
-                            Venha aproveitar o melhor aplicativo de vagas para iniciantes!
-                        </Text>
+                <SafeAreaView style={styles.safeArea}>
+                    <StatusBar backgroundColor="white" barStyle="dark-content" />
+                    
+                    {/* Header with Logo */}
+                    <View style={styles.header}>
+                        <Text allowFontScaling={false} style={styles.headerLogo}>NOVOS TALENTOS</Text>
                     </View>
-
-                    <View style={styles.formLoginContainer}>
-                        <View style={styles.inputContainer}>
-                            <Text allowFontScaling={false} style={styles.textLabel}>E-mail</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Ex: teste.500@gmail.com"
-                                keyboardType="email-address"
-                                onChangeText={value => setEmailLogin(value)}
-                                autoCapitalize='none'
-                            />
-                        </View>
-                        <View style={styles.inputContainer}>
-                            <Text allowFontScaling={false} style={styles.textLabel}>Senha</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="********"
-                                onChangeText={value => setPassLogin(value)}
-                                secureTextEntry={SwitchPassowrd ? false : true}
-                                autoCapitalize='none'
-                            />
-                        </View>
-
-                        <View style={styles.acoesFormContainer}>
-                            <View style={styles.containerMostrarSenha}>
-                                <Text allowFontScaling={false} style={{ fontWeight: 'bold', color: '#777777' }}>Mostrar senha</Text>
-                                <Switch
-                                    value={SwitchPassowrd}
-                                    thumbColor={SwitchPassowrd ? 'green' : 'red'}
-                                    onValueChange={value => setSwitchPassword(value)}
-                                />
-                            </View>
-                            <View style={styles.ContainerEsqueciSenha}>
-                                <TouchableOpacity onPress={esquecerSenha}>
-                                    <Text allowFontScaling={false} style={styles.textEsqueciSenha}>Esqueci minha senha</Text>
-                                </TouchableOpacity>
-                            </View>
-
-                        </View>
-
-                        <TouchableOpacity onPress={logarUser} style={styles.buttonFazerLogin}>
-                            <Text allowFontScaling={false} style={{ textAlign: 'center', color: 'white', fontSize: 18, textTransform: 'uppercase', fontWeight: 'bold' }}>Entrar</Text>
-                        </TouchableOpacity>
-                    </View>
+                    
+                    <KeyboardAvoidingView 
+                        behavior={Platform.OS === "ios" ? "padding" : undefined}
+                        style={styles.keyboardAvoidView}
+                        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+                    >
+                        <ScrollView 
+                            contentContainerStyle={styles.scrollViewContent}
+                            showsVerticalScrollIndicator={false}
+                            bounces={true}
+                        >
+                            <TouchableWithoutFeedback onPress={dismissKeyboard}>
+                                <View style={styles.contentContainer}>
+                                    {/* Logo Section */}
+                                    <View style={styles.logoContainer}>
+                                        <Image 
+                                            style={styles.logoImage} 
+                                            source={require('../../assets/novos_talentos_logo_fundo.png')} 
+                                            resizeMode="contain"
+                                        />
+                                        <Text allowFontScaling={false} style={styles.logoSubtitle}>
+                                            Venha aproveitar o melhor aplicativo de vagas para iniciantes!
+                                        </Text>
+                                    </View>
+                                    
+                                    {/* Login Form Card */}
+                                    <View style={styles.formCard}>
+                                        <Text allowFontScaling={false} style={styles.formTitle}>
+                                            Área do candidato!
+                                        </Text>
+                                        
+                                        <View style={styles.formContainer}>
+                                            <View style={styles.inputContainer}>
+                                                <Text allowFontScaling={false} style={styles.inputLabel}>E-mail</Text>
+                                                <TextInput
+                                                    style={styles.input}
+                                                    placeholder="seu.email@exemplo.com"
+                                                    placeholderTextColor="#A0AEC0"
+                                                    keyboardType="email-address"
+                                                    onChangeText={value => setEmailLogin(value)}
+                                                    autoCapitalize='none'
+                                                />
+                                            </View>
+                                            
+                                            <View style={styles.inputContainer}>
+                                                <Text allowFontScaling={false} style={styles.inputLabel}>Senha</Text>
+                                                <TextInput
+                                                    style={styles.input}
+                                                    placeholder="Digite sua senha"
+                                                    placeholderTextColor="#A0AEC0"
+                                                    onChangeText={value => setPassLogin(value)}
+                                                    secureTextEntry={!SwitchPassowrd}
+                                                    autoCapitalize='none'
+                                                />
+                                            </View>
+                                            
+                                            <View style={styles.formActionsContainer}>
+                                                <View style={styles.showPasswordContainer}>
+                                                    <Text allowFontScaling={false} style={styles.showPasswordText}>
+                                                        Mostrar senha
+                                                    </Text>
+                                                    <Switch
+                                                        value={SwitchPassowrd}
+                                                        thumbColor={SwitchPassowrd ? '#000000' : '#CBD5E0'}
+                                                        trackColor={{ false: '#E2E8F0', true: '#CCCCCC' }}
+                                                        onValueChange={value => setSwitchPassword(value)}
+                                                    />
+                                                </View>
+                                                
+                                                <TouchableOpacity 
+                                                    onPress={esquecerSenha}
+                                                    style={styles.forgotPasswordContainer}
+                                                >
+                                                    <Text allowFontScaling={false} style={styles.forgotPasswordText}>
+                                                        Esqueci minha senha
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                            
+                                            <View style={styles.buttonContainer}>
+                                                <TouchableOpacity 
+                                                    onPress={logarUser} 
+                                                    style={styles.loginButton}
+                                                    disabled={isLoading}
+                                                >
+                                                    {isLoading ? (
+                                                        <ActivityIndicator size="small" color="#fff" />
+                                                    ) : (
+                                                        <Text allowFontScaling={false} style={styles.loginButtonText}>
+                                                            Entrar
+                                                        </Text>
+                                                    )}
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    </View>
+                                </View>
+                            </TouchableWithoutFeedback>
+                        </ScrollView>
+                    </KeyboardAvoidingView>
                 </SafeAreaView>
-            )
-
-            }
+            )}
         </>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
+    loadingContainer: {
+        flex: 1, 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        backgroundColor: '#F7FAFC'
+    },
+    safeArea: {
         flex: 1,
-        width: '100%',
-        display: 'flex',
+        backgroundColor: '#F7FAFC',
+    },
+    keyboardAvoidView: {
+        flex: 1,
+    },
+    header: {
+        backgroundColor: 'white',
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        alignItems: 'center',
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+    },
+    headerLogo: {
+        color: 'black',
+        fontSize: 22,
+        fontWeight: 'bold',
+        letterSpacing: 1,
+    },
+    scrollViewContent: {
+        flexGrow: 1,
+        paddingHorizontal: 16,
+    },
+    contentContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        paddingBottom: 40,
+    },
+    logoContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#ECF0F1',
+        paddingVertical: 20,
     },
-    containerLogo: {
-        width: '100%',
-        height: 100,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'column',
-        marginBottom: 50,
-        gap: 20,
+    logoImage: {
+        height: 180, // Increased logo size
+        width: '90%',
+        maxWidth: 400,
     },
-    textLogo: {
+    logoSubtitle: {
+        fontSize: 15,
+        color: '#4A5568',
+        fontWeight: '500',
         textAlign: 'center',
-        fontWeight: 'bold',
-        fontSize: 40,
+        marginTop: 16,
+        paddingHorizontal: 20,
+        maxWidth: 400,
     },
-    textDescricaoLogo: {
-        fontSize: 13,
-        color: '#777777',
-        fontWeight: 'bold',
+    formCard: {
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 24,
+        marginTop: 10, // Reduced margin to keep form closer to logo
+        marginBottom: 24,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
     },
-    formLoginContainer: {
-        height: 'auto',
+    formTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: '#2D3748',
+        textAlign: 'center',
+        marginBottom: 24,
+    },
+    formContainer: {
         width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 20,
-        position: 'relative',
-        gap: 40,
     },
     inputContainer: {
-        width: '100%',
-        height: 'auto',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        marginBottom: 20,
     },
-    textLabel: {
-        fontWeight: 'bold',
-        fontSize: 19,
-        textAlign: 'left',
-        position: 'absolute',
-        top: -23,
-        left: 37,
+    inputLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#4A5568',
+        marginBottom: 8,
     },
     input: {
+        backgroundColor: '#F7FAFC',
         borderWidth: 1,
-        height: 46,
-        width: '80%',
-        borderRadius: 5,
-        marginTop: 5,
-        borderColor: '#gray',
-        paddingHorizontal: 10,
+        borderColor: '#E2E8F0',
+        borderRadius: 8,
+        height: 50,
+        paddingHorizontal: 16,
+        fontSize: 16,
+        color: '#2D3748',
     },
-    acoesFormContainer: {
-        width: '100%',
-        height: 'auto',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-around',
+    formActionsContainer: {
         flexDirection: 'row',
-        position: 'relative'
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 24,
     },
-    containerMostrarSenha: {
-        display: 'flex',
+    showPasswordContainer: {
         flexDirection: 'row',
         alignItems: 'center',
+    },
+    showPasswordText: {
+        fontSize: 14,
+        color: '#4A5568',
+        marginRight: 8,
+    },
+    forgotPasswordContainer: {
+        padding: 4,
+    },
+    forgotPasswordText: {
+        fontSize: 14,
+        color: '#000000',
+        fontWeight: '600',
+    },
+    buttonContainer: {
+        marginTop: 8,
+    },
+    loginButton: {
+        backgroundColor: '#000000',
+        borderRadius: 8,
+        height: 50,
         justifyContent: 'center',
-        width: '50%',
-        position: 'absolute',
-        left: 15,
-        top: -30,
-    },
-    textEsqueciSenha: {
-        fontSize: 13,
-        color: '#777777',
-        fontWeight: 'bold',
-    },
-    ContainerEsqueciSenha: {
-        display: 'flex',
-        flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
-        width: '50%',
-        position: 'absolute',
-        right: 0,
-        top: -15,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
     },
-    buttonFazerLogin: {
-        backgroundColor: 'black',
-        width: '75%',
-        height: 46,
-        display: 'flex',
-        justifyContent: 'center',
-        borderRadius: 10,
-        elevation: 1
-    }
+    loginButtonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '600',
+        textTransform: 'uppercase',
+    },
 });
