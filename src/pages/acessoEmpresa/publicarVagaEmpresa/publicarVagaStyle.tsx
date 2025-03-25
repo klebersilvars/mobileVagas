@@ -1,10 +1,95 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
 
- const PublicarVagaStyle = StyleSheet.create({
+const { width } = Dimensions.get('window');
+
+const PublicarVagaStyle = StyleSheet.create({
     container: {
-        flex: 1, 
-        display: 'flex',
+        flex: 1,
+        backgroundColor: '#F7FAFC',
+    },
+    header: {
+        width: '100%',
+        flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 16,
+        backgroundColor: 'white',
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+    },
+    headerTitle: {
+        fontWeight: 'bold',
+        fontSize: 22,
+        color: '#2D3748',
+    },
+    publishButton: {
+        backgroundColor: 'black',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 8,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+    },
+    publishButtonText: {
+        color: 'white',
+        fontWeight: '600',
+        marginLeft: 6,
+    },
+    scrollView: {
+        flex: 1,
+        width: '100%',
+    },
+    formCard: {
+        backgroundColor: 'white',
+        borderRadius: 12,
+        margin: 16,
+        padding: 20,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+    },
+    inputGroup: {
+        marginBottom: 20,
+    },
+    inputLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#4A5568',
+        marginBottom: 8,
+    },
+    input: {
+        backgroundColor: '#F7FAFC',
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        borderRadius: 8,
+        height: 50,
+        paddingHorizontal: 16,
+        fontSize: 16,
+        color: '#2D3748',
+    },
+    textArea: {
+        backgroundColor: '#F7FAFC',
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        borderRadius: 8,
+        minHeight: 120,
+        paddingHorizontal: 16,
+        paddingTop: 12,
+        paddingBottom: 12,
+        fontSize: 16,
+        color: '#2D3748',
     },
     title_PublicarVaga: {
         width: '100%',
@@ -34,12 +119,23 @@ import { StyleSheet } from "react-native";
     },
     containerInput: {
         width: '100%',
-        height: '100%',
+        height: '30%',
         backgroundColor: 'white',
         textAlignVertical: 'top',
         paddingLeft: 10,
         paddingRight: 10,
         fontSize: 18,
+        borderBottomLeftRadius: 20,
+        borderBottomRightRadius: 20,
+        elevation: 1,
+        shadowColor: 'black'
+    },
+    containerInputsOptionsVaga: {
+        width:'100%',
+        height: '100%',
+        marginTop: 10,
+        padding: 10,
+        display: 'flex',
     }
 })
 
