@@ -5,9 +5,9 @@ import {
   StyleSheet, 
   Text, 
   FlatList, 
-  TextInput,
   TouchableOpacity,
-  ActivityIndicator 
+  ActivityIndicator,
+  Dimensions
 } from 'react-native';
 import { db } from '../../../firebase/firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
@@ -18,16 +18,20 @@ type Vaga = {
     publicacao_text: string;
     data: string;
     hora: string;
-    quem_publicou: { email: string; nome?: string };
+    quem_publicou: string;
+    salarioVaga: string;
+    titulo_vaga: string;
+    requisito_vaga: string;
+    area_contato_vaga: string;
 };
 
 export default function InterfacePublicacao() {
     const [vagasPublicadas, setVagasPublicadas] = useState<Vaga[]>([]);
     const [loading, setLoading] = useState(true);
+    const [expandedCard, setExpandedCard] = useState<string | null>(null);
 
-    // Função para formatar a data usando o Moment.js
     const formatarData = (data: string) => {
-        return moment(data).format('DD/MM/YYYY'); // Formato brasileiro
+        return moment(data).format('DD/MM/YYYY');
     };
 
     useEffect(() => {
@@ -35,64 +39,112 @@ export default function InterfacePublicacao() {
 
         const unsubscribe = onSnapshot(refVagas, (snapshot) => {
             setLoading(false);
-            
+
             if (snapshot.empty) {
                 console.log("Nenhuma vaga encontrada!");
-                setVagasPublicadas([]);  // Se não houver vagas, a lista será esvaziada.
+                setVagasPublicadas([]);
                 return;
             }
 
             const vagas = snapshot.docs.map((doc) => {
                 const data = doc.data();
-                console.log("Documento recebido:", data);  // Log para depuração
+                console.log("Documento recebido:", data);
 
                 return {
                     id: doc.id,
                     publicacao_text: data.publicacao_text || 'Sem descrição',
                     data: formatarData(data.data || 'Data não informada'),
                     hora: data.hora || 'Hora não informada',
-                    quem_publicou: data.quem_publicou || { email: 'Desconhecido' },
+                    quem_publicou: typeof data.quem_publicou === 'string' ? data.quem_publicou : 'Usuário desconhecido',
+                    salarioVaga: data.salarioVaga || 'Não informado',
+                    titulo_vaga: data.titulo_vaga || 'Vaga sem título',
+                    requisito_vaga: data.requisito_vaga || 'Requisitos não informados',
+                    area_contato_vaga: data.area_contato_vaga || 'Contato não informado'
                 };
             });
 
-            console.log("Vagas formatadas:", vagas);  // Log para depuração
-            setVagasPublicadas(vagas);  // Atualiza o estado com as vagas formatadas
+            console.log("Vagas formatadas:", vagas);
+            setVagasPublicadas(vagas);
         });
 
         return () => unsubscribe();
     }, []);
 
-    // Verificar o valor do estado 'vagasPublicadas' para depuração
-    useEffect(() => {
-        console.log("Estado de vagasPublicadas atualizado:", vagasPublicadas);
-    }, [vagasPublicadas]);
+    const toggleCardExpansion = (id: string) => {
+        setExpandedCard(expandedCard === id ? null : id);
+    };
 
     const renderVagaItem = ({ item }: { item: Vaga }) => {
-        console.log("Renderizando item:", item); // Log de depuração
+        console.log("Renderizando item:", item);
+        const isExpanded = expandedCard === item.id;
+
         return (
-            <TouchableOpacity activeOpacity={0.9}>
+            <TouchableOpacity 
+                activeOpacity={0.9}
+                onPress={() => toggleCardExpansion(item.id)}
+            >
                 <View style={styles.cardContainer}>
+                    {/* Card Header with Company Info */}
                     <View style={styles.cardHeader}>
                         <View style={styles.publisherContainer}>
                             <View style={styles.avatarCircle}>
                                 <Text style={styles.avatarText}>
-                                    {(item.quem_publicou.nome || item.quem_publicou.email).charAt(0).toUpperCase()}
+                                    {item.quem_publicou && item.quem_publicou.charAt(0).toUpperCase()}
                                 </Text>
                             </View>
-                            <Text style={styles.publisherName}>
-                                {item.quem_publicou.nome || item.quem_publicou.email}
-                            </Text>
-                        </View>
-                        <View style={styles.dateTimeContainer}>
-                            <Text style={styles.dateText}>{item.data}</Text>
-                            <Text style={styles.timeText}>{item.hora}</Text>
+                            <View style={styles.publisherInfo}>
+                                <Text style={styles.publisherName} numberOfLines={1}>
+                                    {item.quem_publicou}
+                                </Text>
+                                <View style={styles.dateTimeContainer}>
+                                    <Text style={styles.dateText}>{item.data} às {item.hora}</Text>
+                                </View>
+                            </View>
                         </View>
                     </View>
 
-                    <View style={styles.divider} />
+                    {/* Job Title and Salary */}
+                    <View style={styles.jobTitleContainer}>
+                        <Text style={styles.jobTitle}>{item.titulo_vaga}</Text>
+                        <View style={styles.salaryBadge}>
+                            <Text style={styles.salaryText}>{item.salarioVaga}</Text>
+                        </View>
+                    </View>
 
-                    <View style={styles.contentContainer}>
-                        <Text style={styles.jobDescription}>{item.publicacao_text}</Text>
+                    {/* Job Description */}
+                    <View style={styles.sectionContainer}>
+                        <Text style={styles.sectionTitle}>Descrição</Text>
+                        <Text style={styles.sectionContent} numberOfLines={isExpanded ? undefined : 3}>
+                            {item.publicacao_text}
+                        </Text>
+                    </View>
+
+                    {/* Only show these sections if card is expanded */}
+                    {isExpanded && (
+                        <>
+                            {/* Job Requirements */}
+                            <View style={styles.sectionContainer}>
+                                <Text style={styles.sectionTitle}>Requisitos</Text>
+                                <Text style={styles.sectionContent}>
+                                    {item.requisito_vaga}
+                                </Text>
+                            </View>
+
+                            {/* Contact Information */}
+                            <View style={styles.sectionContainer}>
+                                <Text style={styles.sectionTitle}>Contato</Text>
+                                <Text style={styles.sectionContent}>
+                                    {item.area_contato_vaga}
+                                </Text>
+                            </View>
+                        </>
+                    )}
+
+                    {/* Expand/Collapse Indicator */}
+                    <View style={styles.expandIndicator}>
+                        <Text style={styles.expandText}>
+                            {isExpanded ? 'Mostrar menos' : 'Ver detalhes completos'}
+                        </Text>
                     </View>
                 </View>
             </TouchableOpacity>
@@ -110,7 +162,12 @@ export default function InterfacePublicacao() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <Text style={styles.headerTitle}>Vagas Disponíveis</Text>
+            <View style={styles.header}>
+                <Text style={styles.headerTitle}>Vagas Disponíveis</Text>
+                <Text style={styles.headerSubtitle}>
+                    Encontre oportunidades para iniciar sua carreira
+                </Text>
+            </View>
             
             {vagasPublicadas.length === 0 ? (
                 <View style={styles.emptyContainer}>
@@ -130,42 +187,94 @@ export default function InterfacePublicacao() {
     );
 }
 
+const { width } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F7FA',
-        padding: 16,
+        backgroundColor: '#F5F7FF',
     },
-    headerTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#1A2138',
-        marginBottom: 16,
-        marginTop: 8,
-    },
-    listContainer: {
-        paddingBottom: 20,
-    },
-    cardContainer: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        marginBottom: 16,
+    header: {
+        backgroundColor: '#4A80F0',
+        paddingVertical: 20,
+        paddingHorizontal: 16,
+        borderBottomLeftRadius: 20,
+        borderBottomRightRadius: 20,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
-        elevation: 3,
-        overflow: 'hidden',
+        elevation: 4,
+    },
+    headerTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: 'white',
+        textAlign: 'center',
+    },
+    headerSubtitle: {
+        fontSize: 14,
+        color: 'rgba(255, 255, 255, 0.8)',
+        textAlign: 'center',
+        marginTop: 4,
+    },
+    listContainer: {
+        padding: 16,
+        paddingBottom: 30,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F5F7FF',
+    },
+    loadingText: {
+        marginTop: 12,
+        fontSize: 16,
+        color: '#4A80F0',
+        fontWeight: '500',
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    emptyTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 8,
+    },
+    emptySubtitle: {
+        fontSize: 16,
+        color: '#666',
+        textAlign: 'center',
+    },
+    cardContainer: {
+        backgroundColor: 'white',
+        borderRadius: 12,
+        marginBottom: 16,
+        padding: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 2,
     },
     cardHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: 16,
+        marginBottom: 12,
     },
     publisherContainer: {
         flexDirection: 'row',
         alignItems: 'center',
+        flex: 1,
+    },
+    publisherInfo: {
+        flex: 1,
     },
     avatarCircle: {
         width: 40,
@@ -177,67 +286,86 @@ const styles = StyleSheet.create({
         marginRight: 12,
     },
     avatarText: {
-        color: '#FFFFFF',
+        color: 'white',
         fontSize: 18,
         fontWeight: 'bold',
     },
     publisherName: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#1A2138',
+        color: '#333',
     },
     dateTimeContainer: {
-        alignItems: 'flex-end',
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     dateText: {
-        fontSize: 14,
-        color: '#4A5568',
-        fontWeight: '500',
+        fontSize: 12,
+        color: '#666',
     },
     timeText: {
-        fontSize: 14,
-        color: '#4A5568',
-        marginTop: 2,
+        fontSize: 12,
+        color: '#666',
+        marginLeft: 4,
     },
     divider: {
         height: 1,
-        backgroundColor: '#E2E8F0',
-        marginHorizontal: 16,
+        backgroundColor: '#E0E0E0',
+        marginVertical: 12,
+    },
+    jobTitleContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    jobTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
+        flex: 1,
+        marginRight: 8,
+    },
+    salaryBadge: {
+        backgroundColor: '#E8F0FF',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+    },
+    salaryText: {
+        color: '#4A80F0',
+        fontWeight: '600',
+        fontSize: 14,
+    },
+    sectionContainer: {
+        marginBottom: 16,
+    },
+    sectionTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#666',
+        marginBottom: 6,
+    },
+    sectionContent: {
+        fontSize: 15,
+        color: '#333',
+        lineHeight: 22,
+    },
+    expandIndicator: {
+        alignItems: 'center',
+        marginTop: 8,
+    },
+    expandText: {
+        fontSize: 14,
+        color: '#4A80F0',
+        fontWeight: '500',
     },
     contentContainer: {
-        padding: 16,
+        marginTop: 12,
     },
     jobDescription: {
         fontSize: 15,
+        color: '#333',
         lineHeight: 22,
-        color: '#2D3748',
-    },
-    emptyContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
-    emptyTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#4A5568',
-        marginBottom: 8,
-    },
-    emptySubtitle: {
-        fontSize: 16,
-        color: '#718096',
-        textAlign: 'center',
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#F5F7FA',
-    },
-    loadingText: {
-        marginTop: 12,
-        fontSize: 16,
-        color: '#4A5568',
     },
 });

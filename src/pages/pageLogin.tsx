@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { db } from '../firebase/firebase';
-import { collection, where, query, getDocs} from 'firebase/firestore';
+import { collection, where, query, getDocs } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase/firebase';
@@ -58,29 +58,49 @@ export default function PageLogin() {
             const rUserCandidato = await getDocs(queryEmailUser);
 
             if (!rUserCandidato.empty) {
-                //variável que vai armazenar o email que foi buscado no banco de dados
-                const emailUserDB = rUserCandidato.docs.map((doc) => {
-                    return doc.data().email; // Retorna o campo "email_empresa" de cada documento encontrado
-                });
+                // Get user data from the first document
+                const userData = rUserCandidato.docs[0].data();
+                const emailUserDB = userData.email;
 
-                //vou fazer o login do Usuário agora e levar para a página de empresa
-                const userCredentialEmpresa = await signInWithEmailAndPassword(auth, String(emailUserDB), passLogin)
-                const uidUserCredentialEmpresa = userCredentialEmpresa.user.uid
-                const userLogadoObject = {
-                    uid: uidUserCredentialEmpresa,
-                    email: String(emailUserDB),
+                if (!emailUserDB) {
+                    throw new Error('Email não encontrado no documento');
                 }
 
-                const valueUserTwo = await AsyncStorage.setItem('userCandidatoLogado', JSON.stringify(userLogadoObject))
+                // Login with Firebase Auth
+                try {
+                    const userCredential = await signInWithEmailAndPassword(auth, emailUserDB, passLogin);
+                    const uid = userCredential.user.uid;
+                    
+                    // Create user object with all necessary data
+                    const userLogadoObject = {
+                        uid: uid,
+                        email: emailUserDB,
+                        // Add any other fields you need from userData
+                    };
 
-                Alert.alert('Sucesso', 'Usuário logado com sucesso')
-                navigation.navigate('BottomTabsCandidato', { screen: 'HomeUsuario'});
+                    // Save to AsyncStorage
+                    await AsyncStorage.setItem('userCandidatoLogado', JSON.stringify(userLogadoObject));
+                    
+                    // Show success message
+                    Alert.alert('Sucesso', 'Usuário logado com sucesso');
+                    
+                    // Navigate after a short delay to ensure AsyncStorage is updated
+                    setTimeout(() => {
+                        navigation.reset({
+                            index: 0,
+                            routes: [{ name: 'BottomTabsCandidato', params: { screen: 'HomeUsuario' } }],
+                        });
+                    }, 100);
+                } catch (authError) {
+                    console.error("Erro na autenticação:", authError);
+                    Alert.alert('Erro', 'Senha incorreta. Por favor, tente novamente.');
+                }
             } else {
-                console.log('não encontrei')
+                Alert.alert('Erro', 'Usuário não encontrado. Verifique seu email e tente novamente.');
             }
         } catch (error) {
-            console.log("Erro ao logar:", error);
-            Alert.alert('Erro', 'Email ou senha incorretos');
+            console.error("Erro ao logar:", error);
+            Alert.alert('Erro', 'Ocorreu um erro durante o login. Por favor, tente novamente.');
         } finally {
             setIsLoading(false);
         }
