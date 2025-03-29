@@ -32,21 +32,29 @@ export default function PublicarVaga() {
     const [areaContatoVaga, setAreaContatoVaga] = useState<string>('')
 
     useEffect(() => {
-        // Função assíncrona dentro do useEffect
         const fetchData = async () => {
-            const userEmpresaLogado = await AsyncStorage.getItem('userEmpresaLogado');
-            // Verifica se o item existe
-            if (userEmpresaLogado !== null) {
-                // Converte de volta para objeto
-                const userEmpresa = JSON.parse(userEmpresaLogado);
-                console.log('Usuário logado:', userEmpresa);
-                setUserLogadoState(userEmpresa);
-            } else {
-                console.log('Não há dados no AsyncStorage para "userEmpresaLogado"');
+            try {
+                const userEmpresaLogado = await AsyncStorage.getItem('userEmpresaLogado');
+                if (userEmpresaLogado !== null) {
+                    const userEmpresa = JSON.parse(userEmpresaLogado);
+                    
+                    // Verifique o formato dos dados armazenados
+                    console.log('Dados armazenados:', userEmpresa);
+                    
+                    // Se o e-mail estiver em um campo específico, pegue ele diretamente
+                    if (userEmpresa?.email) {
+                        setUserLogadoState(userEmpresa.email);
+                    } else {
+                        console.log('Campo "email" não encontrado no objeto armazenado.');
+                    }
+                } else {
+                    console.log('Não há dados salvos no AsyncStorage para "userEmpresaLogado".');
+                }
+            } catch (error) {
+                console.error('Erro ao recuperar os dados do AsyncStorage:', error);
             }
         };
-
-        // Chama a função assíncrona
+    
         fetchData();
     }, []);
 

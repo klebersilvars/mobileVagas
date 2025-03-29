@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { View, SafeAreaView, StyleSheet, Text, FlatList, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { 
+  View, 
+  SafeAreaView, 
+  StyleSheet, 
+  Text, 
+  FlatList, 
+  TouchableOpacity, 
+  TextInput, 
+  Alert,
+  Dimensions,
+  StatusBar
+} from 'react-native';
 import { db } from '../../../firebase/firebase';
 import { where, query, collection, onSnapshot, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -54,20 +65,19 @@ export default function VagasPublicadas() {
     const buscarVagas = (emailEmpresa: string) => {
         try {
             const vagasPublicadasRef = collection(db, 'publicar_vaga_empresa');
-            const q = query(vagasPublicadasRef, where('quem_publicou.email', '==', emailEmpresa));
+            const q = query(vagasPublicadasRef, where('quem_publicou', '==', emailEmpresa));
 
             return onSnapshot(q, (querySnapshot) => {
                 const vagas = querySnapshot.docs.map(doc => ({
                     id: doc.id,
                     publicacao_text: doc.data().publicacao_text,
-                    quem_publicou: doc.data().quem_publicou.email,
+                    quem_publicou: doc.data().quem_publicou,
                     data: formatarData(doc.data().data),
                     hora: doc.data().hora,
                     titulo_vaga: doc.data().titulo_vaga,
                     salarioVaga: doc.data().salarioVaga,
                     requisito_vaga: doc.data().requisito_vaga,
                     area_contato_vaga: doc.data().area_contato_vaga
-
                 }));
                 setVagasPublicadas(vagas);
             });
@@ -76,9 +86,9 @@ export default function VagasPublicadas() {
         }
     };
 
-    const handleTextInputChange = (id: string, value: string) => {
+    const handleTextInputChange = (id: string, field: string, value: string) => {
         setVagasPublicadas(prevVagas =>
-            prevVagas.map(vaga => (vaga.id === id ? { ...vaga, publicacao_text: value, titulo_vaga: value, salarioVaga: value, area_contato_vaga: value, requisito_vaga: value, } : vaga))
+            prevVagas.map(vaga => (vaga.id === id ? { ...vaga, [field]: value } : vaga))
         );
     };
 
@@ -96,7 +106,11 @@ export default function VagasPublicadas() {
             }
 
             await updateDoc(vagaRef, {
-                publicacao_text: item.publicacao_text
+                publicacao_text: item.publicacao_text,
+                titulo_vaga: item.titulo_vaga,
+                salarioVaga: item.salarioVaga,
+                area_contato_vaga: item.area_contato_vaga,
+                requisito_vaga: item.requisito_vaga
             });
 
             Alert.alert('Sucesso', 'Publicação atualizada com sucesso!');
@@ -107,175 +121,324 @@ export default function VagasPublicadas() {
         }
     };
 
+    const renderFieldLabel = (label: string) => (
+        <Text style={styles.fieldLabel}>{label}</Text>
+    );
+
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.containerTitlePage}>
-                <Text style={styles.titleContainerPage}>Novos Talentos</Text>
+            <StatusBar backgroundColor="#4A6FFF" barStyle="light-content" />
+            
+            <View style={styles.header}>
+                <Text style={styles.headerTitle}>Novos Talentos</Text>
+                <Text style={styles.headerSubtitle}>Gerencie suas vagas publicadas</Text>
             </View>
 
-            <FlatList
-                showsVerticalScrollIndicator={false}
-                data={vagasPublicadas}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                    <View style={styles.containerBox}>
-                        <View style={styles.containerText}>
-                            <TextInput
-                                value={item.titulo_vaga}
-                                onChangeText={(value) => handleTextInputChange(item.id, value)}
-                                editable={publicacaoEditando === item.id}
-                                style={styles.input}
-                                numberOfLines={20}
-                                multiline
-                            />
-                            <TextInput
-                                value={item.publicacao_text}
-                                onChangeText={(value) => handleTextInputChange(item.id, value)}
-                                editable={publicacaoEditando === item.id}
-                                style={styles.input}
-                                numberOfLines={20}
-                                multiline
-                            />
-                            <TextInput
-                                value={item.salarioVaga}
-                                onChangeText={(value) => handleTextInputChange(item.id, value)}
-                                editable={publicacaoEditando === item.id}
-                                style={styles.input}
-                                numberOfLines={20}
-                                multiline
-                            />
-                            <TextInput
-                                value={item.area_contato_vaga}
-                                onChangeText={(value) => handleTextInputChange(item.id, value)}
-                                editable={publicacaoEditando === item.id}
-                                style={styles.input}
-                                numberOfLines={20}
-                                multiline
-                            />
-                            <TextInput
-                                value={item.requisito_vaga}
-                                onChangeText={(value) => handleTextInputChange(item.id, value)}
-                                editable={publicacaoEditando === item.id}
-                                style={styles.input}
-                                numberOfLines={20}
-                                multiline
-                            />
-                        </View>
-
-                        <View style={styles.containerActionsPubli}>
-                            <View>
-                                <Text><Text style={{ fontWeight: 'bold' }}>Publicado por:</Text> {item.quem_publicou}</Text>
-                                <Text><Text style={{ fontWeight: 'bold' }}>Data:</Text> {item.data}</Text>
-                                <Text><Text style={{ fontWeight: 'bold' }}>Hora:</Text> {item.hora}</Text>
+            {vagasPublicadas.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyText}>Nenhuma vaga publicada ainda</Text>
+                </View>
+            ) : (
+                <FlatList
+                    showsVerticalScrollIndicator={false}
+                    data={vagasPublicadas}
+                    keyExtractor={(item) => item.id}
+                    contentContainerStyle={styles.listContainer}
+                    renderItem={({ item }) => (
+                        <View style={styles.jobCard}>
+                            <View style={styles.jobHeader}>
+                                <View style={styles.titleContainer}>
+                                    {publicacaoEditando === item.id ? (
+                                        <TextInput
+                                            value={item.titulo_vaga}
+                                            onChangeText={(value) => handleTextInputChange(item.id, 'titulo_vaga', value)}
+                                            style={styles.titleInput}
+                                            placeholder="Título da vaga"
+                                            multiline
+                                            numberOfLines={5}
+                                        />
+                                    ) : (
+                                        <Text style={styles.jobTitle}>{item.titulo_vaga}</Text>
+                                    )}
+                                </View>
+                                
+                                <View style={styles.salaryBadge}>
+                                    {publicacaoEditando === item.id ? (
+                                        <TextInput
+                                            value={item.salarioVaga}
+                                            onChangeText={(value) => handleTextInputChange(item.id, 'salarioVaga', value)}
+                                            style={styles.salaryInput}
+                                            placeholder="Salário"
+                                        />
+                                    ) : (
+                                        <Text style={styles.salaryText}>{item.salarioVaga}</Text>
+                                    )}
+                                </View>
                             </View>
 
-                            <View style={{ gap: 10 }}>
-                                <TouchableOpacity
-                                    onPress={() => deletarPublicacao(item)}
-                                    style={styles.deletarPubli}
-                                >
-                                    <Text style={styles.textBtnDeletar}>Deletar</Text>
-                                </TouchableOpacity>
+                            <View style={styles.jobContent}>
+                                {renderFieldLabel('Descrição')}
+                                <TextInput
+                                    value={item.publicacao_text}
+                                    onChangeText={(value) => handleTextInputChange(item.id, 'publicacao_text', value)}
+                                    editable={publicacaoEditando === item.id}
+                                    style={[
+                                        styles.textInput,
+                                        publicacaoEditando === item.id && styles.activeInput
+                                    ]}
+                                    multiline
+                                    placeholder="Descrição da vaga"
+                                />
 
-                                {publicacaoEditando === item.id ? (
+                                {renderFieldLabel('Requisitos')}
+                                <TextInput
+                                    value={item.requisito_vaga}
+                                    onChangeText={(value) => handleTextInputChange(item.id, 'requisito_vaga', value)}
+                                    editable={publicacaoEditando === item.id}
+                                    style={[
+                                        styles.textInput,
+                                        publicacaoEditando === item.id && styles.activeInput
+                                    ]}
+                                    multiline
+                                    placeholder="Requisitos para a vaga"
+                                />
+
+                                {renderFieldLabel('Contato')}
+                                <TextInput
+                                    value={item.area_contato_vaga}
+                                    onChangeText={(value) => handleTextInputChange(item.id, 'area_contato_vaga', value)}
+                                    editable={publicacaoEditando === item.id}
+                                    style={[
+                                        styles.textInput,
+                                        publicacaoEditando === item.id && styles.activeInput
+                                    ]}
+                                    multiline
+                                    placeholder="Área de contato"
+                                />
+                            </View>
+
+                            <View style={styles.jobFooter}>
+                                <View style={styles.metadataContainer}>
+                                    <Text style={styles.metadataText}>
+                                        <Text style={styles.metadataLabel}>Publicado: </Text>
+                                        {item.data} às {item.hora}
+                                    </Text>
+                                    <Text style={styles.metadataText} numberOfLines={1}>
+                                        <Text style={styles.metadataLabel}>Por: </Text>
+                                        {item.quem_publicou}
+                                    </Text>
+                                </View>
+
+                                <View style={styles.actionButtons}>
+                                    {publicacaoEditando === item.id ? (
+                                        <TouchableOpacity
+                                            onPress={() => functionSalvarPubliEditada(item)}
+                                            style={styles.saveButton}
+                                            activeOpacity={0.7}
+                                        >
+                                            <Text style={styles.buttonText}>Salvar</Text>
+                                        </TouchableOpacity>
+                                    ) : (
+                                        <TouchableOpacity
+                                            onPress={() => functionEditarPubli(item)}
+                                            style={styles.editButton}
+                                            activeOpacity={0.7}
+                                        >
+                                            <Text style={styles.buttonText}>Editar</Text>
+                                        </TouchableOpacity>
+                                    )}
+
                                     <TouchableOpacity
-                                        onPress={() => functionSalvarPubliEditada(item)}
-                                        style={styles.salvarPubli}
+                                        onPress={() => deletarPublicacao(item)}
+                                        style={styles.deleteButton}
+                                        activeOpacity={0.7}
                                     >
-                                        <Text style={styles.textBtnEditar}>Salvar</Text>
+                                        <Text style={styles.buttonText}>Deletar</Text>
                                     </TouchableOpacity>
-                                ) : (
-                                    <TouchableOpacity
-                                        onPress={() => functionEditarPubli(item)}
-                                        style={styles.editarPubli}
-                                    >
-                                        <Text style={styles.textBtnEditar}>Editar</Text>
-                                    </TouchableOpacity>
-                                )}
+                                </View>
                             </View>
                         </View>
-                    </View>
-                )}
-            />
+                    )}
+                />
+            )}
         </SafeAreaView>
     );
 }
 
+const { width } = Dimensions.get('window');
+const isSmallDevice = width < 375;
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        padding: 10,
-
+        backgroundColor: '#F5F7FF',
     },
-    containerTitlePage: {
-        width: '100%',
-        height: 80,
-        padding: 24,
-        display: 'flex',
-        alignItems: 'center'
+    header: {
+        backgroundColor: 'black',
+        paddingVertical: 20,
+        paddingHorizontal: 16,
+        borderBottomLeftRadius: 20,
+        borderBottomRightRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 4,
     },
-    titleContainerPage: {
-        fontSize: 25,
+    headerTitle: {
+        fontSize: 24,
         fontWeight: 'bold',
-        textAlign: 'center'
+        color: 'white',
+        textAlign: 'center',
     },
-    containerBox: {
-        width: '100%',
-        padding: 10,
-        height: 340,
-        maxHeight: 350,
-        borderWidth: 1,
-        marginTop: 10,
-
+    headerSubtitle: {
+        fontSize: 14,
+        color: 'rgba(255, 255, 255, 0.8)',
+        textAlign: 'center',
+        marginTop: 4,
     },
-    containerText: {
-        height: 230,
-        maxHeight: 251,
-        width: '100%'
+    listContainer: {
+        padding: 16,
+        paddingBottom: 30,
     },
-    containerActionsPubli: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        width: '100%',
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    emptyText: {
+        fontSize: 16,
+        color: '#666',
+        textAlign: 'center',
+    },
+    jobCard: {
+        backgroundColor: 'white',
+        borderRadius: 12,
+        marginBottom: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 2,
+        overflow: 'hidden',
+    },
+    jobHeader: {
         flexDirection: 'row',
-        alignItems: 'center'
-    },
-    deletarPubli: {
-        backgroundColor: 'red',
-        width: 100,
-        height: 30,
-        display: 'flex',
+        justifyContent: 'space-between',
         alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: 7,
+        padding: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F0F0F0',
     },
-    editarPubli: {
-        backgroundColor: '#FFB300',
-        width: 100,
-        height: 30,
-        display: 'flex',
+    titleContainer: {
+        flex: 1,
+        marginRight: 10,
+    },
+    jobTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    titleInput: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
+        padding: 0,
+        borderBottomWidth: 1,
+        borderBottomColor: '#4A6FFF',
+    },
+    salaryBadge: {
+        backgroundColor: '#E8EDFF',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 20,
+    },
+    salaryText: {
+        color: '#4A6FFF',
+        fontWeight: '600',
+        fontSize: 14,
+    },
+    salaryInput: {
+        color: '#4A6FFF',
+        fontWeight: '600',
+        fontSize: 14,
+        minWidth: 80,
+        textAlign: 'center',
+    },
+    jobContent: {
+        padding: 16,
+    },
+    fieldLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#666',
+        marginBottom: 4,
+        marginTop: 12,
+    },
+    textInput: {
+        backgroundColor: '#F9F9F9',
+        borderRadius: 8,
+        padding: 12,
+        fontSize: 15,
+        color: '#333',
+        minHeight: 60,
+        textAlignVertical: 'top',
+    },
+    activeInput: {
+        backgroundColor: '#F0F4FF',
+        borderWidth: 1,
+        borderColor: '#4A6FFF',
+    },
+    jobFooter: {
+        borderTopWidth: 1,
+        borderTopColor: '#F0F0F0',
+        padding: 16,
+    },
+    metadataContainer: {
+        marginBottom: 12,
+    },
+    metadataText: {
+        fontSize: 13,
+        color: '#666',
+        marginBottom: 2,
+    },
+    metadataLabel: {
+        fontWeight: '600',
+        color: '#444',
+    },
+    actionButtons: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        gap: 10,
+    },
+    editButton: {
+        backgroundColor: '#4A6FFF',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        minWidth: 80,
         alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: 7,
     },
-    salvarPubli: {
-        backgroundColor: 'green',
-        width: 100,
-        height: 30,
-        display: 'flex',
+    saveButton: {
+        backgroundColor: '#22C55E',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        minWidth: 80,
         alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: 7,
     },
-    textBtnDeletar: {
+    deleteButton: {
+        backgroundColor: '#EF4444',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        minWidth: 80,
+        alignItems: 'center',
+    },
+    buttonText: {
         color: 'white',
-        fontWeight: 'bold'
+        fontWeight: '600',
+        fontSize: 14,
     },
-    textBtnEditar: {
-        color: 'white',
-        fontWeight: 'bold'
-    },
-    input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 5, padding: 8, fontSize: 16 },
-})
+});
