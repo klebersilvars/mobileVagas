@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import { 
   SafeAreaView, 
   Text, 
@@ -10,26 +10,27 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar
-} from 'react-native'
-import PublicarVagaStyle from './publicarVagaStyle'
+} from 'react-native';
+import PublicarVagaStyle from './publicarVagaStyle';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { db } from '../../../firebase/firebase';
-import { collection, addDoc, updateDoc } from 'firebase/firestore'
+import { collection, addDoc, updateDoc, getDocs, query, where } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 
 export default function PublicarVaga() {
-    const data = moment()
-    // Converter para string no formato desejado
-    const dataFormatted = data.format('YYYY-MM-DD'); // Exemplo de formato de data
-    const horaFormatted = data.format('HH:mm:ss'); // Exemplo de formato de hora
-    const [userLogadoState, setUserLogadoState] = useState<string>('')
-    const [publicacao_texto, setPublicacao_texto] = useState<string>('')
-    const [tituloVaga, setTituloVaga] = useState<string>('')
-    const [salarioVaga, setSalarioVaga] = useState<string>('')
-    const [requisitosVaga, setRequisitosVaga] = useState<string>('')
-    const [areaLinkVaga, setAreaLinkVaga] = useState<string>('')
-    const [areaContatoVaga, setAreaContatoVaga] = useState<string>('')
+    const data = moment();
+    const dataFormatted = data.format('YYYY-MM-DD');
+    const horaFormatted = data.format('HH:mm:ss');
+
+    const [userLogadoState, setUserLogadoState] = useState<string>('');
+    const [publicacao_texto, setPublicacao_texto] = useState<string>('');
+    const [tituloVaga, setTituloVaga] = useState<string>('');
+    const [salarioVaga, setSalarioVaga] = useState<string>('');
+    const [requisitosVaga, setRequisitosVaga] = useState<string>('');
+    const [areaLinkVaga, setAreaLinkVaga] = useState<string>('');
+    const [areaContatoVaga, setAreaContatoVaga] = useState<string>('');
+    const [nomeEmpresa, setNomeEmpresa] = useState<string>('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -38,53 +39,66 @@ export default function PublicarVaga() {
                 if (userEmpresaLogado !== null) {
                     const userEmpresa = JSON.parse(userEmpresaLogado);
                     
-                    // Verifique o formato dos dados armazenados
-                    console.log('Dados armazenados:', userEmpresa);
-                    
-                    // Se o e-mail estiver em um campo específico, pegue ele diretamente
                     if (userEmpresa?.email) {
                         setUserLogadoState(userEmpresa.email);
-                    } else {
-                        console.log('Campo "email" não encontrado no objeto armazenado.');
+                        await queryBuscarNomeEmpresa(userEmpresa.email); // Busca o nome da empresa
                     }
-                } else {
-                    console.log('Não há dados salvos no AsyncStorage para "userEmpresaLogado".');
                 }
             } catch (error) {
                 console.error('Erro ao recuperar os dados do AsyncStorage:', error);
             }
         };
-    
+
         fetchData();
     }, []);
 
+    async function queryBuscarNomeEmpresa(email: string) {
+        try {
+            const empresaQuery = query(collection(db, 'user_empresa'), where('email_empresa', '==', email));
+            const querySnapshot = await getDocs(empresaQuery);
+
+            if (!querySnapshot.empty) {
+                const empresaData = querySnapshot.docs[0].data();
+                if (empresaData?.nome_empresa) {
+                    setNomeEmpresa(empresaData.nome_empresa);
+                }
+            } else {
+                console.log('Nenhum nome de empresa encontrado para este email.');
+            }
+        } catch (error) {
+            console.error('Erro ao buscar nome da empresa:', error);
+        }
+    }
 
     async function publicarVaga() {
         try {
+            if (!nomeEmpresa) {
+                Alert.alert('Erro', 'O nome da empresa não foi encontrado. Tente novamente.');
+                return;
+            }
+
             const publicationRef = await addDoc(collection(db, 'publicar_vaga_empresa'), {
                 publicacao_text: publicacao_texto,
                 data: dataFormatted,
                 hora: horaFormatted,
                 quem_publicou: userLogadoState,
+                nome_empresa: nomeEmpresa, // Agora salva corretamente
                 requisito_vaga: requisitosVaga,
                 salarioVaga: salarioVaga,
                 titulo_vaga: tituloVaga,
                 area_contato_vaga: areaContatoVaga
             });
 
-            // Agora você pode acessar o ID do documento usando `publicationRef.id`
             const publicationId = publicationRef.id;
-
-            // Caso precise salvar o ID no próprio documento:
             await updateDoc(publicationRef, { id_doc: publicationId });
 
-            Alert.alert('Sucesso!', 'Publicação feita com sucesso!')
-            setPublicacao_texto('')
-            setTituloVaga('')
-            setSalarioVaga('')
-            setRequisitosVaga('')
-            setAreaContatoVaga('')
-            setAreaLinkVaga('')
+            Alert.alert('Sucesso!', 'Publicação feita com sucesso!');
+            setPublicacao_texto('');
+            setTituloVaga('');
+            setSalarioVaga('');
+            setRequisitosVaga('');
+            setAreaContatoVaga('');
+            setAreaLinkVaga('');
         } catch (error) {
             console.error("Erro ao publicar a vaga:", error);
         }

@@ -24,6 +24,7 @@ type Vaga = {
     titulo_vaga: string;
     requisito_vaga: string;
     area_contato_vaga: string;
+    nome_empresa: string;
 };
 
 export default function InterfacePublicacao() {
@@ -60,7 +61,8 @@ export default function InterfacePublicacao() {
                     salarioVaga: data.salarioVaga || 'Não informado',
                     titulo_vaga: data.titulo_vaga || 'Vaga sem título',
                     requisito_vaga: data.requisito_vaga || 'Requisitos não informados',
-                    area_contato_vaga: data.area_contato_vaga || 'Contato não informado'
+                    area_contato_vaga: data.area_contato_vaga || 'Contato não informado',
+                    nome_empresa: data.nome_empresa
                 };
             });
 
@@ -97,7 +99,7 @@ export default function InterfacePublicacao() {
                             </View>
                             <View style={styles.publisherInfo}>
                                 <Text style={styles.publisherName} numberOfLines={1}>
-                                    {item.quem_publicou}
+                                    {item.nome_empresa}
                                 </Text>
                                 <View style={styles.dateTimeContainer}>
                                     <Text style={styles.dateText}>{item.data} às {item.hora}</Text>
