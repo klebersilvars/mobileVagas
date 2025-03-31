@@ -7,7 +7,8 @@ import {
   FlatList, 
   TouchableOpacity,
   ActivityIndicator,
-  Dimensions
+  Dimensions,
+  StatusBar
 } from 'react-native';
 import { db } from '../../../firebase/firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
@@ -79,10 +80,12 @@ export default function InterfacePublicacao() {
         const isExpanded = expandedCard === item.id;
 
         return (
+            
             <TouchableOpacity 
                 activeOpacity={0.9}
                 onPress={() => toggleCardExpansion(item.id)}
             >
+                <StatusBar backgroundColor='#F5F7FF' barStyle='dark-content'/>
                 <View style={styles.cardContainer}>
                     {/* Card Header with Company Info */}
                     <View style={styles.cardHeader}>

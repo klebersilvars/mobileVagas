@@ -10,7 +10,8 @@ export const StyleLoginNavBar = StyleSheet.create({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        flexDirection: 'row'
+        flexDirection: 'row',
+        backgroundColor: '#F5F7FF'
     },
     titleNavBar:{
         fontWeight: 'bold',
