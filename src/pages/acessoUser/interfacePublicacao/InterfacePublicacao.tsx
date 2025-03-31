@@ -50,7 +50,6 @@ export default function InterfacePublicacao() {
 
             const vagas = snapshot.docs.map((doc) => {
                 const data = doc.data();
-                console.log("Documento recebido:", data);
 
                 return {
                     id: doc.id,
@@ -62,11 +61,10 @@ export default function InterfacePublicacao() {
                     titulo_vaga: data.titulo_vaga || 'Vaga sem título',
                     requisito_vaga: data.requisito_vaga || 'Requisitos não informados',
                     area_contato_vaga: data.area_contato_vaga || 'Contato não informado',
-                    nome_empresa: data.nome_empresa
+                    nome_empresa: data.nome_empresa || 'Nome da empresa não informado!'
                 };
             });
 
-            console.log("Vagas formatadas:", vagas);
             setVagasPublicadas(vagas);
         });
 
@@ -78,81 +76,78 @@ export default function InterfacePublicacao() {
     };
 
     const renderVagaItem = ({ item }: { item: Vaga }) => {
-        console.log("Renderizando item:", item);
         const isExpanded = expandedCard === item.id;
 
         return (
-            
-            <TouchableOpacity 
-                activeOpacity={0.9}
-                onPress={() => toggleCardExpansion(item.id)}
-            >
+            <View style={styles.cardContainer}>
                 <StatusBar backgroundColor='#F5F7FF' barStyle='dark-content'/>
-                <View style={styles.cardContainer}>
-                    {/* Card Header with Company Info */}
-                    <View style={styles.cardHeader}>
-                        <View style={styles.publisherContainer}>
-                            <View style={styles.avatarCircle}>
-                                <Text style={styles.avatarText}>
-                                    {item.quem_publicou && item.quem_publicou.charAt(0).toUpperCase()}
-                                </Text>
-                            </View>
-                            <View style={styles.publisherInfo}>
-                                <Text style={styles.publisherName} numberOfLines={1}>
-                                    {item.nome_empresa}
-                                </Text>
-                                <View style={styles.dateTimeContainer}>
-                                    <Text style={styles.dateText}>{item.data} às {item.hora}</Text>
-                                </View>
+
+                {/* Card Header with Company Info */}
+                <View style={styles.cardHeader}>
+                    <View style={styles.publisherContainer}>
+                        <View style={styles.avatarCircle}>
+                            <Text style={styles.avatarText}>
+                                {item.quem_publicou && item.quem_publicou.charAt(0).toUpperCase()}
+                            </Text>
+                        </View>
+                        <View style={styles.publisherInfo}>
+                            <Text style={styles.publisherName} numberOfLines={1}>
+                                {item.nome_empresa}
+                            </Text>
+                            <View style={styles.dateTimeContainer}>
+                                <Text style={styles.dateText}>{item.data} às {item.hora}</Text>
                             </View>
                         </View>
-                    </View>
-
-                    {/* Job Title and Salary */}
-                    <View style={styles.jobTitleContainer}>
-                        <Text style={styles.jobTitle}>{item.titulo_vaga}</Text>
-                        <View style={styles.salaryBadge}>
-                            <Text style={styles.salaryText}>{item.salarioVaga}</Text>
-                        </View>
-                    </View>
-
-                    {/* Job Description */}
-                    <View style={styles.sectionContainer}>
-                        <Text style={styles.sectionTitle}>Descrição</Text>
-                        <Text style={styles.sectionContent} numberOfLines={isExpanded ? undefined : 3}>
-                            {item.publicacao_text}
-                        </Text>
-                    </View>
-
-                    {/* Only show these sections if card is expanded */}
-                    {isExpanded && (
-                        <>
-                            {/* Job Requirements */}
-                            <View style={styles.sectionContainer}>
-                                <Text style={styles.sectionTitle}>Requisitos</Text>
-                                <Text style={styles.sectionContent}>
-                                    {item.requisito_vaga}
-                                </Text>
-                            </View>
-
-                            {/* Contact Information */}
-                            <View style={styles.sectionContainer}>
-                                <Text style={styles.sectionTitle}>Contato</Text>
-                                <Text style={styles.sectionContent}>
-                                    {item.area_contato_vaga}
-                                </Text>
-                            </View>
-                        </>
-                    )}
-
-                    {/* Expand/Collapse Indicator */}
-                    <View style={styles.expandIndicator}>
-                        <Text style={styles.expandText}>
-                            {isExpanded ? 'Mostrar menos' : 'Ver detalhes completos'}
-                        </Text>
                     </View>
                 </View>
-            </TouchableOpacity>
+
+                {/* Job Title and Salary */}
+                <View style={styles.jobTitleContainer}>
+                    <Text style={styles.jobTitle}>{item.titulo_vaga}</Text>
+                    <View style={styles.salaryBadge}>
+                        <Text style={styles.salaryText}>{item.salarioVaga}</Text>
+                    </View>
+                </View>
+
+                {/* Job Description */}
+                <View style={styles.sectionContainer}>
+                    <Text style={styles.sectionTitle}>Descrição</Text>
+                    <Text style={styles.sectionContent} numberOfLines={isExpanded ? undefined : 3}>
+                        {item.publicacao_text}
+                    </Text>
+                </View>
+
+                {/* Only show these sections if card is expanded */}
+                {isExpanded && (
+                    <>
+                        {/* Job Requirements */}
+                        <View style={styles.sectionContainer}>
+                            <Text style={styles.sectionTitle}>Requisitos</Text>
+                            <Text style={styles.sectionContent}>
+                                {item.requisito_vaga}
+                            </Text>
+                        </View>
+
+                        {/* Contact Information */}
+                        <View style={styles.sectionContainer}>
+                            <Text style={styles.sectionTitle}>Contato</Text>
+                            <Text style={styles.sectionContent} selectable={true}>
+                                {item.area_contato_vaga}
+                            </Text>
+                        </View>
+                    </>
+                )}
+
+                {/* Expand/Collapse Button */}
+                <TouchableOpacity 
+                    style={styles.expandButton} 
+                    onPress={() => toggleCardExpansion(item.id)}
+                >
+                    <Text style={styles.expandText}>
+                        {isExpanded ? 'Mostrar menos' : 'Ver detalhes completos'}
+                    </Text>
+                </TouchableOpacity>
+            </View>
         );
     };
 
@@ -373,4 +368,9 @@ const styles = StyleSheet.create({
         color: '#333',
         lineHeight: 22,
     },
+    expandButton: {
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    
 });
