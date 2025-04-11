@@ -37,10 +37,8 @@ export default function PageLogin() {
     const [SwitchPassowrd, setSwitchPassword] = useState<boolean>(false)
     const [emailLogin, setEmailLogin] = useState<string>('')
     const [passLogin, setPassLogin] = useState<string>('')
-    const [IsLoadingIndicator, setIsLoadingIndicator] = useState<boolean>(true);
     const user_candidato_db = collection(db, 'user_candidato')
     const navigation = useNavigation<createTabNavigatorProp>();
-    const [isLoading, setIsLoading] = useState(false);
     const [typeConta, setTypeConta] = useState('candidato')
 
     function esquecerSenha() {
@@ -52,7 +50,6 @@ export default function PageLogin() {
             Alert.alert('ERRO', 'Você precisa preencher todos os campos corretamente');
             return;
         }
-        setIsLoading(true);
         try {
             const queryEmailUser = query(user_candidato_db, where('email', '==', emailLogin), where('type_conta', '==', typeConta))
             const rUserCandidato = await getDocs(queryEmailUser);
@@ -101,16 +98,14 @@ export default function PageLogin() {
         } catch (error) {
             console.error("Erro ao logar:", error);
             Alert.alert('Erro', 'Ocorreu um erro durante o login. Por favor, tente novamente.');
-        } finally {
-            setIsLoading(false);
         }
     }
 
     useFocusEffect(
         React.useCallback(() => {
-            setIsLoadingIndicator(true) // ativa o carregamento
+            // setIsLoadingIndicator(true) // ativa o carregamento
             const timer = setTimeout(() => {
-                setIsLoadingIndicator(false) //desativa o carregamento
+                // setIsLoadingIndicator(false) //desativa o carregamento
             }, 2000);
 
             return () => clearTimeout(timer); // Limpa o timeout ao sair da tela
@@ -123,11 +118,11 @@ export default function PageLogin() {
 
     return (
         <>
-            {IsLoadingIndicator ? (
+            {/* {IsLoadingIndicator ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size={80} color="#000000" />
                 </View>
-            ) : (
+            ) : ( */}
                 <SafeAreaView style={styles.safeArea}>
                     <StatusBar backgroundColor="white" barStyle="dark-content" />
                     
@@ -218,15 +213,15 @@ export default function PageLogin() {
                                                 <TouchableOpacity 
                                                     onPress={logarUser} 
                                                     style={styles.loginButton}
-                                                    disabled={isLoading}
+                                                    // disabled={isLoading}
                                                 >
-                                                    {isLoading ? (
+                                                    {/* {isLoading ? (
                                                         <ActivityIndicator size="small" color="#fff" />
-                                                    ) : (
+                                                    ) : ( */}
                                                         <Text allowFontScaling={false} style={styles.loginButtonText}>
                                                             Entrar
                                                         </Text>
-                                                    )}
+                                                    {/* )} */}
                                                 </TouchableOpacity>
                                             </View>
                                         </View>
@@ -236,7 +231,7 @@ export default function PageLogin() {
                         </ScrollView>
                     </KeyboardAvoidingView>
                 </SafeAreaView>
-            )}
+            {/* )} */}
         </>
     );
 }

@@ -37,7 +37,6 @@ export default function PageEntrarEmpresa() {
     const [SwitchPassowrd, setSwitchPassword] = useState<boolean>(false)
     const [emailLogin, setEmailLogin] = useState<string>('')
     const [PassLogin, setPassLogin] = useState<string>('')
-    const [IsLoadingIndicator, setIsLoadingIndicator] = useState<boolean>(true);
     const empresa_db = collection(db, 'user_empresa'); //verificar se é o banco de dados correto
     const [typeConta, setTypeConta] = useState<string>('empresa')
     const navigation = useNavigation<createTabNavigatorProp>()
@@ -48,9 +47,9 @@ export default function PageEntrarEmpresa() {
 
     useFocusEffect(
         React.useCallback(() => {
-            setIsLoadingIndicator(true) // ativa o carregamento
+            // setIsLoadingIndicator(true) // ativa o carregamento
             const timer = setTimeout(() => {
-                setIsLoadingIndicator(false) //desativa o carregamento
+                // setIsLoadingIndicator(false) //desativa o carregamento
             }, 2000);
 
             return () => clearTimeout(timer); // Limpa o timeout ao sair da tela
@@ -98,11 +97,11 @@ export default function PageEntrarEmpresa() {
 
     return (
         <>
-            {IsLoadingIndicator ? (
+            {/* {IsLoadingIndicator ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size={80} color="#000000" />
                 </View>
-            ) : (
+            ) : ( */}
                 <SafeAreaView style={styles.safeArea}>
                     <StatusBar backgroundColor="white" barStyle="dark-content" />
                     
@@ -206,7 +205,7 @@ export default function PageEntrarEmpresa() {
                         </ScrollView>
                     </KeyboardAvoidingView>
                 </SafeAreaView>
-            )}
+            {/* )} */}
         </>
     );
 }

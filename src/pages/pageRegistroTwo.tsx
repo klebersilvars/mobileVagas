@@ -47,7 +47,6 @@ export default function PageRegistroTwo() {
     const [SwitchPassowrd, setSwitchPassword] = useState<boolean>(false);
     const [cepRegistro, setCepRegistro] = useState<string>('');
     const [registroCepUser, setRegistroCepUser] = useState<Endereco | null>(null);
-    const [loading, setLoading] = useState<boolean>(false); // Estado para carregar a requisição
     const [error, setError] = useState<string | null>(null); // Estado para mostrar mensagens de erro
     const navigation = useNavigation<NavigationStep>();
     const [verificarCepCandidato, setVerificarCepCandidato] = useState<boolean>(false)
@@ -68,7 +67,7 @@ export default function PageRegistroTwo() {
 
     // Função para buscar o CEP
     const buscarCep = async () => {
-        setLoading(true); // Começa o carregamento
+        // setLoading(true); // Começa o carregamento
         setError(null); // Limpa mensagens de erro
 
         try {
@@ -79,13 +78,11 @@ export default function PageRegistroTwo() {
             } else {
                 setRegistroCepUser(response.data);
                 Alert.alert('Sucesso', 'Cep encontrado com sucesso')
-                setLoading(false)
+                // setLoading(false)
             }
         } catch (error) {
             Alert.alert('Erro', 'CEP inválido!')
             setError('Erro ao buscar o CEP. Tente novamente mais tarde!');
-        } finally {
-            setLoading(false)
         }
     };
 
@@ -174,26 +171,26 @@ export default function PageRegistroTwo() {
                                             onPress={buscarCep} 
                                             style={styles.searchButton}
                                         >
-                                            {loading ? (
+                                            {/* {loading ? (
                                                 <ActivityIndicator size="small" color="#fff" />
-                                            ) : (
+                                            ) : ( */}
                                                 <Text allowFontScaling={false} style={styles.searchButtonText}>
                                                     Buscar
                                                 </Text>
-                                            )}
+                                            {/* )} */}
                                         </TouchableOpacity>
                                     ) : (
                                         <TouchableOpacity 
                                             style={styles.searchButtonDisabled}
                                             disabled={true}
                                         >
-                                            {loading ? (
+                                            {/* {loading ? (
                                                 <ActivityIndicator size="small" color="#fff" />
-                                            ) : (
+                                            ) : ( */}
                                                 <Text allowFontScaling={false} style={styles.searchButtonText}>
                                                     Buscar
                                                 </Text>
-                                            )}
+                                            {/* )} */}
                                         </TouchableOpacity>
                                     )}
                                 </View>

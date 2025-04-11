@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   SafeAreaView,
   Platform,
+  Image,
 } from "react-native"
 import { useNavigation, useFocusEffect } from "@react-navigation/native"
 import type { StackNavigationProp } from "@react-navigation/stack"
@@ -22,14 +23,13 @@ type OnBoardingNavigationProp = StackNavigationProp<RootStackParamList>
 
 export default function PageHome() {
   const navigation = useNavigation<OnBoardingNavigationProp>()
-  const [isLoading, setIsLoading] = useState<boolean>(true)
 
   // Redefinir o loading quando a tela ganhar o foco
   useFocusEffect(
     React.useCallback(() => {
-      setIsLoading(true) // Ativa o carregamento ao voltar para a tela
+      // setIsLoading(true) // Ativa o carregamento ao voltar para a tela
       const timer = setTimeout(() => {
-        setIsLoading(false) // Desativa o carregamento após 2 segundos
+        // setIsLoading(false) // Desativa o carregamento após 2 segundos
       }, 2000)
 
       return () => clearTimeout(timer) // Limpa o timeout ao sair da tela
@@ -48,18 +48,6 @@ export default function PageHome() {
     navigation.navigate("PageRegistroOne")
   }
 
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>NT</Text>
-        </View>
-        <ActivityIndicator size="large" color="#4A80F0" style={styles.loader} />
-        <Text style={styles.loadingText}>Carregando...</Text>
-      </View>
-    )
-  }
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
@@ -70,6 +58,10 @@ export default function PageHome() {
           <Text style={styles.textSlogan}>
             O melhor aplicativo para iniciantes encontrarem oportunidades de emprego
           </Text>
+          <Image
+            source={require('../../assets/pageHomeImage.png')}
+            style={styles.image}
+          />
         </View>
 
         {/* <View style={styles.illustrationContainer}>
@@ -264,5 +256,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     color: "#718096",
     fontSize: 14,
+  },
+  image: {
+    width: 400,
+    height: 400,
+    resizeMode: 'contain',
+    marginVertical: 20,
   },
 })

@@ -29,7 +29,6 @@ type Vaga = {
 
 export default function InterfacePublicacao() {
     const [vagasPublicadas, setVagasPublicadas] = useState<Vaga[]>([]);
-    const [loading, setLoading] = useState(true);
     const [expandedCard, setExpandedCard] = useState<string | null>(null);
 
     const formatarData = (data: string) => {
@@ -46,8 +45,6 @@ export default function InterfacePublicacao() {
         const refVagas = collection(db, 'publicar_vaga_empresa');
 
         const unsubscribe = onSnapshot(refVagas, (snapshot) => {
-            setLoading(false);
-
             if (snapshot.empty) {
                 console.log("Nenhuma vaga encontrada!");
                 setVagasPublicadas([]);
@@ -161,15 +158,6 @@ export default function InterfacePublicacao() {
             </View>
         );
     };
-
-    if (loading) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#4A80F0" />
-                <Text style={styles.loadingText}>Carregando vagas...</Text>
-            </View>
-        );
-    }
 
     return (
         <SafeAreaView style={styles.container}>
