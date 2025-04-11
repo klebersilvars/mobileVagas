@@ -10,7 +10,7 @@ export default function TabRouterEmpresa() {
     const Tab = createBottomTabNavigator();
     return (
         <Tab.Navigator
-            initialRouteName='Home'
+            
             screenOptions={{
                 tabBarStyle: { backgroundColor: '#fff', height: 60, paddingBottom: 10, paddingTop: 5 },
                 tabBarLabelStyle: {
@@ -20,16 +20,6 @@ export default function TabRouterEmpresa() {
                 tabBarInactiveTintColor: '#8e8e93', // Cor do ícone inativo,
 
             }}>
-            <Tab.Screen
-                name='Home'
-                component={LoginEmpresa}
-                options={{
-                    headerShown: false,
-                    tabBarIcon: ({ color, size }) => (
-                        <MaterialCommunityIcons name="home" color={color} size={size} />
-                    ),
-                }}
-            />
 
             <Tab.Screen
                 name='Publicar Vaga'

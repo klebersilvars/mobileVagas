@@ -36,6 +36,12 @@ export default function InterfacePublicacao() {
         return moment(data).format('DD/MM/YYYY');
     };
 
+    const formatarSalario = (salario: string) => {
+        const valorNumerico = parseFloat(salario);
+        if (isNaN(valorNumerico)) return salario;
+        return valorNumerico.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    };
+
     useEffect(() => {
         const refVagas = collection(db, 'publicar_vaga_empresa');
 
@@ -105,7 +111,7 @@ export default function InterfacePublicacao() {
                 <View style={styles.jobTitleContainer}>
                     <Text style={styles.jobTitle}>{item.titulo_vaga}</Text>
                     <View style={styles.salaryBadge}>
-                        <Text style={styles.salaryText}>{item.salarioVaga}</Text>
+                        <Text style={styles.salaryText}>{formatarSalario(item.salarioVaga)}</Text>
                     </View>
                 </View>
 
