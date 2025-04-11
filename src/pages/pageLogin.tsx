@@ -27,6 +27,7 @@ import { auth } from '../firebase/firebase';
 import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootTabParamList } from '../../routes/RootTabParamList';
+import CustomAlert from '../components/CustomAlert'
 
 const { width, height } = Dimensions.get('window');
 
@@ -40,6 +41,13 @@ export default function PageLogin() {
     const user_candidato_db = collection(db, 'user_candidato')
     const navigation = useNavigation<createTabNavigatorProp>();
     const [typeConta, setTypeConta] = useState('candidato')
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+
+    function showAlert(message: string) {
+        setAlertMessage(message);
+        setAlertVisible(true);
+    }
 
     function esquecerSenha() {
         Alert.alert('AVISO!', 'Implementação em andamento, peço que aguarde a próxima atualização.')
@@ -47,7 +55,7 @@ export default function PageLogin() {
 
     async function logarUser() {
         if (!emailLogin.trim() || !passLogin.trim()) {
-            Alert.alert('ERRO', 'Você precisa preencher todos os campos corretamente');
+            showAlert('Você precisa preencher todos os campos corretamente');
             return;
         }
         try {
@@ -55,7 +63,6 @@ export default function PageLogin() {
             const rUserCandidato = await getDocs(queryEmailUser);
 
             if (!rUserCandidato.empty) {
-                // Get user data from the first document
                 const userData = rUserCandidato.docs[0].data();
                 const emailUserDB = userData.email;
 
@@ -63,25 +70,17 @@ export default function PageLogin() {
                     throw new Error('Email não encontrado no documento');
                 }
 
-                // Login with Firebase Auth
                 try {
                     const userCredential = await signInWithEmailAndPassword(auth, emailUserDB, passLogin);
                     const uid = userCredential.user.uid;
-                    
-                    // Create user object with all necessary data
                     const userLogadoObject = {
                         uid: uid,
                         email: emailUserDB,
-                        // Add any other fields you need from userData
                     };
 
-                    // Save to AsyncStorage
                     await AsyncStorage.setItem('userCandidatoLogado', JSON.stringify(userLogadoObject));
-                    
-                    // Show success message
-                    Alert.alert('Sucesso', 'Usuário logado com sucesso');
-                    
-                    // Navigate after a short delay to ensure AsyncStorage is updated
+                    showAlert('Usuário logado com sucesso');
+
                     setTimeout(() => {
                         navigation.reset({
                             index: 0,
@@ -90,14 +89,14 @@ export default function PageLogin() {
                     }, 100);
                 } catch (authError) {
                     console.error("Erro na autenticação:", authError);
-                    Alert.alert('Erro', 'Senha incorreta. Por favor, tente novamente.');
+                    showAlert('Senha incorreta. Por favor, tente novamente.');
                 }
             } else {
-                Alert.alert('Erro', 'Usuário não encontrado. Verifique seu email e tente novamente.');
+                showAlert('Usuário não encontrado. Verifique seu email e tente novamente.');
             }
         } catch (error) {
             console.error("Erro ao logar:", error);
-            Alert.alert('Erro', 'Ocorreu um erro durante o login. Por favor, tente novamente.');
+            showAlert('Ocorreu um erro durante o login. Por favor, tente novamente.');
         }
     }
 
@@ -118,6 +117,7 @@ export default function PageLogin() {
 
     return (
         <>
+            <CustomAlert visible={alertVisible} message={alertMessage} onClose={() => setAlertVisible(false)} />
             {/* {IsLoadingIndicator ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size={80} color="#000000" />

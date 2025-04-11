@@ -24,6 +24,7 @@ import { TextInputMask } from 'react-native-masked-text';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RegistroUserTwo } from '../interfaces/storageRegistroInterface';
+import CustomAlert from '../components/CustomAlert';
 
 const { width, height } = Dimensions.get('window');
 
@@ -51,6 +52,8 @@ export default function PageRegistroTwo() {
     const navigation = useNavigation<NavigationStep>();
     const [verificarCepCandidato, setVerificarCepCandidato] = useState<boolean>(false)
     const [DadosUserTwo, setDadosUserTwo] = useState<RegistroUserTwo | null>(null)
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
 
     //validação para verificar se o CEP está VAZIO
     const validacaoInputsCandidatoTwo = () => {
@@ -65,23 +68,25 @@ export default function PageRegistroTwo() {
         validacaoInputsCandidatoTwo()
     }, [cepRegistro])
 
+    function showAlert(message: string) {
+        setAlertMessage(message);
+        setAlertVisible(true);
+    }
+
     // Função para buscar o CEP
     const buscarCep = async () => {
-        // setLoading(true); // Começa o carregamento
-        setError(null); // Limpa mensagens de erro
+        setError(null);
 
         try {
-            // Fazendo a requisição para a API ViaCEP
             const response = await axios.get(`https://viacep.com.br/ws/${cepRegistro}/json/`);
             if (response.data.erro) {
-                alert('CEP não encontrado!');
+                showAlert('CEP não encontrado!');
             } else {
                 setRegistroCepUser(response.data);
-                Alert.alert('Sucesso', 'Cep encontrado com sucesso')
-                // setLoading(false)
+                showAlert('Cep encontrado com sucesso');
             }
         } catch (error) {
-            Alert.alert('Erro', 'CEP inválido!')
+            showAlert('CEP inválido!');
             setError('Erro ao buscar o CEP. Tente novamente mais tarde!');
         }
     };
@@ -123,6 +128,8 @@ export default function PageRegistroTwo() {
     return (
         <SafeAreaView style={styles.safeArea}>
             <StatusBar backgroundColor="white" barStyle="dark-content" />
+            
+            <CustomAlert visible={alertVisible} message={alertMessage} onClose={() => setAlertVisible(false)} />
             
             {/* Header with Logo */}
             <View style={styles.header}>

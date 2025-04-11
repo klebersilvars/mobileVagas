@@ -27,6 +27,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootTabParamList } from '../../routes/RootTabParamList';
+import CustomAlert from '../components/CustomAlert';
 
 const { width, height } = Dimensions.get('window');
 
@@ -40,6 +41,8 @@ export default function PageEntrarEmpresa() {
     const empresa_db = collection(db, 'user_empresa'); //verificar se é o banco de dados correto
     const [typeConta, setTypeConta] = useState<string>('empresa')
     const navigation = useNavigation<createTabNavigatorProp>()
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
 
     function esquecerSenha() {
         Alert.alert('AVISO!', 'Implementação em andamento, peço que aguarde a próxima atualização.')
@@ -56,9 +59,14 @@ export default function PageEntrarEmpresa() {
         }, [])
     )
 
+    function showAlert(message: string) {
+        setAlertMessage(message);
+        setAlertVisible(true);
+    }
+
     async function logarEmpresa() {
         if (emailLogin == '' || PassLogin == '') {
-            Alert.alert('ERRO!', 'Os campos de E-MAIL ou senha estão vazios, tente novamente!');
+            showAlert('Os campos de E-MAIL ou senha estão vazios, tente novamente!');
             return;
         }
         try {
@@ -66,12 +74,10 @@ export default function PageEntrarEmpresa() {
             const rUserEmpresa = await getDocs(queryEmailEmpresa);
 
             if (!rUserEmpresa.empty) {
-                //variável que vai armazenar o email que foi buscado no banco de dados
                 const emailEmpresaDB = rUserEmpresa.docs.map((doc) => {
-                    return doc.data().email_empresa; // Retorna o campo "email_empresa" de cada documento encontrado
+                    return doc.data().email_empresa;
                 });
 
-                //vou fazer o login do Usuário agora e levar para a página de empresa
                 const userCredentialEmpresa = await signInWithEmailAndPassword(auth, String(emailEmpresaDB), PassLogin)
                 const uidUserCredentialEmpresa = userCredentialEmpresa.user.uid
                 const userLogadoObject = {
@@ -79,12 +85,12 @@ export default function PageEntrarEmpresa() {
                     email: String(emailEmpresaDB),
                 }
 
-                const valueUserTwo = await AsyncStorage.setItem('userEmpresaLogado', JSON.stringify(userLogadoObject))
+                await AsyncStorage.setItem('userEmpresaLogado', JSON.stringify(userLogadoObject))
 
-                Alert.alert('Sucesso', 'Usuário logado com sucesso')
+                showAlert('Usuário logado com sucesso');
                 navigation.navigate('BottomTabsEmpresa', { screen: 'homeEmpresa' });
             } else {
-                Alert.alert('AVISO!', 'Este e-mail não está cadastrado como uma EMPRESA.')
+                showAlert('Este e-mail não está cadastrado como uma EMPRESA.');
             }
         } catch (e) {
             console.log(e)
@@ -97,6 +103,7 @@ export default function PageEntrarEmpresa() {
 
     return (
         <>
+            <CustomAlert visible={alertVisible} message={alertMessage} onClose={() => setAlertVisible(false)} />
             {/* {IsLoadingIndicator ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size={80} color="#000000" />
