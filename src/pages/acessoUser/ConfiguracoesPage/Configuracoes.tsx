@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { SafeAreaView, TouchableOpacity, Text, View, StyleSheet, Alert } from 'react-native'
 import NavBarConfigs from '../../../components/NavBarConfigs/NavBarConfigs'
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -8,10 +8,18 @@ import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../../../routes/RootStackParamList';
 import { StackNavigationProp } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomAlertRed from '../../../components/CustomAlertRed';
 
 type RouterHomeExit = StackNavigationProp<RootStackParamList>;
 
 export default function ConfiguracoesUser() {
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+
+    function showAlert(message: string) {
+        setAlertMessage(message);
+        setAlertVisible(true);
+    }
 
     function alertaVersao() {
         Alert.alert('Aviso', 'O aplicativo se encontra na versão BETA')
@@ -26,53 +34,55 @@ export default function ConfiguracoesUser() {
     async function deslogarConta() {
         try {
             await signOut(auth)
-            Alert.alert('Aviso!', 'Usuário deslogado!')
-            navigation.navigate('PageLogin')
-            await AsyncStorage.removeItem('userCandidatoLogado')
+            showAlert('Usuário deslogado com sucesso!')
+            setTimeout(() => {
+                navigation.navigate('PageLogin')
+                AsyncStorage.removeItem('userCandidatoLogado')
+            }, 3000);
         }catch {
-            Alert.alert('Erro!', 'Tente novamente mais tarde!')
+            showAlert('Erro ao deslogar! Tente novamente mais tarde!')
         }
     }
+
     return (
-        <SafeAreaView>
-            <NavBarConfigs />
+        <>
+            <CustomAlertRed visible={alertVisible} message={alertMessage} onClose={() => setAlertVisible(false)} />
+            <SafeAreaView>
+                <NavBarConfigs />
 
-            <View style={styles.container}>
+                <View style={styles.container}>
+                    <TouchableOpacity onPress={assinaturaAviso} style={styles.buttonDeslogarConta}>
+                        <Text style={styles.textAssinaturaConta}>Assinatura</Text>
+                        <MaterialCommunityIcons
+                            name="cash"
+                            size={25}
+                            color={'black'}
+                            style={styles.iconExitApp}
+                        />
+                    </TouchableOpacity>
 
-                
-                <TouchableOpacity onPress={assinaturaAviso} style={styles.buttonDeslogarConta}>
-                    <Text style={styles.textAssinaturaConta}>Assinatura</Text>
-                    <MaterialCommunityIcons
-                                name="cash"
-                                size={25}
-                                color={'black'}
-                                style={styles.iconExitApp}
-                            />
-                </TouchableOpacity>
+                    <TouchableOpacity onPress={alertaVersao} style={styles.buttonDeslogarConta}>
+                        <Text style={styles.textVersionApp}>Versão do aplicativo</Text>
+                        <MaterialCommunityIcons
+                            name="arrow-right"
+                            size={25}
+                            color={'black'}
+                            style={styles.iconArrow}
+                        />
+                    </TouchableOpacity>
 
-                <TouchableOpacity onPress={alertaVersao} style={styles.buttonDeslogarConta}>
-                    <Text style={styles.textVersionApp}>Versão do aplicativo</Text>
-                    <MaterialCommunityIcons
-                                name="arrow-right"
-                                size={25}
-                                color={'black'}
-                                style={styles.iconArrow}
-                            />
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={deslogarConta} style={styles.buttonDeslogarConta}>
-                    <Text style={styles.textDeslogarConta}>Deslogar conta</Text>
-                    <MaterialCommunityIcons
-                                name="exit-to-app"
-                                size={25}
-                                color={'red'}
-                                style={styles.iconExitApp}
-                            />
-                </TouchableOpacity>
-
-
-            </View>
-        </SafeAreaView>
+                    <TouchableOpacity onPress={deslogarConta} style={styles.buttonDeslogarConta}>
+                        <Text style={styles.textDeslogarConta}>Deslogar conta</Text>
+                        <MaterialCommunityIcons
+                            name="exit-to-app"
+                            size={25}
+                            color={'red'}
+                            style={styles.iconExitApp}
+                        />
+                    </TouchableOpacity>
+                </View>
+            </SafeAreaView>
+        </>
     )
 }
 

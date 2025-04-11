@@ -2,18 +2,18 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Modal } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
-interface CustomAlertProps {
+interface CustomAlertRedProps {
   visible: boolean;
   message: string;
   onClose: () => void;
 }
 
-const CustomAlert: React.FC<CustomAlertProps> = ({ visible, message, onClose }) => {
+const CustomAlertRed: React.FC<CustomAlertRedProps> = ({ visible, message, onClose }) => {
   useEffect(() => {
     if (visible) {
       const timer = setTimeout(() => {
         onClose();
-      }, 1000); // 3 segundos de exibição
+      }, 2000);
 
       return () => clearTimeout(timer);
     }
@@ -27,7 +27,7 @@ const CustomAlert: React.FC<CustomAlertProps> = ({ visible, message, onClose }) 
     >
       <View style={styles.overlay}>
         <View style={styles.alertBox}>  
-          <MaterialIcons name="check-circle" size={24} color="green" style={styles.icon} />
+          <MaterialIcons name="error-outline" size={24} color="red" style={styles.icon} />
           <Text style={styles.message}>{message}</Text>
         </View>
       </View>
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     width: '90%',
     marginBottom: 40,
     padding: 20,
-    backgroundColor: '#e0f7e9',
+    backgroundColor: '#ffebee',
     borderRadius: 10,
     alignItems: 'center',
     shadowColor: '#000',
@@ -61,10 +61,10 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: 16,
-    color: '#2d6a4f',
+    color: '#c62828',
     flex: 1,
     textAlign: 'left',
   },
 });
 
-export default CustomAlert; 
+export default CustomAlertRed; 

@@ -17,6 +17,7 @@ import { db } from '../../../firebase/firebase';
 import { collection, addDoc, updateDoc, getDocs, query, where } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
+import CustomAlertGreen from '../../../components/CustomAlertGreen';
 
 export default function PublicarVaga() {
     const data = moment();
@@ -31,6 +32,13 @@ export default function PublicarVaga() {
     const [areaLinkVaga, setAreaLinkVaga] = useState<string>('');
     const [areaContatoVaga, setAreaContatoVaga] = useState<string>('');
     const [nomeEmpresa, setNomeEmpresa] = useState<string>('');
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+
+    function showAlert(message: string) {
+        setAlertMessage(message);
+        setAlertVisible(true);
+    }
 
     useEffect(() => {
         const fetchData = async () => {
@@ -82,7 +90,7 @@ export default function PublicarVaga() {
                 data: dataFormatted,
                 hora: horaFormatted,
                 quem_publicou: userLogadoState,
-                nome_empresa: nomeEmpresa, // Agora salva corretamente
+                nome_empresa: nomeEmpresa,
                 requisito_vaga: requisitosVaga,
                 salarioVaga: salarioVaga,
                 titulo_vaga: tituloVaga,
@@ -92,7 +100,7 @@ export default function PublicarVaga() {
             const publicationId = publicationRef.id;
             await updateDoc(publicationRef, { id_doc: publicationId });
 
-            Alert.alert('Sucesso!', 'Publicação feita com sucesso!');
+            showAlert('Vaga publicada com sucesso!');
             setPublicacao_texto('');
             setTituloVaga('');
             setSalarioVaga('');
@@ -101,6 +109,7 @@ export default function PublicarVaga() {
             setAreaLinkVaga('');
         } catch (error) {
             console.error("Erro ao publicar a vaga:", error);
+            Alert.alert('Erro', 'Ocorreu um erro ao publicar a vaga. Tente novamente.');
         }
     }
     
@@ -109,6 +118,11 @@ export default function PublicarVaga() {
             behavior={Platform.OS === "ios" ? "padding" : undefined}
             style={{ flex: 1 }}
         >
+            <CustomAlertGreen 
+                visible={alertVisible} 
+                message={alertMessage} 
+                onClose={() => setAlertVisible(false)} 
+            />
             <SafeAreaView style={PublicarVagaStyle.container}>
                 <StatusBar backgroundColor="white" barStyle="dark-content" />
                 

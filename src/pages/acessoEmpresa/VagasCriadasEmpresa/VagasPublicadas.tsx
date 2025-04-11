@@ -14,6 +14,7 @@ import {
 import { db } from '../../../firebase/firebase';
 import { where, query, collection, onSnapshot, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomAlertGreen from '../../../components/CustomAlertGreen';
 
 type Vaga = {
     id: string;
@@ -32,21 +33,17 @@ const formatarData = (data: string) => {
     return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : data;
 };
 
-async function deletarPublicacao(item: Vaga) {
-    try {
-        console.log(`Publicação identificada para deletar: ${item.id}`);
-        await deleteDoc(doc(db, 'publicar_vaga_empresa', item.id));
-        Alert.alert('Sucesso', 'Publicação deletada com sucesso!');
-    } catch (error) {
-        console.error('Erro ao deletar a publicação:', error);
-        Alert.alert('Erro', 'Não foi possível deletar a publicação.');
-    }
-}
-
 export default function VagasPublicadas() {
     const [userEmpresaLogadoState, setUserEmpresaLogadoState] = useState<string>('');
     const [vagasPublicadas, setVagasPublicadas] = useState<Vaga[]>([]);
     const [publicacaoEditando, setPublicacaoEditando] = useState<string | null>(null);
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+
+    function showAlert(message: string) {
+        setAlertMessage(message);
+        setAlertVisible(true);
+    }
 
     useEffect(() => {
         const fetchData = async () => {
@@ -113,7 +110,7 @@ export default function VagasPublicadas() {
                 requisito_vaga: item.requisito_vaga
             });
 
-            Alert.alert('Sucesso', 'Publicação atualizada com sucesso!');
+            showAlert('Publicação atualizada com sucesso!');
             setPublicacaoEditando(null);
         } catch (error) {
             console.error('Erro ao atualizar publicação:', error);
@@ -125,10 +122,27 @@ export default function VagasPublicadas() {
         <Text style={styles.fieldLabel}>{label}</Text>
     );
 
+    async function deletarPublicacao(item: Vaga) {
+        try {
+            console.log(`Publicação identificada para deletar: ${item.id}`);
+            await deleteDoc(doc(db, 'publicar_vaga_empresa', item.id));
+            showAlert('Publicação deletada com sucesso!');
+        } catch (error) {
+            console.error('Erro ao deletar a publicação:', error);
+            Alert.alert('Erro', 'Não foi possível deletar a publicação.');
+        }
+    }
+
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar backgroundColor="#4A6FFF" barStyle="light-content" />
+            <StatusBar backgroundColor="white" barStyle="dark-content" />
             
+            <CustomAlertGreen 
+                visible={alertVisible} 
+                message={alertMessage} 
+                onClose={() => setAlertVisible(false)} 
+            />
+
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>Novos Talentos</Text>
                 <Text style={styles.headerSubtitle}>Gerencie suas vagas publicadas</Text>
@@ -274,7 +288,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F5F7FF',
     },
     header: {
-        backgroundColor: 'black',
+        backgroundColor: 'white',
         paddingVertical: 20,
         paddingHorizontal: 16,
         borderBottomLeftRadius: 20,
@@ -288,12 +302,12 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: 'white',
+        color: 'black',
         textAlign: 'center',
     },
     headerSubtitle: {
         fontSize: 14,
-        color: 'rgba(255, 255, 255, 0.8)',
+        color: 'black',
         textAlign: 'center',
         marginTop: 4,
     },

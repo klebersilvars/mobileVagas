@@ -87,13 +87,21 @@ export default function PageEntrarEmpresa() {
 
                 await AsyncStorage.setItem('userEmpresaLogado', JSON.stringify(userLogadoObject))
 
-                showAlert('Usuário logado com sucesso');
-                navigation.navigate('BottomTabsEmpresa', { screen: 'homeEmpresa' });
+                showAlert('Empresa logado com sucesso');
+                
+                // Aguarda o alerta ser exibido antes de navegar
+                setTimeout(() => {
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'BottomTabsEmpresa', params: { screen: 'Publicar Vaga' } }],
+                    });
+                }, 3000);
             } else {
                 showAlert('Este e-mail não está cadastrado como uma EMPRESA.');
             }
         } catch (e) {
             console.log(e)
+            showAlert('Erro ao fazer login. Verifique suas credenciais e tente novamente.');
         }
     }
 
