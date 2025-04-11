@@ -84,6 +84,11 @@ export default function InterfacePublicacao() {
     const renderVagaItem = ({ item }: { item: Vaga }) => {
         const isExpanded = expandedCard === item.id;
 
+        // Função para verificar e exibir "A COMBINAR" se o campo estiver vazio
+        const verificarCampo = (campo: string) => {
+            return campo ? campo : "A COMBINAR";
+        };
+
         return (
             <View style={styles.cardContainer}>
                 <StatusBar backgroundColor='#F5F7FF' barStyle='dark-content'/>
@@ -98,10 +103,10 @@ export default function InterfacePublicacao() {
                         </View>
                         <View style={styles.publisherInfo}>
                             <Text style={styles.publisherName} numberOfLines={1}>
-                                {item.nome_empresa}
+                                {verificarCampo(item.nome_empresa)}
                             </Text>
                             <View style={styles.dateTimeContainer}>
-                                <Text style={styles.dateText}>{item.data} às {item.hora}</Text>
+                                <Text style={styles.dateText}>{verificarCampo(item.data)} às {verificarCampo(item.hora)}</Text>
                             </View>
                         </View>
                     </View>
@@ -109,9 +114,9 @@ export default function InterfacePublicacao() {
 
                 {/* Job Title and Salary */}
                 <View style={styles.jobTitleContainer}>
-                    <Text style={styles.jobTitle}>{item.titulo_vaga}</Text>
+                    <Text style={styles.jobTitle}>{verificarCampo(item.titulo_vaga)}</Text>
                     <View style={styles.salaryBadge}>
-                        <Text style={styles.salaryText}>{formatarSalario(item.salarioVaga)}</Text>
+                        <Text style={styles.salaryText}>{formatarSalario(verificarCampo(item.salarioVaga))}</Text>
                     </View>
                 </View>
 
@@ -119,7 +124,7 @@ export default function InterfacePublicacao() {
                 <View style={styles.sectionContainer}>
                     <Text style={styles.sectionTitle}>Descrição</Text>
                     <Text style={styles.sectionContent} numberOfLines={isExpanded ? undefined : 3}>
-                        {item.publicacao_text}
+                        {verificarCampo(item.publicacao_text)}
                     </Text>
                 </View>
 
@@ -130,7 +135,7 @@ export default function InterfacePublicacao() {
                         <View style={styles.sectionContainer}>
                             <Text style={styles.sectionTitle}>Requisitos</Text>
                             <Text style={styles.sectionContent}>
-                                {item.requisito_vaga}
+                                {verificarCampo(item.requisito_vaga)}
                             </Text>
                         </View>
 
@@ -138,7 +143,7 @@ export default function InterfacePublicacao() {
                         <View style={styles.sectionContainer}>
                             <Text style={styles.sectionTitle}>Contato</Text>
                             <Text style={styles.sectionContent} selectable={true}>
-                                {item.area_contato_vaga}
+                                {verificarCampo(item.area_contato_vaga)}
                             </Text>
                         </View>
                     </>
