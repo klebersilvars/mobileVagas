@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Modal, TextInput, Alert } from 'react-native';
 import { auth, db } from '../../firebase/firebase';
+import { uploadImage } from '../../firebase/cloudinary';
 import { doc, getDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import * as ImagePicker from 'expo-image-picker';
 import { StylePerfilUser } from './StylePerfilUser';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -10,6 +12,7 @@ export default function PerfilUser() {
     const [userData, setUserData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
+    const [profileImage, setProfileImage] = useState<string | null>(null);
     const [editData, setEditData] = useState({
         nome_completo: '',
         email: '',
@@ -23,7 +26,8 @@ export default function PerfilUser() {
         type_conta: '',
         uf: '',
         formacoes: [''],
-        experiencias: ['']
+        experiencias: [''],
+        profileImage: ''
     });
 
     useEffect(() => {
@@ -63,7 +67,8 @@ export default function PerfilUser() {
                                 type_conta: data.type_conta || '',
                                 uf: data.uf || '',
                                 formacoes: data.formacoes || [''],
-                                experiencias: data.experiencias || ['']
+                                experiencias: data.experiencias || [''],
+                                profileImage: data.profileImage || ''
                             });
                         } else {
                             console.log('Nenhum usuário encontrado com este email');
@@ -182,6 +187,58 @@ export default function PerfilUser() {
         setEditData({...editData, telefone: telefoneFormatado});
     };
 
+    const pickImage = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        
+        if (status !== 'granted') {
+            Alert.alert('Permissão necessária', 'Precisamos de acesso à sua galeria para selecionar uma foto.');
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.5,
+        });
+
+        if (!result.canceled) {
+            const imageUri = result.assets[0].uri;
+            setProfileImage(imageUri);
+            await uploadImageToCloudinary(imageUri);
+        }
+    };
+
+    const uploadImageToCloudinary = async (uri: string) => {
+        try {
+            const userDataString = await AsyncStorage.getItem('userCandidatoLogado');
+            if (!userDataString) return;
+
+            const userData = JSON.parse(userDataString);
+            const userEmail = userData.email;
+
+            if (!userEmail) return;
+
+            const imageUrl = await uploadImage(uri);
+
+            const usersRef = collection(db, 'user_candidato');
+            const q = query(usersRef, where('email', '==', userEmail));
+            const querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+                const userDoc = querySnapshot.docs[0];
+                await updateDoc(doc(db, 'user_candidato', userDoc.id), {
+                    profileImage: imageUrl
+                });
+                setUserData((prev: any) => ({ ...prev, profileImage: imageUrl }));
+                setEditData((prev) => ({ ...prev, profileImage: imageUrl }));
+            }
+        } catch (error) {
+            console.error('Erro ao fazer upload da imagem:', error);
+            Alert.alert('Erro', 'Não foi possível fazer upload da imagem. Verifique sua conexão com a internet.');
+        }
+    };
+
     if (loading) {
         return (
             <View style={StylePerfilUser.container}>
@@ -195,12 +252,12 @@ export default function PerfilUser() {
             <View style={StylePerfilUser.header}>
                 <View style={StylePerfilUser.profileImageContainer}>
                     <Image
-                        source={require('../../../assets/homem.png')}
+                        source={userData?.profileImage ? { uri: userData.profileImage } : require('../../../assets/homem.png')}
                         style={StylePerfilUser.profileImage}
                     />
                     <TouchableOpacity 
                         style={StylePerfilUser.editPhotoButton}
-                        onPress={() => Alert.alert("Editar foto", "Funcionalidade de editar foto será implementada em breve.")}
+                        onPress={pickImage}
                     >
                         <MaterialCommunityIcons name="camera" size={22} color="#fff" />
                     </TouchableOpacity>
@@ -276,12 +333,12 @@ export default function PerfilUser() {
                         <ScrollView style={StylePerfilUser.modalScrollView}>
                             <View style={StylePerfilUser.avatarEditContainer}>
                                 <Image
-                                    source={require('../../../assets/homem.png')}
+                                    source={editData.profileImage ? { uri: editData.profileImage } : require('../../../assets/homem.png')}
                                     style={StylePerfilUser.modalProfileImage}
                                 />
                                 <TouchableOpacity 
                                     style={StylePerfilUser.changePhotoButton}
-                                    onPress={() => Alert.alert("Trocar foto", "Esta funcionalidade estará disponível em breve.")}
+                                    onPress={pickImage}
                                 >
                                     <Text style={StylePerfilUser.changePhotoText}>Alterar foto</Text>
                                 </TouchableOpacity>
