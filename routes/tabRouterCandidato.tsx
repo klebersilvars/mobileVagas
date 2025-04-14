@@ -4,9 +4,11 @@ import LoginUser from '../src/pages/acessoUser/loginUser';
 import LoginEmpresa from '../src/pages/acessoEmpresa/acessoEmpresa'
 import ConfiguracoesUser from '../src/pages/acessoUser/ConfiguracoesPage/Configuracoes';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import PerfilUser from '../src/pages/acessoUser/PerfilUser';
 
 export default function TabRouterCandidato() {
     const Tab = createBottomTabNavigator();
+    
     return (
         <Tab.Navigator
             screenOptions={{
@@ -30,6 +32,17 @@ export default function TabRouterCandidato() {
             />
 
             <Tab.Screen
+                name='Perfil'
+                component={PerfilUser}
+                options={{
+                    headerShown: false,
+                    tabBarIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="account" color={color} size={size} />
+                    ),
+                }}
+            />
+
+            <Tab.Screen
                 name='Configurações'
                 component={ConfiguracoesUser}
                 options={{
@@ -39,7 +52,6 @@ export default function TabRouterCandidato() {
                     ),
                 }}
             />
-
 
         </Tab.Navigator>
     )
