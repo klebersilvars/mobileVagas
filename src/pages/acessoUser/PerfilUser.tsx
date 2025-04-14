@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Modal, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Modal, TextInput, Alert } from 'react-native';
 import { auth, db } from '../../firebase/firebase';
 import { doc, getDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { StylePerfilUser } from './StylePerfilUser';
@@ -193,10 +193,18 @@ export default function PerfilUser() {
     return (
         <ScrollView style={StylePerfilUser.container}>
             <View style={StylePerfilUser.header}>
-                <Image
-                    source={require('../../../assets/homem.png')}
-                    style={StylePerfilUser.profileImage}
-                />
+                <View style={StylePerfilUser.profileImageContainer}>
+                    <Image
+                        source={require('../../../assets/homem.png')}
+                        style={StylePerfilUser.profileImage}
+                    />
+                    <TouchableOpacity 
+                        style={StylePerfilUser.editPhotoButton}
+                        onPress={() => Alert.alert("Editar foto", "Funcionalidade de editar foto será implementada em breve.")}
+                    >
+                        <MaterialCommunityIcons name="camera" size={22} color="#fff" />
+                    </TouchableOpacity>
+                </View>
                 <Text style={StylePerfilUser.name}>{userData?.nome_completo || 'Nome do Usuário'}</Text>
             </View>
 
@@ -266,6 +274,19 @@ export default function PerfilUser() {
                         </View>
                         
                         <ScrollView style={StylePerfilUser.modalScrollView}>
+                            <View style={StylePerfilUser.avatarEditContainer}>
+                                <Image
+                                    source={require('../../../assets/homem.png')}
+                                    style={StylePerfilUser.modalProfileImage}
+                                />
+                                <TouchableOpacity 
+                                    style={StylePerfilUser.changePhotoButton}
+                                    onPress={() => Alert.alert("Trocar foto", "Esta funcionalidade estará disponível em breve.")}
+                                >
+                                    <Text style={StylePerfilUser.changePhotoText}>Alterar foto</Text>
+                                </TouchableOpacity>
+                            </View>
+
                             <View style={StylePerfilUser.sectionContainer}>
                                 <Text style={StylePerfilUser.sectionTitle}>Informações Pessoais</Text>
                                 <Text style={StylePerfilUser.inputLabel}>Nome Completo</Text>
@@ -377,7 +398,7 @@ export default function PerfilUser() {
                                     style={StylePerfilUser.addButton}
                                     onPress={addFormacao}
                                 >
-                                    <MaterialCommunityIcons name="plus" size={24} color="#4CAF50" />
+                                    <MaterialCommunityIcons name="plus" size={24} color="#000000" />
                                     <Text style={StylePerfilUser.addButtonText}>Adicionar Formação</Text>
                                 </TouchableOpacity>
                             </View>
@@ -417,7 +438,7 @@ export default function PerfilUser() {
                                     style={StylePerfilUser.addButton}
                                     onPress={addExperiencia}
                                 >
-                                    <MaterialCommunityIcons name="plus" size={24} color="#4CAF50" />
+                                    <MaterialCommunityIcons name="plus" size={24} color="#000000" />
                                     <Text style={StylePerfilUser.addButtonText}>Adicionar Experiência</Text>
                                 </TouchableOpacity>
                             </View>
