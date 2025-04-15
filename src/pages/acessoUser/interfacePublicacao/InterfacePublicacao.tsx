@@ -8,11 +8,14 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Dimensions,
-  StatusBar
+  StatusBar,
+  Alert,
+  Linking
 } from 'react-native';
 import { db } from '../../../firebase/firebase';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, query, getDocs, where } from 'firebase/firestore';
 import moment from 'moment';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Vaga = {
     id: string;
@@ -27,9 +30,22 @@ type Vaga = {
     nome_empresa: string;
 };
 
+interface UserData {
+    nome_completo: string;
+    email: string;
+    telefone: string;
+    logradouro: string;
+    bairro: string;
+    estado: string;
+    uf: string;
+    formacoes?: string[];
+    experiencias?: string[];
+}
+
 export default function InterfacePublicacao() {
     const [vagasPublicadas, setVagasPublicadas] = useState<Vaga[]>([]);
     const [expandedCard, setExpandedCard] = useState<string | null>(null);
+    const [userData, setUserData] = useState<UserData | null>(null);
 
     const formatarData = (data: string) => {
         return moment(data).format('DD/MM/YYYY');
@@ -74,8 +90,96 @@ export default function InterfacePublicacao() {
         return () => unsubscribe();
     }, []);
 
+    useEffect(() => {
+        loadUserData();
+    }, []);
+
+    const loadUserData = async () => {
+        try {
+            const userDataString = await AsyncStorage.getItem('userCandidatoLogado');
+            if (userDataString) {
+                const userData = JSON.parse(userDataString);
+                const userEmail = userData.email;
+
+                if (userEmail) {
+                    const usersRef = collection(db, 'user_candidato');
+                    const q = query(usersRef, where('email', '==', userEmail));
+                    const querySnapshot = await getDocs(q);
+                    
+                    if (!querySnapshot.empty) {
+                        const userDoc = querySnapshot.docs[0];
+                        const data = userDoc.data();
+                        setUserData({
+                            nome_completo: data.nome_completo || '',
+                            email: data.email || '',
+                            telefone: data.telefone || '',
+                            logradouro: data.logradouro || '',
+                            bairro: data.bairro || '',
+                            estado: data.estado || '',
+                            uf: data.uf || '',
+                            formacoes: data.formacoes || [],
+                            experiencias: data.experiencias || []
+                        });
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao carregar dados do usuário:', error);
+        }
+    };
+
     const toggleCardExpansion = (id: string) => {
         setExpandedCard(expandedCard === id ? null : id);
+    };
+
+    const handleCandidatura = async (vaga: Vaga) => {
+        if (!userData) {
+            Alert.alert('Erro', 'Você precisa estar logado para se candidatar.');
+            return;
+        }
+
+        try {
+            // Formatar os dados do usuário
+            const formattedUserData = `
+Nome: ${userData.nome_completo || 'Não informado'}
+Email: ${userData.email || 'Não informado'}
+Telefone: ${userData.telefone || 'Não informado'}
+Endereço: ${userData.logradouro || ''}, ${userData.bairro || ''}, ${userData.estado || ''}-${userData.uf || ''}
+
+Formação Acadêmica:
+${userData.formacoes?.map(formacao => `- ${formacao}`).join('\n') || 'Não informado'}
+
+Experiência Profissional:
+${userData.experiencias?.map(exp => `- ${exp}`).join('\n') || 'Não informado'}`;
+
+            // Montar o e-mail
+            const subject = encodeURIComponent(`Candidatura para vaga: ${vaga.titulo_vaga}`);
+            const body = encodeURIComponent(`
+Olá ${vaga.nome_empresa},
+
+Uma nova candidatura foi recebida para a vaga "${vaga.titulo_vaga}".
+
+Dados do Candidato:
+${formattedUserData}
+
+Atenciosamente,
+${userData.nome_completo || 'Candidato'}
+            `);
+
+            // Abrir o cliente de e-mail padrão
+            const mailtoLink = `mailto:${vaga.quem_publicou}?subject=${subject}&body=${body}`;
+            const canOpen = await Linking.canOpenURL(mailtoLink);
+            
+            if (canOpen) {
+                await Linking.openURL(mailtoLink);
+                Alert.alert('Sucesso', 'Sua candidatura foi enviada com sucesso!');
+            } else {
+                Alert.alert('Erro', 'Não foi possível abrir o cliente de e-mail.');
+            }
+        } catch (error) {
+            console.error('Erro ao processar candidatura:', error);
+            Alert.alert('Erro', 'Ocorreu um erro ao processar sua candidatura. Tente novamente.');
+        }
     };
 
     const renderVagaItem = ({ item }: { item: Vaga }) => {
@@ -154,6 +258,13 @@ export default function InterfacePublicacao() {
                     <Text style={styles.expandText}>
                         {isExpanded ? 'Mostrar menos' : 'Ver detalhes completos'}
                     </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                    style={styles.candidatarButton}
+                    onPress={() => handleCandidatura(item)}
+                >
+                    <Text style={styles.candidatarButtonText}>Candidatar-se</Text>
                 </TouchableOpacity>
             </View>
         );
@@ -371,5 +482,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 10,
     },
-    
+    candidatarButton: {
+        backgroundColor: '#007bff',
+        padding: 12,
+        borderRadius: 6,
+        alignItems: 'center',
+        marginTop: 8
+    },
+    candidatarButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold'
+    }
 });
