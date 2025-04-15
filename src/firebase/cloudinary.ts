@@ -1,5 +1,5 @@
 const CLOUD_NAME = 'dcytxe89i';
-const UPLOAD_PRESET = 'vagas_mobile';
+const UPLOAD_PRESET = 'ml_default';
 
 export const uploadImage = async (imageUri: string) => {
     try {

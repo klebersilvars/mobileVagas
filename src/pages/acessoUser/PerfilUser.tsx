@@ -187,28 +187,6 @@ export default function PerfilUser() {
         setEditData({...editData, telefone: telefoneFormatado});
     };
 
-    const pickImage = async () => {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        
-        if (status !== 'granted') {
-            Alert.alert('Permissão necessária', 'Precisamos de acesso à sua galeria para selecionar uma foto.');
-            return;
-        }
-
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.5,
-        });
-
-        if (!result.canceled) {
-            const imageUri = result.assets[0].uri;
-            setProfileImage(imageUri);
-            await uploadImageToCloudinary(imageUri);
-        }
-    };
-
     const uploadImageToCloudinary = async (uri: string) => {
         try {
             const userDataString = await AsyncStorage.getItem('userCandidatoLogado');
@@ -219,8 +197,14 @@ export default function PerfilUser() {
 
             if (!userEmail) return;
 
+            // Fazer upload da nova imagem
             const imageUrl = await uploadImage(uri);
 
+            // Atualizar o estado local primeiro
+            setProfileImage(imageUrl);
+            setEditData(prev => ({ ...prev, profileImage: imageUrl }));
+
+            // Atualizar no Firebase
             const usersRef = collection(db, 'user_candidato');
             const q = query(usersRef, where('email', '==', userEmail));
             const querySnapshot = await getDocs(q);
@@ -230,12 +214,47 @@ export default function PerfilUser() {
                 await updateDoc(doc(db, 'user_candidato', userDoc.id), {
                     profileImage: imageUrl
                 });
+                
+                // Atualizar o estado do usuário
                 setUserData((prev: any) => ({ ...prev, profileImage: imageUrl }));
-                setEditData((prev) => ({ ...prev, profileImage: imageUrl }));
+                
+                // Mostrar mensagem de sucesso
+                Alert.alert('Sucesso', 'Foto de perfil atualizada com sucesso!');
             }
         } catch (error) {
             console.error('Erro ao fazer upload da imagem:', error);
-            Alert.alert('Erro', 'Não foi possível fazer upload da imagem. Verifique sua conexão com a internet.');
+            Alert.alert('Erro', 'Não foi possível atualizar a foto de perfil. Tente novamente.');
+            // Restaurar a imagem anterior em caso de erro
+            setProfileImage(userData?.profileImage || null);
+        }
+    };
+
+    const pickImage = async () => {
+        try {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            
+            if (status !== 'granted') {
+                Alert.alert('Permissão necessária', 'Precisamos de acesso à sua galeria para selecionar uma foto.');
+                return;
+            }
+
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ['images'],
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.5,
+            });
+
+            if (!result.canceled) {
+                const imageUri = result.assets[0].uri;
+                // Mostrar a nova imagem imediatamente
+                setProfileImage(imageUri);
+                // Fazer upload da imagem
+                await uploadImageToCloudinary(imageUri);
+            }
+        } catch (error) {
+            console.error('Erro ao selecionar imagem:', error);
+            Alert.alert('Erro', 'Não foi possível selecionar a imagem. Tente novamente.');
         }
     };
 
