@@ -61,10 +61,14 @@ export default function PageRegistroOne() {
     // Função para verificar a idade e habilitar/desabilitar o botão
     const verIdade = (anoNascimento: string) => {
         const anoNascimentoNum = parseInt(anoNascimento);
+        const idade = anoAtual - anoNascimentoNum;
 
-        if (anoNascimentoNum && (anoAtual - anoNascimentoNum) >= 18) {
+        if (anoNascimentoNum && idade >= 18 && idade <= 25) {
             setMaiorIdade(true); // Habilita o botão
-            setMensagemIdade(''); // Limpa qualquer mensagem caso a pessoa seja maior de idade
+            setMensagemIdade(''); // Limpa qualquer mensagem caso a idade esteja dentro do permitido
+        } else if (idade > 25) {
+            setMaiorIdade(false); // Desabilita o botão
+            setMensagemIdade('Você tem mais de 25 anos, não será possível prosseguir com a criação da conta.'); // Mensagem para maior de 25 anos
         } else {
             setMaiorIdade(false); // Desabilita o botão
             setMensagemIdade('Você é menor de idade, não será possível prosseguir com a criação da conta.'); // Mensagem para menor de idade
