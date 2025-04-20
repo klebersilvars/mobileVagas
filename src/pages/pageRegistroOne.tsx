@@ -52,6 +52,7 @@ export default function PageRegistroOne() {
     const [camposCandidatos, setCamposCandidatos] = useState<boolean>(false)
     const [camposEmpresa, setCamposEmpresa] = useState<boolean>(false);
     const [dadosUserInterface, setDadosUserInterface] = useState<RegistroUserOne | null>(null)
+    const [orientacaoSexual, setOrientacaoSexual] = useState<string>('');
 
     useEffect(() => {
         const date = new Date();
@@ -136,14 +137,15 @@ export default function PageRegistroOne() {
 
     useEffect(() => {
         const novoUsuario: RegistroUserOne = {
-            nome_completo: nomeCompletoRegistro, // Preencha com o valor apropriado
-            email: emailRegistro,         // Preencha com o valor apropriado
+            nome_completo: nomeCompletoRegistro,
+            email: emailRegistro,
             data_nascimento: dataNascimentoRegistro,
-            type_conta: typeConta
+            type_conta: typeConta,
+            orientacao_sexual: orientacaoSexual
         };
 
         setDadosUserInterface(novoUsuario)
-    }, [nomeCompletoRegistro, emailRegistro, dataNascimentoRegistro])
+    }, [nomeCompletoRegistro, emailRegistro, dataNascimentoRegistro, orientacaoSexual])
 
     const dadosUserOne = async ()=> {
         try{
@@ -313,8 +315,84 @@ export default function PageRegistroOne() {
                                     ) : null}
                                 </View>
 
+                                <View style={styles.orientacaoSexualContainer}>
+                                    <Text allowFontScaling={false} style={styles.orientacaoSexualTitle}>
+                                        Orientação Sexual
+                                    </Text>
+                                    
+                                    <View style={styles.orientacaoSexualOptions}>
+                                        <TouchableOpacity 
+                                            style={[
+                                                styles.orientacaoSexualOption, 
+                                                orientacaoSexual === 'heterossexual' && styles.orientacaoSexualOptionSelected
+                                            ]}
+                                            onPress={() => setOrientacaoSexual('heterossexual')}
+                                        >
+                                            <Text 
+                                                style={[
+                                                    styles.orientacaoSexualOptionText,
+                                                    orientacaoSexual === 'heterossexual' && styles.orientacaoSexualOptionTextSelected
+                                                ]}
+                                            >
+                                                Heterossexual
+                                            </Text>
+                                        </TouchableOpacity>
+                                        
+                                        <TouchableOpacity 
+                                            style={[
+                                                styles.orientacaoSexualOption, 
+                                                orientacaoSexual === 'homossexual' && styles.orientacaoSexualOptionSelected
+                                            ]}
+                                            onPress={() => setOrientacaoSexual('homossexual')}
+                                        >
+                                            <Text 
+                                                style={[
+                                                    styles.orientacaoSexualOptionText,
+                                                    orientacaoSexual === 'homossexual' && styles.orientacaoSexualOptionTextSelected
+                                                ]}
+                                            >
+                                                Homossexual
+                                            </Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity 
+                                            style={[
+                                                styles.orientacaoSexualOption, 
+                                                orientacaoSexual === 'bissexual' && styles.orientacaoSexualOptionSelected
+                                            ]}
+                                            onPress={() => setOrientacaoSexual('bissexual')}
+                                        >
+                                            <Text 
+                                                style={[
+                                                    styles.orientacaoSexualOptionText,
+                                                    orientacaoSexual === 'bissexual' && styles.orientacaoSexualOptionTextSelected
+                                                ]}
+                                            >
+                                                Bissexual
+                                            </Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity 
+                                            style={[
+                                                styles.orientacaoSexualOption, 
+                                                orientacaoSexual === 'outros' && styles.orientacaoSexualOptionSelected
+                                            ]}
+                                            onPress={() => setOrientacaoSexual('outros')}
+                                        >
+                                            <Text 
+                                                style={[
+                                                    styles.orientacaoSexualOptionText,
+                                                    orientacaoSexual === 'outros' && styles.orientacaoSexualOptionTextSelected
+                                                ]}
+                                            >
+                                                Outros
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+
                                 <View style={styles.buttonContainer}>
-                                    {maiorIdade && !camposCandidatos ? (
+                                    {maiorIdade && !camposCandidatos && orientacaoSexual ? (
                                         <TouchableOpacity 
                                             style={styles.primaryButton}
                                             onPress={salvarUserOneStepPage}
@@ -563,6 +641,54 @@ const styles = StyleSheet.create({
     disabledButtonText: {
         color: '#718096',
         fontSize: 16,
+        fontWeight: '600',
+    },
+    orientacaoSexualContainer: {
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 20,
+        marginBottom: 20,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+    },
+    orientacaoSexualTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#2D3748',
+        textAlign: 'center',
+        marginBottom: 16,
+    },
+    orientacaoSexualOptions: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        gap: 10,
+    },
+    orientacaoSexualOption: {
+        flex: 1,
+        minWidth: '48%',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        marginBottom: 10,
+        alignItems: 'center',
+    },
+    orientacaoSexualOptionSelected: {
+        backgroundColor: '#EBF8FF',
+        borderColor: '#3498DB',
+    },
+    orientacaoSexualOptionText: {
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#718096',
+    },
+    orientacaoSexualOptionTextSelected: {
+        color: '#3498DB',
         fontWeight: '600',
     },
 });

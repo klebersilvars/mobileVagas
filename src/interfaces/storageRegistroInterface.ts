@@ -5,6 +5,7 @@ export interface RegistroUserOne {
     email?: string;
     data_nascimento: string;
     type_conta: string;
+    orientacao_sexual?: string;
 }
 
 export interface RegistroUserTwo {
