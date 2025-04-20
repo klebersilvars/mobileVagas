@@ -13,7 +13,7 @@ import {
   Linking
 } from 'react-native';
 import { db } from '../../../firebase/firebase';
-import { collection, onSnapshot, query, getDocs, where } from 'firebase/firestore';
+import { collection, onSnapshot, query, getDocs, where, addDoc, setDoc, doc } from 'firebase/firestore';
 import moment from 'moment';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -46,6 +46,7 @@ export default function InterfacePublicacao() {
     const [vagasPublicadas, setVagasPublicadas] = useState<Vaga[]>([]);
     const [expandedCard, setExpandedCard] = useState<string | null>(null);
     const [userData, setUserData] = useState<UserData | null>(null);
+    const [candidaturas, setCandidaturas] = useState<string[]>([]);
 
     const formatarData = (data: string) => {
         return moment(data).format('DD/MM/YYYY');
@@ -94,6 +95,20 @@ export default function InterfacePublicacao() {
         loadUserData();
     }, []);
 
+    const loadCandidaturas = async (userEmail: string) => {
+        try {
+            const q = query(
+                collection(db, 'user_candidatura_vaga'),
+                where('email_user', '==', userEmail)
+            );
+            const querySnapshot = await getDocs(q);
+            const candidaturasIds = querySnapshot.docs.map(doc => doc.data().id_vaga);
+            setCandidaturas(candidaturasIds);
+        } catch (error) {
+            console.error('Erro ao carregar candidaturas:', error);
+        }
+    };
+
     const loadUserData = async () => {
         try {
             const userDataString = await AsyncStorage.getItem('userCandidatoLogado');
@@ -120,6 +135,8 @@ export default function InterfacePublicacao() {
                             formacoes: data.formacoes || [],
                             experiencias: data.experiencias || []
                         });
+
+                        await loadCandidaturas(userEmail);
                     }
                 }
             }
@@ -132,14 +149,44 @@ export default function InterfacePublicacao() {
         setExpandedCard(expandedCard === id ? null : id);
     };
 
+    const salvarCandidatura = async (vaga: Vaga) => {
+        if (!userData?.email) return;
+
+        try {
+            const dataAtual = new Date();
+            const dataFormatada = moment(dataAtual).format('DD/MM/YYYY');
+            const horaFormatada = moment(dataAtual).format('HH:mm');
+
+            const candidaturaRef = collection(db, 'user_candidatura_vaga');
+            await addDoc(candidaturaRef, {
+                candidatura: true,
+                email_user: userData.email,
+                id_user: userData.email,
+                id_vaga: vaga.id,
+                data_candidatura: dataFormatada,
+                hora_candidatura: horaFormatada
+            });
+
+            setCandidaturas(prev => [...prev, vaga.id]);
+            
+        } catch (error) {
+            console.error('Erro ao salvar candidatura:', error);
+            throw error;
+        }
+    };
+
     const handleCandidatura = async (vaga: Vaga) => {
         if (!userData) {
             Alert.alert('Erro', 'Você precisa estar logado para se candidatar.');
             return;
         }
 
+        if (candidaturas.includes(vaga.id)) {
+            Alert.alert('Aviso', 'Você já se candidatou para esta vaga!');
+            return;
+        }
+
         try {
-            // Formatar os dados do usuário
             const formattedUserData = `
 Nome: ${userData.nome_completo || 'Não informado'}
 Email: ${userData.email || 'Não informado'}
@@ -152,7 +199,6 @@ ${userData.formacoes?.map(formacao => `- ${formacao}`).join('\n') || 'Não infor
 Experiência Profissional:
 ${userData.experiencias?.map(exp => `- ${exp}`).join('\n') || 'Não informado'}`;
 
-            // Montar o e-mail
             const subject = encodeURIComponent(`Candidatura para vaga: ${vaga.titulo_vaga}`);
             const body = encodeURIComponent(`
 Olá ${vaga.nome_empresa},
@@ -166,12 +212,12 @@ Atenciosamente,
 ${userData.nome_completo || 'Candidato'}
             `);
 
-            // Abrir o cliente de e-mail padrão
             const mailtoLink = `mailto:${vaga.quem_publicou}?subject=${subject}&body=${body}`;
             const canOpen = await Linking.canOpenURL(mailtoLink);
             
             if (canOpen) {
                 await Linking.openURL(mailtoLink);
+                await salvarCandidatura(vaga);
                 Alert.alert('Sucesso', 'Sua candidatura foi enviada com sucesso!');
             } else {
                 Alert.alert('Erro', 'Não foi possível abrir o cliente de e-mail.');
@@ -184,6 +230,7 @@ ${userData.nome_completo || 'Candidato'}
 
     const renderVagaItem = ({ item }: { item: Vaga }) => {
         const isExpanded = expandedCard === item.id;
+        const jaCandidatou = candidaturas.includes(item.id);
 
         // Função para verificar e exibir "A COMBINAR" se o campo estiver vazio
         const verificarCampo = (campo: string) => {
@@ -261,10 +308,16 @@ ${userData.nome_completo || 'Candidato'}
                 </TouchableOpacity>
 
                 <TouchableOpacity 
-                    style={styles.candidatarButton}
+                    style={[
+                        styles.candidatarButton,
+                        jaCandidatou && styles.candidatarButtonDisabled
+                    ]}
                     onPress={() => handleCandidatura(item)}
+                    disabled={jaCandidatou}
                 >
-                    <Text style={styles.candidatarButtonText}>Candidatar-se</Text>
+                    <Text style={styles.candidatarButtonText}>
+                        {jaCandidatou ? 'CANDIDATURA ENVIADA' : 'Candidatar-se'}
+                    </Text>
                 </TouchableOpacity>
             </View>
         );
@@ -488,6 +541,9 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         alignItems: 'center',
         marginTop: 8
+    },
+    candidatarButtonDisabled: {
+        backgroundColor: '#28a745',
     },
     candidatarButtonText: {
         color: '#fff',
