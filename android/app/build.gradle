@@ -1,0 +1,9 @@
+android {
+    // ... existing code ...
+    
+    buildFeatures {
+        renderScript true
+    }
+    
+    // ... rest of the file ...
+} 

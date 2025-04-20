@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  View, 
-  SafeAreaView, 
-  StyleSheet, 
-  Text, 
-  FlatList, 
-  TouchableOpacity,
-  ActivityIndicator,
-  Dimensions,
-  StatusBar,
-  Alert,
-  Linking
+import {
+    View,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    FlatList,
+    TouchableOpacity,
+    ActivityIndicator,
+    Dimensions,
+    StatusBar,
+    Alert,
+    Linking,
+    RefreshControl,
+    Animated
 } from 'react-native';
 import { db } from '../../../firebase/firebase';
 import { collection, onSnapshot, query, getDocs, where, addDoc, setDoc, doc } from 'firebase/firestore';
@@ -47,6 +49,9 @@ export default function InterfacePublicacao() {
     const [expandedCard, setExpandedCard] = useState<string | null>(null);
     const [userData, setUserData] = useState<UserData | null>(null);
     const [candidaturas, setCandidaturas] = useState<string[]>([]);
+    const [refreshing, setRefreshing] = useState(false);
+    const [isBlurred, setIsBlurred] = useState(false);
+    const blurAnimation = new Animated.Value(0);
 
     const formatarData = (data: string) => {
         return moment(data).format('DD/MM/YYYY');
@@ -120,7 +125,7 @@ export default function InterfacePublicacao() {
                     const usersRef = collection(db, 'user_candidato');
                     const q = query(usersRef, where('email', '==', userEmail));
                     const querySnapshot = await getDocs(q);
-                    
+
                     if (!querySnapshot.empty) {
                         const userDoc = querySnapshot.docs[0];
                         const data = userDoc.data();
@@ -168,7 +173,7 @@ export default function InterfacePublicacao() {
             });
 
             setCandidaturas(prev => [...prev, vaga.id]);
-            
+
         } catch (error) {
             console.error('Erro ao salvar candidatura:', error);
             throw error;
@@ -214,7 +219,7 @@ ${userData.nome_completo || 'Candidato'}
 
             const mailtoLink = `mailto:${vaga.quem_publicou}?subject=${subject}&body=${body}`;
             const canOpen = await Linking.canOpenURL(mailtoLink);
-            
+
             if (canOpen) {
                 await Linking.openURL(mailtoLink);
                 await salvarCandidatura(vaga);
@@ -228,6 +233,56 @@ ${userData.nome_completo || 'Candidato'}
         }
     };
 
+    const animateBlur = (toValue: number) => {
+        Animated.timing(blurAnimation, {
+            toValue,
+            duration: 300,
+            useNativeDriver: false,
+        }).start();
+    };
+
+    const onRefresh = React.useCallback(async () => {
+        setRefreshing(true);
+        setIsBlurred(true);
+        animateBlur(1);
+
+        try {
+            await loadUserData();
+            const refVagas = collection(db, 'publicar_vaga_empresa');
+            const snapshot = await getDocs(refVagas);
+            
+            if (snapshot.empty) {
+                setVagasPublicadas([]);
+            } else {
+                const vagas = snapshot.docs.map((doc) => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        publicacao_text: data.publicacao_text || 'Sem descrição',
+                        data: formatarData(data.data || 'Data não informada'),
+                        hora: data.hora || 'Hora não informada',
+                        quem_publicou: typeof data.quem_publicou === 'string' ? data.quem_publicou : 'Usuário desconhecido',
+                        salarioVaga: data.salarioVaga || 'Não informado',
+                        titulo_vaga: data.titulo_vaga || 'Vaga sem título',
+                        requisito_vaga: data.requisito_vaga || 'Requisitos não informados',
+                        area_contato_vaga: data.area_contato_vaga || 'Contato não informado',
+                        nome_empresa: data.nome_empresa || 'Nome da empresa não informado!'
+                    };
+                });
+                setVagasPublicadas(vagas);
+            }
+        } catch (error) {
+            console.error('Erro ao atualizar dados:', error);
+            Alert.alert('Erro', 'Não foi possível atualizar as vagas. Tente novamente.');
+        } finally {
+            setTimeout(() => {
+                setRefreshing(false);
+                setIsBlurred(false);
+                animateBlur(0);
+            }, 1000);
+        }
+    }, []);
+
     const renderVagaItem = ({ item }: { item: Vaga }) => {
         const isExpanded = expandedCard === item.id;
         const jaCandidatou = candidaturas.includes(item.id);
@@ -238,7 +293,15 @@ ${userData.nome_completo || 'Candidato'}
         };
 
         return (
-            <View style={styles.cardContainer}>
+            <Animated.View style={[
+                styles.cardContainer,
+                isBlurred && {
+                    opacity: blurAnimation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [1, 0.5]
+                    })
+                }
+            ]}>
                 <StatusBar backgroundColor='#F5F7FF' barStyle='dark-content'/>
 
                 {/* Card Header with Company Info */}
@@ -298,8 +361,8 @@ ${userData.nome_completo || 'Candidato'}
                 )}
 
                 {/* Expand/Collapse Button */}
-                <TouchableOpacity 
-                    style={styles.expandButton} 
+                <TouchableOpacity
+                    style={styles.expandButton}
                     onPress={() => toggleCardExpansion(item.id)}
                 >
                     <Text style={styles.expandText}>
@@ -307,7 +370,7 @@ ${userData.nome_completo || 'Candidato'}
                     </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={[
                         styles.candidatarButton,
                         jaCandidatou && styles.candidatarButtonDisabled
@@ -319,7 +382,7 @@ ${userData.nome_completo || 'Candidato'}
                         {jaCandidatou ? 'CANDIDATURA ENVIADA' : 'Candidatar-se'}
                     </Text>
                 </TouchableOpacity>
-            </View>
+            </Animated.View>
         );
     };
 
@@ -331,20 +394,47 @@ ${userData.nome_completo || 'Candidato'}
                     Encontre oportunidades para iniciar sua carreira
                 </Text>
             </View>
-            
+
             {vagasPublicadas.length === 0 ? (
                 <View style={styles.emptyContainer}>
                     <Text style={styles.emptyTitle}>Nenhuma vaga disponível</Text>
                     <Text style={styles.emptySubtitle}>As vagas publicadas aparecerão aqui</Text>
                 </View>
             ) : (
-                <FlatList
-                    data={vagasPublicadas}
-                    keyExtractor={(item) => item.id}
-                    renderItem={renderVagaItem}
-                    contentContainerStyle={styles.listContainer}
-                    showsVerticalScrollIndicator={false}
-                />
+                <>
+                    <FlatList
+                        data={vagasPublicadas}
+                        keyExtractor={(item) => item.id}
+                        renderItem={renderVagaItem}
+                        contentContainerStyle={styles.listContainer}
+                        showsVerticalScrollIndicator={false}
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={refreshing}
+                                onRefresh={onRefresh}
+                                colors={['#4A80F0']}
+                                tintColor="#4A80F0"
+                                title="Atualizando..."
+                                titleColor="#4A80F0"
+                                progressViewOffset={20}
+                            />
+                        }
+                    />
+                    {isBlurred && (
+                        <Animated.View style={[
+                            styles.loadingOverlay,
+                            {
+                                opacity: blurAnimation.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [0, 1]
+                                })
+                            }
+                        ]}>
+                            <ActivityIndicator size="large" color="#4A80F0" />
+                            <Text style={styles.loadingText}>Atualizando vagas...</Text>
+                        </Animated.View>
+                    )}
+                </>
             )}
         </SafeAreaView>
     );
@@ -385,18 +475,6 @@ const styles = StyleSheet.create({
         padding: 16,
         paddingBottom: 30,
     },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#F5F7FF',
-    },
-    loadingText: {
-        marginTop: 12,
-        fontSize: 16,
-        color: '#4A80F0',
-        fontWeight: '500',
-    },
     emptyContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -424,6 +502,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 3,
         elevation: 2,
+        overflow: 'hidden',
     },
     cardHeader: {
         flexDirection: 'row',
@@ -549,5 +628,22 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: 'bold'
+    },
+    loadingOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000,
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#4A80F0',
+        fontWeight: '500'
     }
 });
