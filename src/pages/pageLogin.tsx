@@ -24,14 +24,19 @@ import { collection, where, query, getDocs } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase/firebase';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootTabParamList } from '../../routes/RootTabParamList';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../routes/RootStackParamList';
 import CustomAlert from '../components/CustomAlert'
 
 const { width, height } = Dimensions.get('window');
 
-type createTabNavigatorProp = BottomTabNavigationProp<RootTabParamList>;
+type NavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<RootTabParamList>,
+  StackNavigationProp<RootStackParamList>
+>;
 
 export default function PageLogin() {
     //useState
@@ -39,7 +44,7 @@ export default function PageLogin() {
     const [emailLogin, setEmailLogin] = useState<string>('')
     const [passLogin, setPassLogin] = useState<string>('')
     const user_candidato_db = collection(db, 'user_candidato')
-    const navigation = useNavigation<createTabNavigatorProp>();
+    const navigation = useNavigation<NavigationProp>();
     const [typeConta, setTypeConta] = useState('candidato')
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
@@ -50,7 +55,7 @@ export default function PageLogin() {
     }
 
     function esquecerSenha() {
-        Alert.alert('AVISO!', 'Implementação em andamento, peço que aguarde a próxima atualização.')
+        navigation.navigate('PageEsqueciSenha');
     }
 
     async function logarUser() {

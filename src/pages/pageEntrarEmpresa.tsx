@@ -24,14 +24,19 @@ import { db } from '../firebase/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase/firebase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootTabParamList } from '../../routes/RootTabParamList';
 import CustomAlert from '../components/CustomAlert';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../routes/RootStackParamList';
 
 const { width, height } = Dimensions.get('window');
 
-type createTabNavigatorProp = BottomTabNavigationProp<RootTabParamList>;
+type NavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<RootTabParamList>,
+  StackNavigationProp<RootStackParamList>
+>;
 
 export default function PageEntrarEmpresa() {
     //useState
@@ -40,12 +45,12 @@ export default function PageEntrarEmpresa() {
     const [PassLogin, setPassLogin] = useState<string>('')
     const empresa_db = collection(db, 'user_empresa'); //verificar se é o banco de dados correto
     const [typeConta, setTypeConta] = useState<string>('empresa')
-    const navigation = useNavigation<createTabNavigatorProp>()
+    const navigation = useNavigation<NavigationProp>()
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
 
     function esquecerSenha() {
-        Alert.alert('AVISO!', 'Implementação em andamento, peço que aguarde a próxima atualização.')
+        navigation.navigate('PageEsqueciSenha');
     }
 
     useFocusEffect(

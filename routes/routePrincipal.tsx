@@ -7,6 +7,7 @@ import PageRegistroOne from '../src/pages/pageRegistroOne';
 import PageRegistroTwo from '../src/pages/pageRegistroTwo';
 import PageRegistroThree from '../src/pages/pageRegistroThree'
 import PageEntrarEmpresa from '../src/pages/pageEntrarEmpresa';
+import PageEsqueciSenha from '../src/pages/pageEsqueciSenha';
 import TabRouterCandidato from './tabRouterCandidato';
 import { HeaderLeft, HeaderLeftPageLogin } from '../src/components/HeaderLeft/HeaderLeft';
 import TabRouterEmpresa from './tabRouterEmpresa';
@@ -87,6 +88,19 @@ export default function Routes() {
                         headerTransparent: true,     // Torna o cabeçalho transparente
                         headerLeft: () => (
                             // Use navigation dentro de um componente de tela
+                            <HeaderLeft />
+                        ),
+                    }}
+                />
+
+                <Stack.Screen
+                    name="PageEsqueciSenha"
+                    component={PageEsqueciSenha}
+                    options={{
+                        headerShown: true,
+                        title: '',
+                        headerTransparent: true,
+                        headerLeft: () => (
                             <HeaderLeft />
                         ),
                     }}

@@ -3,13 +3,32 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Modal, Tex
 import { auth, db } from '../../firebase/firebase';
 import { uploadImage } from '../../firebase/cloudinary';
 import { doc, getDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { updatePassword } from 'firebase/auth';
 import * as ImagePicker from 'expo-image-picker';
 import { StylePerfilUser } from './StylePerfilUser';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+interface UserData {
+    nome_completo: string;
+    email: string;
+    telefone: string;
+    bairro: string;
+    cep: string;
+    complemento: string;
+    data_nascimento: string;
+    estado: string;
+    logradouro: string;
+    type_conta: string;
+    uf: string;
+    formacoes: string[];
+    experiencias: string[];
+    profileImage: string;
+    password: string;
+}
+
 export default function PerfilUser() {
-    const [userData, setUserData] = useState<any>(null);
+    const [userData, setUserData] = useState<UserData | null>(null);
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
     const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -27,7 +46,10 @@ export default function PerfilUser() {
         uf: '',
         formacoes: [''],
         experiencias: [''],
-        profileImage: ''
+        profileImage: '',
+        senha_atual: '',
+        nova_senha: '',
+        confirmar_senha: ''
     });
 
     useEffect(() => {
@@ -68,7 +90,10 @@ export default function PerfilUser() {
                                 uf: data.uf || '',
                                 formacoes: data.formacoes || [''],
                                 experiencias: data.experiencias || [''],
-                                profileImage: data.profileImage || ''
+                                profileImage: data.profileImage || '',
+                                senha_atual: '',
+                                nova_senha: '',
+                                confirmar_senha: ''
                             });
                         } else {
                             console.log('Nenhum usuário encontrado com este email');
@@ -101,14 +126,31 @@ export default function PerfilUser() {
                     
                     if (!querySnapshot.empty) {
                         const userDoc = querySnapshot.docs[0];
-                        await updateDoc(doc(db, 'user_candidato', userDoc.id), editData);
-                        setUserData((prev: any) => ({ ...prev, ...editData }));
+                        const updateData = {
+                            nome_completo: editData.nome_completo,
+                            telefone: editData.telefone,
+                            bairro: editData.bairro,
+                            cep: editData.cep,
+                            complemento: editData.complemento,
+                            data_nascimento: editData.data_nascimento,
+                            estado: editData.estado,
+                            logradouro: editData.logradouro,
+                            uf: editData.uf,
+                            formacoes: editData.formacoes.filter(f => f.trim() !== ''),
+                            experiencias: editData.experiencias.filter(e => e.trim() !== ''),
+                            profileImage: editData.profileImage
+                        };
+
+                        await updateDoc(doc(db, 'user_candidato', userDoc.id), updateData);
+                        setUserData((prev: UserData) => ({ ...prev, ...updateData }));
                         setModalVisible(false);
+                        Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
                     }
                 }
             }
         } catch (error) {
-            console.error('Erro ao atualizar dados:', error);
+            console.error('Erro ao atualizar perfil:', error);
+            Alert.alert('Erro', 'Não foi possível atualizar o perfil. Tente novamente.');
         }
     };
 
@@ -255,6 +297,67 @@ export default function PerfilUser() {
         } catch (error) {
             console.error('Erro ao selecionar imagem:', error);
             Alert.alert('Erro', 'Não foi possível selecionar a imagem. Tente novamente.');
+        }
+    };
+
+    const handleUpdatePassword = async () => {
+        try {
+            if (!editData.senha_atual || !editData.nova_senha || !editData.confirmar_senha) {
+                Alert.alert('Erro', 'Preencha todos os campos de senha');
+                return;
+            }
+
+            if (editData.nova_senha !== editData.confirmar_senha) {
+                Alert.alert('Erro', 'As senhas não coincidem');
+                return;
+            }
+
+            const userDataString = await AsyncStorage.getItem('userCandidatoLogado');
+            if (userDataString) {
+                const userData = JSON.parse(userDataString);
+                const userEmail = userData.email;
+
+                if (userEmail) {
+                    // Verificar senha atual no Firestore
+                    const usersRef = collection(db, 'user_candidato');
+                    const q = query(usersRef, where('email', '==', userEmail));
+                    const querySnapshot = await getDocs(q);
+                    
+                    if (!querySnapshot.empty) {
+                        const userDoc = querySnapshot.docs[0];
+                        const userData = userDoc.data();
+
+                        if (userData.password !== editData.senha_atual) {
+                            Alert.alert('Erro', 'Senha atual incorreta');
+                            return;
+                        }
+
+                        // Atualizar senha no Authentication
+                        const user = auth.currentUser;
+                        if (user) {
+                            await updatePassword(user, editData.nova_senha);
+                        }
+
+                        // Atualizar senha no Firestore
+                        await updateDoc(doc(db, 'user_candidato', userDoc.id), {
+                            password: editData.nova_senha
+                        });
+
+                        // Limpar campos de senha
+                        setEditData(prev => ({
+                            ...prev,
+                            senha_atual: '',
+                            nova_senha: '',
+                            confirmar_senha: ''
+                        }));
+
+                        Alert.alert('Sucesso', 'Senha atualizada com sucesso!');
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao atualizar senha:', error);
+            Alert.alert('Erro', 'Não foi possível atualizar a senha. Tente novamente.');
         }
     };
 
@@ -516,6 +619,44 @@ export default function PerfilUser() {
                                 >
                                     <MaterialCommunityIcons name="plus" size={24} color="#000000" />
                                     <Text style={StylePerfilUser.addButtonText}>Adicionar Experiência</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            <View style={StylePerfilUser.sectionContainer}>
+                                <Text style={StylePerfilUser.sectionTitle}>Alterar Senha</Text>
+                                
+                                <Text style={StylePerfilUser.inputLabel}>Senha Atual</Text>
+                                <TextInput
+                                    style={StylePerfilUser.input}
+                                    placeholder="Digite sua senha atual"
+                                    value={editData.senha_atual}
+                                    onChangeText={(text) => setEditData({...editData, senha_atual: text})}
+                                    secureTextEntry
+                                />
+
+                                <Text style={StylePerfilUser.inputLabel}>Nova Senha</Text>
+                                <TextInput
+                                    style={StylePerfilUser.input}
+                                    placeholder="Digite sua nova senha"
+                                    value={editData.nova_senha}
+                                    onChangeText={(text) => setEditData({...editData, nova_senha: text})}
+                                    secureTextEntry
+                                />
+
+                                <Text style={StylePerfilUser.inputLabel}>Confirmar Nova Senha</Text>
+                                <TextInput
+                                    style={StylePerfilUser.input}
+                                    placeholder="Confirme sua nova senha"
+                                    value={editData.confirmar_senha}
+                                    onChangeText={(text) => setEditData({...editData, confirmar_senha: text})}
+                                    secureTextEntry
+                                />
+
+                                <TouchableOpacity 
+                                    style={[StylePerfilUser.modalButton, StylePerfilUser.saveButton, { marginTop: 10 }]}
+                                    onPress={handleUpdatePassword}
+                                >
+                                    <Text style={StylePerfilUser.modalButtonText}>Alterar Senha</Text>
                                 </TouchableOpacity>
                             </View>
                         </ScrollView>

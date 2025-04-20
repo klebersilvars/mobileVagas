@@ -8,7 +8,7 @@ import PerfilUser from '../src/pages/acessoUser/PerfilUser';
 
 export default function TabRouterCandidato() {
     const Tab = createBottomTabNavigator();
-    
+
     return (
         <Tab.Navigator
             screenOptions={{
@@ -52,7 +52,6 @@ export default function TabRouterCandidato() {
                     ),
                 }}
             />
-
         </Tab.Navigator>
     )
 }
