@@ -4,7 +4,7 @@ import { collection, getDocs, setDoc, doc, getDoc } from 'firebase/firestore';
 const VERSION_DOC_ID = 'dzXz1HCFbOYhjOo2MXjh';
 
 // Versão atual do aplicativo
-export const CURRENT_APP_VERSION = '1.0.0';
+export const CURRENT_APP_VERSION = '1.0.1';
 
 // Função para atualizar a versão no Firebase
 export const updateAppVersion = async (version: string) => {

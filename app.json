@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "mobileVagas",
-    "slug": "mobileVagas",
-    "version": "1.0.0",
+    "name": "NovosTalentos",
+    "slug": "NovosTalentos",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/novos_talentos_logo_fundo.png",
     "userInterfaceStyle": "light",
@@ -16,7 +16,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.kleberfjv.mobilevagas",
+      "package": "com.kleberfjv.NovosTalentos",
       "adaptiveIcon": {
         "foregroundImage": "./assets/novos_talentos_logo_fundo.png",
         "backgroundColor": "#ffffff"

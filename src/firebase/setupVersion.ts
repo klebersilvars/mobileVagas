@@ -24,7 +24,7 @@ async function setupVersionCollection() {
         
         // Configurar dados iniciais
         await setDoc(versionRef, {
-            version: '1.0.0',           // versão atual do app
+            version: '1.0.1',           // versão atual do app
             minVersion: '1.0.0',        // versão mínima suportada
             isForceUpdate: false,       // se true, força atualização
             updatedAt: new Date().toISOString(),
