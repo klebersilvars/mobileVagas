@@ -16,6 +16,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.kleberfjv.mobilevagas",
       "adaptiveIcon": {
         "foregroundImage": "./assets/novos_talentos_logo_fundo.png",
         "backgroundColor": "#ffffff"
@@ -26,6 +27,11 @@
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "10d78967-cb07-4623-857c-550463ecd395"
+      }
+    }
   }
 }
