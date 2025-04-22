@@ -16,7 +16,8 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Dimensions,
-  ScrollView
+  ScrollView,
+  PixelRatio
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { query, where, collection, getDocs } from 'firebase/firestore';
@@ -32,6 +33,26 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../routes/RootStackParamList';
 
 const { width, height } = Dimensions.get('window');
+
+// Responsive calculation functions
+const scale = Math.min(width, height) / 375; // Base scale on the smaller dimension
+const verticalScale = height / 812; // Based on iPhone X height
+const horizontalScale = width / 375; // Based on iPhone X width
+
+const normalize = (size:number, factor = 0.5) => {
+  return size + (scale - 1) * size * factor;
+};
+
+// Convert percentage to pixels
+const wp = (percentage:number) => {
+  const value = (percentage * width) / 100;
+  return Math.round(value);
+};
+
+const hp = (percentage:number) => {
+  const value = (percentage * height) / 100;
+  return Math.round(value);
+};
 
 type NavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<RootTabParamList>,
@@ -133,7 +154,7 @@ export default function PageEntrarEmpresa() {
                     <KeyboardAvoidingView 
                         behavior={Platform.OS === "ios" ? "padding" : undefined}
                         style={styles.keyboardAvoidView}
-                        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+                        keyboardVerticalOffset={Platform.OS === "ios" ? hp(8) : 0}
                     >
                         <ScrollView 
                             contentContainerStyle={styles.scrollViewContent}
@@ -246,8 +267,8 @@ const styles = StyleSheet.create({
     },
     header: {
         backgroundColor: 'white',
-        paddingVertical: 16,
-        paddingHorizontal: 20,
+        paddingVertical: normalize(16, 0.3),
+        paddingHorizontal: normalize(20, 0.3),
         alignItems: 'center',
         elevation: 4,
         shadowColor: '#000',
@@ -257,109 +278,118 @@ const styles = StyleSheet.create({
     },
     headerLogo: {
         color: 'black',
-        fontSize: 22,
+        fontSize: normalize(22),
         fontWeight: 'bold',
         letterSpacing: 1,
     },
     scrollViewContent: {
         flexGrow: 1,
-        paddingHorizontal: 16,
+        paddingHorizontal: wp(4),
+        paddingBottom: hp(5),
     },
     contentContainer: {
         flex: 1,
         justifyContent: 'center',
-        paddingBottom: 40,
+        paddingBottom: hp(5),
+        minHeight: height * 0.8, // Ensure content takes up at least 80% of screen height
     },
     logoContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 20,
+        paddingVertical: normalize(20, 0.3),
+        marginTop: height * 0.02, // Responsive top margin
     },
     logoImage: {
-        height: 180,
+        height: Math.min(height * 0.22, 180), // Responsive height with max value
         width: '90%',
-        maxWidth: 400,
+        maxWidth: normalize(400),
+        aspectRatio: 2, // Maintain aspect ratio
     },
     logoSubtitle: {
-        fontSize: 15,
+        fontSize: normalize(15, 0.3),
         color: '#4A5568',
         fontWeight: '500',
         textAlign: 'center',
-        marginTop: 16,
-        paddingHorizontal: 20,
-        maxWidth: 400,
+        marginTop: normalize(16, 0.3),
+        paddingHorizontal: normalize(20, 0.3),
+        maxWidth: normalize(400),
+        width: '90%',
     },
     formCard: {
         backgroundColor: 'white',
-        borderRadius: 12,
-        padding: 24,
-        marginTop: 10,
-        marginBottom: 24,
+        borderRadius: normalize(12),
+        padding: normalize(24, 0.3),
+        marginTop: normalize(10, 0.3),
+        marginBottom: normalize(24, 0.3),
         elevation: 2,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
         shadowRadius: 2,
+        width: '100%',
     },
     formTitle: {
-        fontSize: 22,
+        fontSize: normalize(22),
         fontWeight: 'bold',
         color: '#2D3748',
         textAlign: 'center',
-        marginBottom: 24,
+        marginBottom: normalize(24, 0.3),
     },
     formContainer: {
         width: '100%',
     },
     inputContainer: {
-        marginBottom: 20,
+        marginBottom: normalize(20, 0.3),
     },
     inputLabel: {
-        fontSize: 14,
+        fontSize: normalize(14, 0.3),
         fontWeight: '600',
         color: '#4A5568',
-        marginBottom: 8,
+        marginBottom: normalize(8, 0.3),
     },
     input: {
         backgroundColor: '#F7FAFC',
         borderWidth: 1,
         borderColor: '#E2E8F0',
-        borderRadius: 8,
-        height: 50,
-        paddingHorizontal: 16,
-        fontSize: 16,
+        borderRadius: normalize(8),
+        height: normalize(50, 0.3),
+        paddingHorizontal: normalize(16, 0.3),
+        fontSize: normalize(16, 0.3),
         color: '#2D3748',
     },
     formActionsContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 24,
+        marginBottom: normalize(24, 0.3),
+        flexWrap: 'wrap', // Allow wrapping on very small screens
     },
     showPasswordContainer: {
         flexDirection: 'row',
         alignItems: 'center',
+        marginVertical: normalize(4, 0.3), // Add vertical margin for when it wraps
     },
     showPasswordText: {
-        fontSize: 14,
+        fontSize: normalize(14, 0.3),
         color: '#4A5568',
-        marginRight: 8,
+        marginRight: normalize(8, 0.3),
     },
     forgotPasswordContainer: {
-        padding: 4,
+        padding: normalize(4, 0.3),
+        marginVertical: normalize(4, 0.3), // Add vertical margin for when it wraps
     },
     forgotPasswordText: {
-        fontSize: 14,
+        fontSize: normalize(14, 0.3),
         color: '#000000',
         fontWeight: '600',
     },
     buttonContainer: {
-        marginTop: 8,
+        marginTop: normalize(8, 0.3),
     },
     loginButton: {
         backgroundColor: '#000000',
-        borderRadius: 8,
-        height: 50,
+        borderRadius: normalize(8),
+        height: normalize(50, 0.3),
         justifyContent: 'center',
         alignItems: 'center',
         elevation: 2,
@@ -370,7 +400,7 @@ const styles = StyleSheet.create({
     },
     loginButtonText: {
         color: 'white',
-        fontSize: 16,
+        fontSize: normalize(16, 0.3),
         fontWeight: '600',
         textTransform: 'uppercase',
     },

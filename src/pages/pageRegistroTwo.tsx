@@ -14,7 +14,8 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
-  Dimensions
+  Dimensions,
+  PixelRatio
 } from 'react-native';
 import { ButtonStepOne, ButtonStepOneDisabled } from '../components/ButtonStepOne';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -27,6 +28,26 @@ import { RegistroUserTwo } from '../interfaces/storageRegistroInterface';
 import CustomAlert from '../components/CustomAlert';
 
 const { width, height } = Dimensions.get('window');
+
+// Responsive calculation functions
+const scale = Math.min(width, height) / 375; // Base scale on the smaller dimension
+const verticalScale = height / 812; // Based on iPhone X height
+const horizontalScale = width / 375; // Based on iPhone X width
+
+const normalize = (size:number, factor = 0.5) => {
+  return size + (scale - 1) * size * factor;
+};
+
+// Convert percentage to pixels
+const wp = (percentage:number) => {
+  const value = (percentage * width) / 100;
+  return Math.round(value);
+};
+
+const hp = (percentage:number) => {
+  const value = (percentage * height) / 100;
+  return Math.round(value);
+};
 
 type NavigationStep = StackNavigationProp<RootStackParamList>;
 
@@ -140,11 +161,11 @@ export default function PageRegistroTwo() {
             <KeyboardAvoidingView 
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
                 style={styles.keyboardAvoidView}
-                keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+                keyboardVerticalOffset={Platform.OS === "ios" ? hp(8) : 0}
             >
                 <ScrollView 
                     contentContainerStyle={styles.scrollViewContent}
-                    showsVerticalScrollIndicator={true}
+                    showsVerticalScrollIndicator={false}
                     bounces={true}
                 >
                     {/* Form Content */}
@@ -301,8 +322,8 @@ const styles = StyleSheet.create({
     },
     header: {
         backgroundColor: 'white',
-        paddingVertical: 16,
-        paddingHorizontal: 20,
+        paddingVertical: normalize(16, 0.3),
+        paddingHorizontal: normalize(20, 0.3),
         alignItems: 'center',
         elevation: 4,
         shadowColor: '#000',
@@ -312,79 +333,83 @@ const styles = StyleSheet.create({
     },
     headerLogo: {
         color: 'black',
-        fontSize: 22,
+        fontSize: normalize(22),
         fontWeight: 'bold',
         letterSpacing: 1,
     },
     scrollViewContent: {
-        paddingHorizontal: 16,
-        paddingBottom: 120, // Extra padding at the bottom to ensure scrolling works
+        paddingHorizontal: wp(4),
+        paddingBottom: hp(15), // Extra padding at the bottom to ensure scrolling works
+        flexGrow: 1,
+        minHeight: Platform.OS === 'ios' ? hp(70) : hp(60), // Ensure content takes up enough space to be scrollable
     },
     formCard: {
         backgroundColor: 'white',
-        borderRadius: 12,
-        padding: 24,
-        marginTop: 24,
-        marginBottom: 24,
+        borderRadius: normalize(12),
+        padding: normalize(24, 0.3),
+        marginTop: hp(3),
+        marginBottom: hp(3),
         elevation: 2,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
         shadowRadius: 2,
+        width: '100%',
     },
     formTitle: {
-        fontSize: 22,
+        fontSize: normalize(22),
         fontWeight: 'bold',
         color: '#2D3748',
         textAlign: 'center',
     },
     formSubtitle: {
-        fontSize: 14,
+        fontSize: normalize(14, 0.3),
         color: '#718096',
         textAlign: 'center',
-        marginTop: 8,
-        marginBottom: 24,
+        marginTop: normalize(8, 0.3),
+        marginBottom: normalize(24, 0.3),
+        paddingHorizontal: wp(2),
     },
     formContainer: {
         width: '100%',
     },
     inputContainer: {
-        marginBottom: 20,
+        marginBottom: normalize(20, 0.3),
     },
     inputLabel: {
-        fontSize: 14,
+        fontSize: normalize(14, 0.3),
         fontWeight: '600',
         color: '#4A5568',
-        marginBottom: 8,
+        marginBottom: normalize(8, 0.3),
     },
     input: {
         backgroundColor: '#F7FAFC',
         borderWidth: 1,
         borderColor: '#E2E8F0',
-        borderRadius: 8,
-        height: 50,
-        paddingHorizontal: 16,
-        fontSize: 16,
+        borderRadius: normalize(8),
+        height: normalize(50, 0.3),
+        paddingHorizontal: normalize(16, 0.3),
+        fontSize: normalize(16, 0.3),
         color: '#2D3748',
     },
     inputDisabled: {
         backgroundColor: '#EDF2F7',
         borderWidth: 1,
         borderColor: '#E2E8F0',
-        borderRadius: 8,
-        height: 50,
-        paddingHorizontal: 16,
-        fontSize: 16,
+        borderRadius: normalize(8),
+        height: normalize(50, 0.3),
+        paddingHorizontal: normalize(16, 0.3),
+        fontSize: normalize(16, 0.3),
         color: '#718096',
     },
     buttonContainer: {
-        marginTop: 16,
+        marginTop: normalize(16, 0.3),
         alignItems: 'center',
     },
     searchButton: {
         backgroundColor: 'black',
-        borderRadius: 8,
-        height: 50,
+        borderRadius: normalize(8),
+        height: normalize(50, 0.3),
         width: '100%',
         justifyContent: 'center',
         alignItems: 'center',
@@ -396,21 +421,21 @@ const styles = StyleSheet.create({
     },
     searchButtonDisabled: {
         backgroundColor: '#CBD5E0',
-        borderRadius: 8,
-        height: 50,
+        borderRadius: normalize(8),
+        height: normalize(50, 0.3),
         width: '100%',
         justifyContent: 'center',
         alignItems: 'center',
     },
     searchButtonText: {
         color: 'white',
-        fontSize: 16,
+        fontSize: normalize(16, 0.3),
         fontWeight: '600',
     },
     primaryButton: {
         backgroundColor: 'black',
-        borderRadius: 8,
-        height: 50,
+        borderRadius: normalize(8),
+        height: normalize(50, 0.3),
         width: '100%',
         justifyContent: 'center',
         alignItems: 'center',
@@ -422,28 +447,28 @@ const styles = StyleSheet.create({
     },
     primaryButtonText: {
         color: 'white',
-        fontSize: 16,
+        fontSize: normalize(16, 0.3),
         fontWeight: '600',
     },
     disabledButton: {
         backgroundColor: '#CBD5E0',
-        borderRadius: 8,
-        height: 50,
+        borderRadius: normalize(8),
+        height: normalize(50, 0.3),
         width: '100%',
         justifyContent: 'center',
         alignItems: 'center',
     },
     disabledButtonText: {
         color: '#718096',
-        fontSize: 16,
+        fontSize: normalize(16, 0.3),
         fontWeight: '600',
     },
     errorMessage: {
         color: '#E53E3E',
-        fontSize: 14,
-        marginTop: 8,
+        fontSize: normalize(14, 0.3),
+        marginTop: normalize(8, 0.3),
     },
     extraPadding: {
-        height: 50, // Extra space at the bottom of the form
+        height: hp(6), // Extra space at the bottom of the form that scales with screen height
     }
 });

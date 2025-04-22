@@ -10,6 +10,8 @@ import {
   SafeAreaView,
   Platform,
   Image,
+  PixelRatio,
+  ScrollView
 } from "react-native"
 import { useNavigation, useFocusEffect } from "@react-navigation/native"
 import type { StackNavigationProp } from "@react-navigation/stack"
@@ -17,8 +19,30 @@ import type { RootStackParamList } from "../../routes/RootStackParamList" // Cer
 import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { LinearGradient } from "expo-linear-gradient"
 
-const windowWidth = Dimensions.get("window").width
-const windowHeight = Dimensions.get("window").height
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window")
+
+// Responsive calculation functions
+const widthPercentageToDP = (widthPercent: number) => {
+  const screenWidth = SCREEN_WIDTH;
+  return PixelRatio.roundToNearestPixel(screenWidth * widthPercent / 100);
+};
+
+const heightPercentageToDP = (heightPercent: number) => {
+  const screenHeight = SCREEN_HEIGHT;
+  return PixelRatio.roundToNearestPixel(screenHeight * heightPercent / 100);
+};
+
+// Scale based on screen size
+const scale = SCREEN_WIDTH / 375; // based on iPhone 8 width
+const normalize = (size: number) => {
+  const newSize = size * scale;
+  if (Platform.OS === 'ios') {
+    return Math.round(PixelRatio.roundToNearestPixel(newSize));
+  } else {
+    return Math.round(PixelRatio.roundToNearestPixel(newSize)) - 2;
+  }
+};
+
 type OnBoardingNavigationProp = StackNavigationProp<RootStackParamList>
 
 export default function PageHome() {
@@ -51,53 +75,56 @@ export default function PageHome() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-
-      <View style={styles.contentContainer}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.titleNovosTalentos}>Novos Talentos</Text>
-          <Text style={styles.textSlogan}>
-            O melhor aplicativo para iniciantes encontrarem oportunidades de emprego
-          </Text>
-          <Image
-            source={require('../../assets/pageHomeImage.png')}
-            style={styles.image}
-          />
-        </View>
-
-        {/* <View style={styles.illustrationContainer}>
-          <View style={styles.illustrationCircle} />
-        </View> */}
-
-        <View style={styles.buttonsContainer}>
-          <TouchableOpacity style={styles.buttonPrimary} activeOpacity={0.8} onPress={irPageLogin}>
-            <LinearGradient
-              colors={["black", 'black']}
-              style={styles.buttonGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-            >
-              <MaterialCommunityIcons name="account-circle" size={24} color="#FFFFFF" />
-              <Text style={styles.buttonTextPrimary}>Entrar como candidato</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.buttonSecondary} activeOpacity={0.8} onPress={irPageEntrarEmpresa}>
-            <MaterialCommunityIcons name="office-building" size={24} color="#4A80F0" style={styles.buttonIcon} />
-            <Text style={styles.buttonTextSecondary}>Entrar como empresa</Text>
-          </TouchableOpacity>
-
-          <View style={styles.dividerContainer}>
-            <View style={styles.divider} />
-            <Text style={styles.dividerText}>ou</Text>
-            <View style={styles.divider} />
+      
+      <ScrollView 
+        contentContainerStyle={styles.scrollViewContent}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.contentContainer}>
+          <View style={styles.headerContainer}>
+            <Text style={styles.titleNovosTalentos}>Novos Talentos</Text>
+            <Text style={styles.textSlogan}>
+              O melhor aplicativo para iniciantes encontrarem oportunidades de emprego
+            </Text>
+            <Image
+              source={require('../../assets/pageHomeImage.png')}
+              style={styles.image}
+              resizeMode="contain"
+            />
           </View>
 
-          <TouchableOpacity style={styles.buttonOutline} activeOpacity={0.8} onPress={irPageRegistro}>
-            <MaterialCommunityIcons name="account-plus" size={24} color="#4A80F0" style={styles.buttonIcon} />
-            <Text style={styles.buttonTextOutline}>Registrar</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonsContainer}>
+            <TouchableOpacity style={styles.buttonPrimary} activeOpacity={0.8} onPress={irPageLogin}>
+              <LinearGradient
+                colors={["black", 'black']}
+                style={styles.buttonGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              >
+                <MaterialCommunityIcons name="account-circle" size={normalize(24)} color="#FFFFFF" />
+                <Text style={styles.buttonTextPrimary}>Entrar como candidato</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.buttonSecondary} activeOpacity={0.8} onPress={irPageEntrarEmpresa}>
+              <MaterialCommunityIcons name="office-building" size={normalize(24)} color="#4A80F0" style={styles.buttonIcon} />
+              <Text style={styles.buttonTextSecondary}>Entrar como empresa</Text>
+            </TouchableOpacity>
+
+            <View style={styles.dividerContainer}>
+              <View style={styles.divider} />
+              <Text style={styles.dividerText}>ou</Text>
+              <View style={styles.divider} />
+            </View>
+
+            <TouchableOpacity style={styles.buttonOutline} activeOpacity={0.8} onPress={irPageRegistro}>
+              <MaterialCommunityIcons name="account-plus" size={normalize(24)} color="#4A80F0" style={styles.buttonIcon} />
+              <Text style={styles.buttonTextOutline}>Registrar</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   )
 }
@@ -107,6 +134,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
+  scrollViewContent: {
+    flexGrow: 1,
+  },
   loadingContainer: {
     flex: 1,
     alignItems: "center",
@@ -114,13 +144,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   logoContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
+    width: widthPercentageToDP(20),
+    height: widthPercentageToDP(20),
+    borderRadius: widthPercentageToDP(5),
     backgroundColor: "black",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 20,
+    marginBottom: heightPercentageToDP(2.5),
     shadowColor: "black",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -128,65 +158,63 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   logoText: {
-    fontSize: 32,
+    fontSize: normalize(32),
     fontWeight: "bold",
     color: "#FFFFFF",
   },
   loader: {
-    marginBottom: 12,
+    marginBottom: heightPercentageToDP(1.5),
   },
   loadingText: {
-    fontSize: 16,
+    fontSize: normalize(16),
     color: "#4A5568",
     fontWeight: "500",
   },
   contentContainer: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: Platform.OS === "android" ? 40 : 20,
-    paddingBottom: 40,
+    paddingHorizontal: widthPercentageToDP(6),
+    paddingTop: Platform.OS === "android" ? heightPercentageToDP(5) : heightPercentageToDP(2.5),
+    paddingBottom: heightPercentageToDP(5),
     justifyContent: "space-between",
+    minHeight: SCREEN_HEIGHT - (Platform.OS === "ios" ? 90 : 60), // Account for safe area
   },
   headerContainer: {
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: heightPercentageToDP(2.5),
+    paddingTop: heightPercentageToDP(2),
   },
   titleNovosTalentos: {
-    fontSize: 36,
+    fontSize: normalize(36),
     fontWeight: "bold",
     color: "#1A2138",
-    marginBottom: 12,
+    marginBottom: heightPercentageToDP(1.5),
     textAlign: "center",
   },
   textSlogan: {
-    fontSize: 16,
+    fontSize: normalize(16),
     color: "#4A5568",
     textAlign: "center",
-    lineHeight: 24,
-    maxWidth: "80%",
+    lineHeight: normalize(24),
+    maxWidth: "90%",
+    paddingHorizontal: widthPercentageToDP(2),
   },
-  illustrationContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginVertical: 20,
-    height: windowHeight * 0.25,
-  },
-  illustrationCircle: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: "#F0F5FF",
-    opacity: 0.8,
+  image: {
+    width: widthPercentageToDP(90),
+    height: heightPercentageToDP(40),
+    marginVertical: heightPercentageToDP(2),
+    alignSelf: 'center',
   },
   buttonsContainer: {
     width: "100%",
     marginTop: "auto",
+    paddingBottom: heightPercentageToDP(2),
   },
   buttonPrimary: {
     width: "100%",
-    height: 56,
-    borderRadius: 12,
-    marginBottom: 16,
+    height: heightPercentageToDP(7),
+    minHeight: 50,
+    borderRadius: normalize(12),
+    marginBottom: heightPercentageToDP(2),
     shadowColor: "#4A80F0",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -198,23 +226,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    borderRadius: normalize(12),
+    paddingHorizontal: widthPercentageToDP(4),
   },
   buttonSecondary: {
     width: "100%",
-    height: 56,
-    borderRadius: 12,
+    height: heightPercentageToDP(7),
+    minHeight: 50,
+    borderRadius: normalize(12),
     backgroundColor: "#F0F5FF",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 24,
+    marginBottom: heightPercentageToDP(3),
   },
   buttonOutline: {
     width: "100%",
-    height: 56,
-    borderRadius: 12,
+    height: heightPercentageToDP(7),
+    minHeight: 50,
+    borderRadius: normalize(12),
     borderWidth: 1.5,
     borderColor: "#4A80F0",
     flexDirection: "row",
@@ -222,30 +252,30 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   buttonIcon: {
-    marginRight: 8,
+    marginRight: widthPercentageToDP(2),
   },
   buttonTextPrimary: {
     color: "#FFFFFF",
-    fontSize: 16,
+    fontSize: normalize(16),
     fontWeight: "600",
-    marginLeft: 8,
+    marginLeft: widthPercentageToDP(2),
   },
   buttonTextSecondary: {
     color: "#4A80F0",
-    fontSize: 16,
+    fontSize: normalize(16),
     fontWeight: "600",
-    marginLeft: 8,
+    marginLeft: widthPercentageToDP(2),
   },
   buttonTextOutline: {
     color: "#4A80F0",
-    fontSize: 16,
+    fontSize: normalize(16),
     fontWeight: "600",
-    marginLeft: 8,
+    marginLeft: widthPercentageToDP(2),
   },
   dividerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: heightPercentageToDP(3),
   },
   divider: {
     flex: 1,
@@ -253,14 +283,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#E2E8F0",
   },
   dividerText: {
-    paddingHorizontal: 16,
+    paddingHorizontal: widthPercentageToDP(4),
     color: "#718096",
-    fontSize: 14,
-  },
-  image: {
-    width: 400,
-    height: 400,
-    resizeMode: 'contain',
-    marginVertical: 20,
+    fontSize: normalize(14),
   },
 })
