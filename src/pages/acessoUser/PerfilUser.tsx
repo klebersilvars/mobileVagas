@@ -19,7 +19,7 @@ import {
 import { auth, db } from '../../firebase/firebase';
 import { uploadImage } from '../../firebase/cloudinary';
 import { doc, getDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import { updatePassword } from 'firebase/auth';
+import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialCommunityIcons, Ionicons, Feather, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -322,7 +322,7 @@ export default function PerfilUser() {
             }
 
             const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ['images'],
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 aspect: [1, 1],
                 quality: 0.5,
@@ -343,62 +343,66 @@ export default function PerfilUser() {
 
     const handleUpdatePassword = async () => {
         try {
-            if (!editData.senha_atual || !editData.nova_senha || !editData.confirmar_senha) {
-                Alert.alert('Erro', 'Preencha todos os campos de senha');
-                return;
-            }
-
+            // Verificar se as senhas novas coincidem
             if (editData.nova_senha !== editData.confirmar_senha) {
-                Alert.alert('Erro', 'As senhas não coincidem');
+                Alert.alert('Erro', 'As novas senhas não coincidem');
                 return;
             }
 
-            const userDataString = await AsyncStorage.getItem('userCandidatoLogado');
-            if (userDataString) {
-                const userData = JSON.parse(userDataString);
-                const userEmail = userData.email;
-
-                if (userEmail) {
-                    // Verificar senha atual no Firestore
-                    const usersRef = collection(db, 'user_candidato');
-                    const q = query(usersRef, where('email', '==', userEmail));
-                    const querySnapshot = await getDocs(q);
-                    
-                    if (!querySnapshot.empty) {
-                        const userDoc = querySnapshot.docs[0];
-                        const userData = userDoc.data();
-
-                        if (userData.password !== editData.senha_atual) {
-                            Alert.alert('Erro', 'Senha atual incorreta');
-                            return;
-                        }
-
-                        // Atualizar senha no Authentication
-                        const user = auth.currentUser;
-                        if (user) {
-                            await updatePassword(user, editData.nova_senha);
-                        }
-
-                        // Atualizar senha no Firestore
-                        await updateDoc(doc(db, 'user_candidato', userDoc.id), {
-                            password: editData.nova_senha
-                        });
-
-                        // Limpar campos de senha
-                        setEditData(prev => ({
-                            ...prev,
-                            senha_atual: '',
-                            nova_senha: '',
-                            confirmar_senha: ''
-                        }));
-
-                        Alert.alert('Sucesso', 'Senha atualizada com sucesso!');
-                    }
-                }
+            // Verificar se a senha tem pelo menos 6 caracteres
+            if (editData.nova_senha.length < 6) {
+                Alert.alert('Erro', 'A nova senha deve ter pelo menos 6 caracteres');
+                return;
             }
+
+            const user = auth.currentUser;
+            if (!user || !user.email) {
+                Alert.alert('Erro', 'Usuário não está autenticado');
+                return;
+            }
+
+            // Reautenticar o usuário antes de alterar a senha
+            const credential = EmailAuthProvider.credential(
+                user.email,
+                editData.senha_atual
+            );
+
+            try {
+                await reauthenticateWithCredential(user, credential);
+            } catch (reAuthError) {
+                console.error('Erro na reautenticação:', reAuthError);
+                Alert.alert('Erro', 'Senha atual incorreta');
+                return;
+            }
+
+            // Atualizar a senha no Firebase Auth
+            await updatePassword(user, editData.nova_senha);
+
+            // Atualizar a senha no Firestore
+            const usersRef = collection(db, 'user_candidato');
+            const q = query(usersRef, where('email', '==', user.email));
+            const querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+                const userDoc = querySnapshot.docs[0];
+                await updateDoc(doc(db, 'user_candidato', userDoc.id), {
+                    password: editData.nova_senha
+                });
+            }
+
+            // Limpar os campos de senha
+            setEditData(prev => ({
+                ...prev,
+                senha_atual: '',
+                nova_senha: '',
+                confirmar_senha: ''
+            }));
+
+            Alert.alert('Sucesso', 'Senha atualizada com sucesso!');
+            setModalVisible(false);
         } catch (error) {
             console.error('Erro ao atualizar senha:', error);
-            Alert.alert('Erro', 'Não foi possível atualizar a senha. Tente novamente.');
+            Alert.alert('Erro', 'Não foi possível atualizar a senha. Tente novamente mais tarde.');
         }
     };
 
@@ -567,7 +571,7 @@ export default function PerfilUser() {
                                 style={styles.addButton}
                                 onPress={addFormacao}
                             >
-                                <Ionicons name="add-circle-outline" size={20} color="#4A80F0" />
+                                <Ionicons name="add-circle-outline" size={20} color="#000" />
                                 <Text style={styles.addButtonText}>Adicionar Formação</Text>
                             </TouchableOpacity>
                         </View>
@@ -605,7 +609,7 @@ export default function PerfilUser() {
                                 style={styles.addButton}
                                 onPress={addExperiencia}
                             >
-                                <Ionicons name="add-circle-outline" size={20} color="#4A80F0" />
+                                <Ionicons name="add-circle-outline" size={20} color="#000" />
                                 <Text style={styles.addButtonText}>Adicionar Experiência</Text>
                             </TouchableOpacity>
                         </View>
@@ -645,57 +649,59 @@ export default function PerfilUser() {
                             style={styles.addButton}
                             onPress={addExperiencia}
                         >
-                            <Ionicons name="add-circle-outline" size={20} color="#4A80F0" />
+                            <Ionicons name="add-circle-outline" size={20} color="#000" />
                             <Text style={styles.addButtonText}>Adicionar Experiência</Text>
                         </TouchableOpacity>
                     </>
                 );
             case 'password':
                 return (
-                    <>
-                        <Text style={styles.inputLabel}>Senha Atual</Text>
+                    <View style={styles.tabContent}>
+                        <Text style={styles.sectionTitle}>Alterar Senha</Text>
+                        
                         <View style={styles.inputContainer}>
                             <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
                             <TextInput
                                 style={styles.input}
-                                placeholder="Digite sua senha atual"
+                                placeholder="Senha atual"
                                 value={editData.senha_atual}
                                 onChangeText={(text) => setEditData({...editData, senha_atual: text})}
                                 secureTextEntry
+                                autoCapitalize='none'
                             />
                         </View>
-
-                        <Text style={styles.inputLabel}>Nova Senha</Text>
+                        
                         <View style={styles.inputContainer}>
                             <Ionicons name="key-outline" size={20} color="#666" style={styles.inputIcon} />
                             <TextInput
                                 style={styles.input}
-                                placeholder="Digite sua nova senha"
+                                placeholder="Nova senha"
                                 value={editData.nova_senha}
                                 onChangeText={(text) => setEditData({...editData, nova_senha: text})}
                                 secureTextEntry
+                                autoCapitalize='none'
                             />
                         </View>
-
-                        <Text style={styles.inputLabel}>Confirmar Nova Senha</Text>
+                        
                         <View style={styles.inputContainer}>
                             <Ionicons name="checkmark-circle-outline" size={20} color="#666" style={styles.inputIcon} />
                             <TextInput
                                 style={styles.input}
-                                placeholder="Confirme sua nova senha"
+                                placeholder="Confirmar nova senha"
                                 value={editData.confirmar_senha}
                                 onChangeText={(text) => setEditData({...editData, confirmar_senha: text})}
                                 secureTextEntry
+                                autoCapitalize='none'
                             />
                         </View>
-
-                        <TouchableOpacity 
-                            style={styles.passwordUpdateButton}
+                        
+                        <TouchableOpacity
+                            style={[styles.saveButton, { marginTop: 20 }]}
                             onPress={handleUpdatePassword}
                         >
-                            <Text style={styles.passwordUpdateButtonText}>Atualizar Senha</Text>
+                            <Text style={styles.saveButtonText}>Atualizar Senha</Text>
                         </TouchableOpacity>
-                    </>
+                    </View>
                 );
             default:
                 return null;
@@ -705,7 +711,7 @@ export default function PerfilUser() {
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#4A80F0" />
+                <ActivityIndicator size="large" color="#000" />
                 <Text style={styles.loadingText}>Carregando perfil...</Text>
             </View>
         );
@@ -713,16 +719,13 @@ export default function PerfilUser() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#4A80F0" />
+            <StatusBar barStyle="light-content" backgroundColor="#000" />
             
             <ScrollView 
                 style={styles.scrollView}
                 showsVerticalScrollIndicator={false}
             >
-                <LinearGradient
-                    colors={['#4A80F0', '#775ADA']}
-                    style={styles.header}
-                >
+                <View style={styles.header}>
                     <View style={styles.profileImageContainer}>
                         {userData?.profileImage ? (
                             <Image
@@ -746,11 +749,11 @@ export default function PerfilUser() {
                     
                     <Text style={styles.userName}>{userData?.nome_completo || 'Nome do Usuário'}</Text>
                     <Text style={styles.userEmail}>{userData?.email || 'email@exemplo.com'}</Text>
-                </LinearGradient>
+                </View>
 
                 <View style={styles.infoCard}>
                     <View style={styles.sectionHeader}>
-                        <Ionicons name="person" size={20} color="#4A80F0" />
+                        <Ionicons name="person" size={20} color="#000" />
                         <Text style={styles.sectionTitle}>Informações Pessoais</Text>
                     </View>
                     
@@ -785,7 +788,7 @@ export default function PerfilUser() {
 
                 <View style={styles.infoCard}>
                     <View style={styles.sectionHeader}>
-                        <Ionicons name="location" size={20} color="#4A80F0" />
+                        <Ionicons name="location" size={20} color="#000" />
                         <Text style={styles.sectionTitle}>Endereço</Text>
                     </View>
                     
@@ -827,7 +830,7 @@ export default function PerfilUser() {
 
                 <View style={styles.infoCard}>
                     <View style={styles.sectionHeader}>
-                        <Ionicons name="school" size={20} color="#4A80F0" />
+                        <Ionicons name="school" size={20} color="#000" />
                         <Text style={styles.sectionTitle}>Formação Acadêmica</Text>
                     </View>
                     
@@ -847,7 +850,7 @@ export default function PerfilUser() {
 
                 <View style={styles.infoCard}>
                     <View style={styles.sectionHeader}>
-                        <Ionicons name="briefcase" size={20} color="#4A80F0" />
+                        <Ionicons name="briefcase" size={20} color="#000" />
                         <Text style={styles.sectionTitle}>Experiência Profissional</Text>
                     </View>
                     
@@ -869,13 +872,10 @@ export default function PerfilUser() {
                     style={styles.editButton}
                     onPress={() => setModalVisible(true)}
                 >
-                    <LinearGradient
-                        colors={['#4A80F0', '#775ADA']}
-                        style={styles.editButtonGradient}
-                    >
+                    <View style={styles.editButtonGradient}>
                         <Ionicons name="create-outline" size={20} color="#fff" />
                         <Text style={styles.editButtonText}>Editar Perfil</Text>
-                    </LinearGradient>
+                    </View>
                 </TouchableOpacity>
             </ScrollView>
 
@@ -885,114 +885,115 @@ export default function PerfilUser() {
                 visible={modalVisible}
                 onRequestClose={() => setModalVisible(false)}
             >
-                <KeyboardAvoidingView 
+                <KeyboardAvoidingView
                     behavior={Platform.OS === "ios" ? "padding" : "height"}
                     style={styles.modalContainer}
                 >
                     <View style={styles.modalContent}>
                         <View style={styles.modalHeader}>
-                            <View style={styles.dragIndicator} />
-                            <Text style={styles.modalTitle}>Editar Perfil</Text>
-                            <TouchableOpacity 
-                                style={styles.closeButton}
+                            <TouchableOpacity
                                 onPress={() => setModalVisible(false)}
+                                style={styles.closeButton}
                             >
-                                <Ionicons name="close" size={24} color="#666" />
+                                <Ionicons name="close" size={24} color="#000" />
                             </TouchableOpacity>
+                            <Text style={styles.modalTitle}>Editar Perfil</Text>
                         </View>
 
-                        <View style={styles.avatarEditContainer}>
-                            {editData.profileImage ? (
+                        {/* Profile Image Section - Now at the top of the modal */}
+                        <View style={styles.profileImageEditContainer}>
+                            {profileImage || userData?.profileImage ? (
                                 <Image
-                                    source={{ uri: editData.profileImage }}
-                                    style={styles.modalProfileImage}
+                                    source={{ uri: profileImage || userData?.profileImage }}
+                                    style={styles.profileImageEdit}
                                 />
                             ) : (
-                                <View style={styles.modalProfileImageFallback}>
-                                    <Text style={styles.modalProfileImageFallbackText}>
-                                        {getInitials(editData.nome_completo || 'User')}
+                                <View style={styles.profileImageFallbackEdit}>
+                                    <Text style={styles.profileImageFallbackTextEdit}>
+                                        {getInitials(userData?.nome_completo || 'User')}
                                     </Text>
                                 </View>
                             )}
                             <TouchableOpacity 
-                                style={styles.changePhotoButton}
+                                style={styles.editPhotoButtonModal}
                                 onPress={pickImage}
                             >
-                                <Ionicons name="camera-outline" size={18} color="#4A80F0" />
-                                <Text style={styles.changePhotoText}>Alterar foto</Text>
+                                <Ionicons name="camera" size={18} color="#fff" />
                             </TouchableOpacity>
                         </View>
 
-                        <View style={styles.tabContainer}>
+                        {/* Tab Navigation - Now below the profile image */}
+                        <View style={styles.tabsContainer}>
                             <ScrollView 
                                 horizontal 
-                                showsHorizontalScrollIndicator={false}
-                                contentContainerStyle={styles.tabScrollContainer}
+                                showsHorizontalScrollIndicator={false} 
+                                style={styles.tabScrollView}
+                                contentContainerStyle={styles.tabScrollContent}
                             >
-                                <TouchableOpacity 
-                                    style={[styles.tabButton, activeTab === 'personal' && styles.activeTabButton]}
+                                <TouchableOpacity
+                                    style={[styles.tab, activeTab === 'personal' && styles.activeTab]}
                                     onPress={() => setActiveTab('personal')}
                                 >
                                     <Ionicons 
                                         name="person" 
-                                        size={18} 
-                                        color={activeTab === 'personal' ? "#4A80F0" : "#666"} 
+                                        size={20} 
+                                        color={activeTab === 'personal' ? '#000' : '#666'} 
                                     />
                                     <Text style={[styles.tabText, activeTab === 'personal' && styles.activeTabText]}>
                                         Pessoal
                                     </Text>
                                 </TouchableOpacity>
                                 
-                                <TouchableOpacity 
-                                    style={[styles.tabButton, activeTab === 'address' && styles.activeTabButton]}
+                                <TouchableOpacity
+                                    style={[styles.tab, activeTab === 'address' && styles.activeTab]}
                                     onPress={() => setActiveTab('address')}
                                 >
                                     <Ionicons 
                                         name="location" 
-                                        size={18} 
-                                        color={activeTab === 'address' ? "#4A80F0" : "#666"} 
+                                        size={20} 
+                                        color={activeTab === 'address' ? '#000' : '#666'} 
                                     />
                                     <Text style={[styles.tabText, activeTab === 'address' && styles.activeTabText]}>
                                         Endereço
                                     </Text>
                                 </TouchableOpacity>
                                 
-                                <TouchableOpacity 
-                                    style={[styles.tabButton, activeTab === 'education' && styles.activeTabButton]}
+                                <TouchableOpacity
+                                    style={[styles.tab, activeTab === 'education' && styles.activeTab]}
                                     onPress={() => setActiveTab('education')}
                                 >
                                     <Ionicons 
                                         name="school" 
-                                        size={18} 
-                                        color={activeTab === 'education' ? "#4A80F0" : "#666"} 
+                                        size={20} 
+                                        color={activeTab === 'education' ? '#000' : '#666'} 
                                     />
                                     <Text style={[styles.tabText, activeTab === 'education' && styles.activeTabText]}>
                                         Formação
                                     </Text>
                                 </TouchableOpacity>
                                 
-                                <TouchableOpacity 
-                                    style={[styles.tabButton, activeTab === 'experience' && styles.activeTabButton]}
+                                <TouchableOpacity
+                                    style={[styles.tab, activeTab === 'experience' && styles.activeTab]}
                                     onPress={() => setActiveTab('experience')}
                                 >
                                     <Ionicons 
                                         name="briefcase" 
-                                        size={18} 
-                                        color={activeTab === 'experience' ? "#4A80F0" : "#666"} 
+                                        size={20} 
+                                        color={activeTab === 'experience' ? '#000' : '#666'} 
                                     />
                                     <Text style={[styles.tabText, activeTab === 'experience' && styles.activeTabText]}>
                                         Experiência
                                     </Text>
                                 </TouchableOpacity>
-                                
-                                <TouchableOpacity 
-                                    style={[styles.tabButton, activeTab === 'password' && styles.activeTabButton]}
+
+                                <TouchableOpacity
+                                    style={[styles.tab, activeTab === 'password' && styles.activeTab]}
                                     onPress={() => setActiveTab('password')}
                                 >
                                     <Ionicons 
-                                        name="lock-closed" 
-                                        size={18} 
-                                        color={activeTab === 'password' ? "#4A80F0" : "#666"} 
+                                        name="key" 
+                                        size={20} 
+                                        color={activeTab === 'password' ? '#000' : '#666'} 
                                     />
                                     <Text style={[styles.tabText, activeTab === 'password' && styles.activeTabText]}>
                                         Senha
@@ -1001,30 +1002,19 @@ export default function PerfilUser() {
                             </ScrollView>
                         </View>
 
+                        {/* Content Area - Below tabs */}
                         <ScrollView 
-                            style={styles.modalScrollView}
-                            showsVerticalScrollIndicator={false}
+                            style={styles.modalScroll} 
+                            contentContainerStyle={styles.modalScrollContent}
                         >
-                            <View style={styles.formContainer}>
-                                {renderTabContent()}
-                            </View>
+                            {renderTabContent()}
                         </ScrollView>
 
-                        <View style={styles.modalButtons}>
-                            <TouchableOpacity 
-                                style={[styles.modalButton, styles.cancelButton]}
-                                onPress={() => setModalVisible(false)}
-                            >
-                                <Text style={styles.cancelButtonText}>Cancelar</Text>
-                            </TouchableOpacity>
-                            
-                            <TouchableOpacity 
-                                style={[styles.modalButton, styles.saveButton]}
-                                onPress={handleSave}
-                            >
+                        {activeTab !== 'password' && (
+                            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
                                 <Text style={styles.saveButtonText}>Salvar</Text>
                             </TouchableOpacity>
-                        </View>
+                        )}
                     </View>
                 </KeyboardAvoidingView>
             </Modal>
@@ -1035,7 +1025,7 @@ export default function PerfilUser() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F7FF',
+        backgroundColor: '#f5f5f5',
     },
     scrollView: {
         flex: 1,
@@ -1044,7 +1034,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#F5F7FF',
+        backgroundColor: '#f5f5f5',
     },
     loadingText: {
         marginTop: normalize(12),
@@ -1057,6 +1047,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderBottomLeftRadius: normalize(30),
         borderBottomRightRadius: normalize(30),
+        backgroundColor: '#000',
     },
     profileImageContainer: {
         position: 'relative',
@@ -1073,7 +1064,7 @@ const styles = StyleSheet.create({
         width: normalize(100),
         height: normalize(100),
         borderRadius: normalize(50),
-        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        backgroundColor: '#333',
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 3,
@@ -1088,7 +1079,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 0,
         right: 0,
-        backgroundColor: '#4A80F0',
+        backgroundColor: '#000',
         width: normalize(36),
         height: normalize(36),
         borderRadius: normalize(18),
@@ -1127,11 +1118,14 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: normalize(18),
         fontWeight: '600',
-        color: '#333',
+        color: '#000',
         marginLeft: normalize(8),
     },
     infoRow: {
         marginBottom: normalize(12),
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
+        paddingBottom: normalize(8),
     },
     infoItem: {
         flexDirection: 'column',
@@ -1143,19 +1137,22 @@ const styles = StyleSheet.create({
     },
     infoValue: {
         fontSize: normalize(16),
-        color: '#333',
+        color: '#000',
         fontWeight: '500',
     },
     educationItem: {
         flexDirection: 'row',
         marginBottom: normalize(12),
         alignItems: 'flex-start',
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
+        paddingBottom: normalize(8),
     },
     educationBullet: {
         width: normalize(24),
         height: normalize(24),
         borderRadius: normalize(12),
-        backgroundColor: '#4A80F0',
+        backgroundColor: '#000',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: normalize(12),
@@ -1169,19 +1166,22 @@ const styles = StyleSheet.create({
     educationText: {
         flex: 1,
         fontSize: normalize(15),
-        color: '#333',
+        color: '#000',
         lineHeight: normalize(22),
     },
     experienceItem: {
         flexDirection: 'row',
         marginBottom: normalize(12),
         alignItems: 'flex-start',
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
+        paddingBottom: normalize(8),
     },
     experienceBullet: {
         width: normalize(24),
         height: normalize(24),
         borderRadius: normalize(12),
-        backgroundColor: '#775ADA',
+        backgroundColor: '#000',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: normalize(12),
@@ -1195,7 +1195,7 @@ const styles = StyleSheet.create({
     experienceText: {
         flex: 1,
         fontSize: normalize(15),
-        color: '#333',
+        color: '#000',
         lineHeight: normalize(22),
     },
     emptyListText: {
@@ -1216,6 +1216,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingVertical: normalize(14),
+        backgroundColor: '#000',
     },
     editButtonText: {
         color: 'white',
@@ -1243,69 +1244,74 @@ const styles = StyleSheet.create({
         borderBottomColor: '#f0f0f0',
         position: 'relative',
     },
-    dragIndicator: {
-        width: normalize(40),
-        height: normalize(5),
-        backgroundColor: '#e0e0e0',
-        borderRadius: normalize(3),
-        position: 'absolute',
-        top: normalize(8),
-        alignSelf: 'center',
-    },
-    modalTitle: {
-        fontSize: normalize(18),
-        fontWeight: '600',
-        color: '#333',
-    },
     closeButton: {
         position: 'absolute',
         right: normalize(16),
         top: normalize(16),
     },
-    avatarEditContainer: {
+    modalTitle: {
+        fontSize: normalize(18),
+        fontWeight: '600',
+        color: '#000',
+    },
+    // New styles for the redesigned modal
+    profileImageEditContainer: {
         alignItems: 'center',
-        marginVertical: normalize(16),
+        marginVertical: normalize(20),
+        position: 'relative',
     },
-    modalProfileImage: {
-        width: normalize(80),
-        height: normalize(80),
-        borderRadius: normalize(40),
-        borderWidth: 2,
-        borderColor: '#4A80F0',
+    profileImageEdit: {
+        width: normalize(100),
+        height: normalize(100),
+        borderRadius: normalize(50),
+        borderWidth: 3,
+        borderColor: '#000',
     },
-    modalProfileImageFallback: {
-        width: normalize(80),
-        height: normalize(80),
-        borderRadius: normalize(40),
-        backgroundColor: '#E8F0FF',
+    profileImageFallbackEdit: {
+        width: normalize(100),
+        height: normalize(100),
+        borderRadius: normalize(50),
+        backgroundColor: '#333',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 3,
+        borderColor: '#000',
+    },
+    profileImageFallbackTextEdit: {
+        fontSize: normalize(36),
+        fontWeight: 'bold',
+        color: 'white',
+    },
+    editPhotoButtonModal: {
+        position: 'absolute',
+        bottom: 0,
+        right: normalize(20),
+        backgroundColor: '#000',
+        width: normalize(36),
+        height: normalize(36),
+        borderRadius: normalize(18),
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 2,
-        borderColor: '#4A80F0',
+        borderColor: 'white',
     },
-    modalProfileImageFallbackText: {
-        fontSize: normalize(28),
-        fontWeight: 'bold',
-        color: '#4A80F0',
-    },
-    changePhotoButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: normalize(8),
-    },
-    changePhotoText: {
-        color: '#4A80F0',
-        marginLeft: normalize(4),
-        fontSize: normalize(14),
-    },
-    tabContainer: {
+    tabsContainer: {
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 3,
         borderBottomWidth: 1,
         borderBottomColor: '#f0f0f0',
     },
-    tabScrollContainer: {
-        paddingHorizontal: normalize(16),
+    tabScrollView: {
+        flexGrow: 0,
     },
-    tabButton: {
+    tabScrollContent: {
+        paddingHorizontal: normalize(10),
+    },
+    tab: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: normalize(12),
@@ -1314,22 +1320,26 @@ const styles = StyleSheet.create({
         borderBottomWidth: 2,
         borderBottomColor: 'transparent',
     },
-    activeTabButton: {
-        borderBottomColor: '#4A80F0',
+    activeTab: {
+        borderBottomColor: '#000',
     },
     tabText: {
         fontSize: normalize(14),
         color: '#666',
-        marginLeft: normalize(4),
+        marginLeft: normalize(8),
     },
     activeTabText: {
-        color: '#4A80F0',
+        color: '#000',
         fontWeight: '600',
     },
-    modalScrollView: {
+    modalScroll: {
         flex: 1,
+        padding: normalize(16),
     },
-    formContainer: {
+    modalScrollContent: {
+        paddingBottom: normalize(20),
+    },
+    tabContent: {
         padding: normalize(16),
     },
     inputLabel: {
@@ -1337,16 +1347,17 @@ const styles = StyleSheet.create({
         color: '#666',
         marginBottom: normalize(6),
         marginLeft: normalize(4),
+        marginTop: normalize(10),
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F5F7FF',
+        backgroundColor: '#f9f9f9',
         borderRadius: normalize(12),
         paddingHorizontal: normalize(12),
         marginBottom: normalize(16),
         borderWidth: 1,
-        borderColor: '#E0E0E0',
+        borderColor: '#e0e0e0',
     },
     inputIcon: {
         marginRight: normalize(8),
@@ -1355,7 +1366,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingVertical: normalize(12),
         fontSize: normalize(15),
-        color: '#333',
+        color: '#000',
     },
     rowContainer: {
         flexDirection: 'row',
@@ -1375,11 +1386,11 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F5F7FF',
+        backgroundColor: '#f9f9f9',
         borderRadius: normalize(12),
         paddingHorizontal: normalize(12),
         borderWidth: 1,
-        borderColor: '#E0E0E0',
+        borderColor: '#e0e0e0',
     },
     deleteButton: {
         width: normalize(40),
@@ -1395,52 +1406,23 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: normalize(12),
-        backgroundColor: 'rgba(74, 128, 240, 0.1)',
+        backgroundColor: 'rgba(0, 0, 0, 0.05)',
         borderRadius: normalize(12),
         marginTop: normalize(8),
     },
     addButtonText: {
-        color: '#4A80F0',
+        color: '#000',
         fontWeight: '500',
         marginLeft: normalize(8),
     },
-    passwordUpdateButton: {
-        backgroundColor: '#4A80F0',
-        borderRadius: normalize(12),
-        paddingVertical: normalize(12),
-        alignItems: 'center',
-        marginTop: normalize(16),
-    },
-    passwordUpdateButtonText: {
-        color: 'white',
-        fontWeight: '600',
-        fontSize: normalize(15),
-    },
-    modalButtons: {
-        flexDirection: 'row',
-        padding: normalize(16),
-        borderTopWidth: 1,
-        borderTopColor: '#f0f0f0',
-    },
-    modalButton: {
-        flex: 1,
-        paddingVertical: normalize(14),
-        borderRadius: normalize(12),
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    cancelButton: {
-        backgroundColor: '#f0f0f0',
-        marginRight: normalize(8),
-    },
-    cancelButtonText: {
-        color: '#666',
-        fontWeight: '600',
-        fontSize: normalize(15),
-    },
     saveButton: {
-        backgroundColor: '#4A80F0',
-        marginLeft: normalize(8),
+        backgroundColor: '#000',
+        borderRadius: normalize(12),
+        paddingVertical: normalize(14),
+        alignItems: 'center',
+        marginHorizontal: normalize(16),
+        marginBottom: normalize(16),
+        marginTop: normalize(8),
     },
     saveButtonText: {
         color: 'white',
