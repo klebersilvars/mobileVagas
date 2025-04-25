@@ -61,6 +61,183 @@ interface UserData {
     experiencias?: string[];
 }
 
+// Componente separado para o card de vaga
+const VagaCard = React.memo(({ 
+    item, 
+    index, 
+    expandedCard, 
+    candidaturas, 
+    refreshing,
+    onPress,
+    onCandidatura,
+    formatarSalario,
+    getInitials
+}: { 
+    item: Vaga, 
+    index: number,
+    expandedCard: string | null,
+    candidaturas: string[],
+    refreshing: boolean,
+    onPress: (id: string) => void,
+    onCandidatura: (vaga: Vaga) => void,
+    formatarSalario: (salario: string) => string,
+    getInitials: (name: string) => string
+}) => {
+    const translateY = React.useRef(new Animated.Value(50)).current;
+    const opacity = React.useRef(new Animated.Value(0)).current;
+    const isExpanded = expandedCard === item.id;
+    const jaCandidatou = candidaturas.includes(item.id);
+    const companyInitials = getInitials(item.nome_empresa);
+
+    React.useEffect(() => {
+        if (!refreshing) {
+            Animated.parallel([
+                Animated.timing(translateY, {
+                    toValue: 0,
+                    duration: 300,
+                    delay: index * 100,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(opacity, {
+                    toValue: 1,
+                    duration: 300,
+                    delay: index * 100,
+                    useNativeDriver: true,
+                }),
+            ]).start();
+        }
+    }, [refreshing, index]);
+
+    const verificarCampo = (campo: string) => {
+        return campo ? campo : "A COMBINAR";
+    };
+
+    return (
+        <Animated.View 
+            style={[
+                styles.vagaContainer, 
+                { 
+                    transform: [{ translateY }],
+                    opacity,
+                    width: width * 0.9 
+                }
+            ]}
+        >
+            <TouchableOpacity 
+                activeOpacity={0.9}
+                onPress={() => onPress(item.id)}
+            >
+                <View style={styles.vagaHeader}>
+                    <View style={styles.companyAvatarContainer}>
+                        <View style={styles.avatarCircle}>
+                            <Text style={styles.avatarText}>{companyInitials}</Text>
+                        </View>
+                        <View style={styles.companyInfo}>
+                            <Text style={styles.companyName} numberOfLines={1}>
+                                {verificarCampo(item.nome_empresa)}
+                            </Text>
+                            <View style={styles.dateTimeContainer}>
+                                <Ionicons name="time-outline" size={12} color="#666" />
+                                <Text style={styles.dateText}>
+                                    {verificarCampo(item.data)} às {verificarCampo(item.hora)}
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+                </View>
+                
+                <View style={styles.jobTitleContainer}>
+                    <Text style={styles.vagaTitle} numberOfLines={2}>
+                        {verificarCampo(item.titulo_vaga)}
+                    </Text>
+                    <View style={styles.salaryBadge}>
+                        <Text style={styles.salaryText}>
+                            {formatarSalario(verificarCampo(item.salarioVaga))}
+                        </Text>
+                    </View>
+                </View>
+                
+                <View style={styles.locationContainer}>
+                    <Ionicons name="location-outline" size={16} color="#666" />
+                    <Text style={styles.vagaLocation}>
+                        {verificarCampo(item.area_contato_vaga)}
+                    </Text>
+                </View>
+                
+                <View style={styles.divider} />
+                
+                {isExpanded ? (
+                    <View style={styles.expandedContent}>
+                        <View style={styles.sectionContainer}>
+                            <Text style={styles.sectionTitle}>
+                                <MaterialIcons name="description" size={16} color="#000" /> Descrição
+                            </Text>
+                            <Text style={styles.vagaDescription}>
+                                {verificarCampo(item.publicacao_text)}
+                            </Text>
+                        </View>
+                        
+                        <View style={styles.sectionContainer}>
+                            <Text style={styles.sectionTitle}>
+                                <MaterialIcons name="assignment" size={16} color="#000" /> Requisitos
+                            </Text>
+                            <Text style={styles.vagaRequirements}>
+                                {verificarCampo(item.requisito_vaga)}
+                            </Text>
+                        </View>
+
+                        <TouchableOpacity 
+                            style={styles.expandButton}
+                            onPress={() => onPress(item.id)}
+                        >
+                            <Text style={styles.expandText}>
+                                Ver menos <Ionicons name="chevron-up" size={14} color="#000" />
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                    <>
+                        <Text style={styles.vagaDescription} numberOfLines={2}>
+                            {verificarCampo(item.publicacao_text)}
+                        </Text>
+                        <TouchableOpacity 
+                            style={styles.expandButton}
+                            onPress={() => onPress(item.id)}
+                        >
+                            <Text style={styles.expandText}>
+                                Ver mais <Ionicons name="chevron-down" size={14} color="#000" />
+                            </Text>
+                        </TouchableOpacity>
+                    </>
+                )}
+            </TouchableOpacity>
+            
+            <View style={styles.vagaActions}>
+                <TouchableOpacity 
+                    style={[
+                        styles.candidaturaButton,
+                        jaCandidatou && styles.candidaturaSuccess
+                    ]}
+                    onPress={() => onCandidatura(item)}
+                    disabled={jaCandidatou}
+                >
+                    <Text style={styles.candidaturaButtonText}>
+                        {jaCandidatou ? (
+                            <>
+                                <Ionicons name="checkmark-circle" size={16} color="white" /> CANDIDATURA ENVIADA
+                            </>
+                        ) : (
+                            <>
+                                <FontAwesome name="paper-plane" size={14} color="white" /> Candidatar-se
+                            </>
+                        )}
+                    </Text>
+                </TouchableOpacity>
+            </View>
+        </Animated.View>
+    );
+});
+
 export default function InterfacePublicacao() {
     const [vagasPublicadas, setVagasPublicadas] = useState<Vaga[]>([]);
     const [expandedCard, setExpandedCard] = useState<string | null>(null);
@@ -69,12 +246,20 @@ export default function InterfacePublicacao() {
     const [refreshing, setRefreshing] = useState(false);
     const [isBlurred, setIsBlurred] = useState(false);
     const blurAnimation = new Animated.Value(0);
+    const [animationComplete, setAnimationComplete] = useState(true);
     
     // Animation values for header
     const scrollY = new Animated.Value(0);
     const headerHeight = scrollY.interpolate({
         inputRange: [0, 100],
-        outputRange: [getResponsiveHeight(150), getResponsiveHeight(80)],
+        outputRange: [getResponsiveHeight(150), getResponsiveHeight(120)],
+        extrapolate: 'clamp'
+    });
+    
+    // Animation for title only - subtitle will remain visible
+    const titleScale = scrollY.interpolate({
+        inputRange: [0, 100],
+        outputRange: [1, 0.9],
         extrapolate: 'clamp'
     });
 
@@ -89,36 +274,41 @@ export default function InterfacePublicacao() {
     };
 
     useEffect(() => {
-        const refVagas = collection(db, 'publicar_vaga_empresa');
+        const fetchVagas = async () => {
+            try {
+                const refVagas = collection(db, 'publicar_vaga_empresa');
+                const snapshot = await getDocs(refVagas);
 
-        const unsubscribe = onSnapshot(refVagas, (snapshot) => {
-            if (snapshot.empty) {
-                console.log("Nenhuma vaga encontrada!");
-                setVagasPublicadas([]);
-                return;
+                if (snapshot.empty) {
+                    console.log("Nenhuma vaga encontrada!");
+                    setVagasPublicadas([]);
+                    return;
+                }
+
+                const vagas = snapshot.docs.map((doc) => {
+                    const data = doc.data();
+
+                    return {
+                        id: doc.id,
+                        publicacao_text: data.publicacao_text || 'Sem descrição',
+                        data: formatarData(data.data || 'Data não informada'),
+                        hora: data.hora || 'Hora não informada',
+                        quem_publicou: typeof data.quem_publicou === 'string' ? data.quem_publicou : 'Usuário desconhecido',
+                        salarioVaga: data.salarioVaga || 'Não informado',
+                        titulo_vaga: data.titulo_vaga || 'Vaga sem título',
+                        requisito_vaga: data.requisito_vaga || 'Requisitos não informados',
+                        area_contato_vaga: data.area_contato_vaga || 'Contato não informado',
+                        nome_empresa: data.nome_empresa || 'Nome da empresa não informado!'
+                    };
+                });
+
+                setVagasPublicadas(vagas);
+            } catch (error) {
+                console.error('Erro ao buscar vagas:', error);
             }
+        };
 
-            const vagas = snapshot.docs.map((doc) => {
-                const data = doc.data();
-
-                return {
-                    id: doc.id,
-                    publicacao_text: data.publicacao_text || 'Sem descrição',
-                    data: formatarData(data.data || 'Data não informada'),
-                    hora: data.hora || 'Hora não informada',
-                    quem_publicou: typeof data.quem_publicou === 'string' ? data.quem_publicou : 'Usuário desconhecido',
-                    salarioVaga: data.salarioVaga || 'Não informado',
-                    titulo_vaga: data.titulo_vaga || 'Vaga sem título',
-                    requisito_vaga: data.requisito_vaga || 'Requisitos não informados',
-                    area_contato_vaga: data.area_contato_vaga || 'Contato não informado',
-                    nome_empresa: data.nome_empresa || 'Nome da empresa não informado!'
-                };
-            });
-
-            setVagasPublicadas(vagas);
-        });
-
-        return () => unsubscribe();
+        fetchVagas();
     }, []);
 
     useEffect(() => {
@@ -267,8 +457,11 @@ ${userData.nome_completo || 'Candidato'}
     };
 
     const onRefresh = React.useCallback(async () => {
+        if (!animationComplete) return; // Previne múltiplas atualizações
+
         setRefreshing(true);
         setIsBlurred(true);
+        setAnimationComplete(false);
         animateBlur(1);
 
         try {
@@ -304,9 +497,13 @@ ${userData.nome_completo || 'Candidato'}
                 setRefreshing(false);
                 setIsBlurred(false);
                 animateBlur(0);
+                // Aguarda um pouco antes de permitir nova animação
+                setTimeout(() => {
+                    setAnimationComplete(true);
+                }, 500);
             }, 1000);
         }
-    }, []);
+    }, [animationComplete]);
 
     // Get company initials for avatar
     const getInitials = (name: string) => {
@@ -320,168 +517,35 @@ ${userData.nome_completo || 'Candidato'}
     };
 
     const renderVagaItem = ({ item, index }: { item: Vaga, index: number }) => {
-        const isExpanded = expandedCard === item.id;
-        const jaCandidatou = candidaturas.includes(item.id);
-        const companyInitials = getInitials(item.nome_empresa);
-
-        // Função para verificar e exibir "A COMBINAR" se o campo estiver vazio
-        const verificarCampo = (campo: string) => {
-            return campo ? campo : "A COMBINAR";
-        };
-
-        // Animation for card appearance
-        const translateY = new Animated.Value(50);
-        const opacity = new Animated.Value(0);
-        
-        Animated.parallel([
-            Animated.timing(translateY, {
-                toValue: 0,
-                duration: 300,
-                delay: index * 50,
-                useNativeDriver: true,
-            }),
-            Animated.timing(opacity, {
-                toValue: 1,
-                duration: 300,
-                delay: index * 50,
-                useNativeDriver: true,
-            }),
-        ]).start();
-
         return (
-            <Animated.View 
-                style={[
-                    styles.vagaContainer, 
-                    { 
-                        transform: [{ translateY }],
-                        opacity,
-                        width: width * 0.9 
-                    }
-                ]} 
-                key={item.id}
-            >
-                <TouchableOpacity 
-                    activeOpacity={0.9}
-                    onPress={() => toggleCardExpansion(item.id)}
-                >
-                    <View style={styles.vagaHeader}>
-                        <View style={styles.companyAvatarContainer}>
-                            <View style={styles.avatarCircle}>
-                                <Text style={styles.avatarText}>{companyInitials}</Text>
-                            </View>
-                            <View style={styles.companyInfo}>
-                                <Text style={styles.companyName} numberOfLines={1}>
-                                    {verificarCampo(item.nome_empresa)}
-                                </Text>
-                                <View style={styles.dateTimeContainer}>
-                                    <Ionicons name="time-outline" size={12} color="#666" />
-                                    <Text style={styles.dateText}>
-                                        {verificarCampo(item.data)} às {verificarCampo(item.hora)}
-                                    </Text>
-                                </View>
-                            </View>
-                        </View>
-                    </View>
-                    
-                    <View style={styles.jobTitleContainer}>
-                        <Text style={styles.vagaTitle} numberOfLines={2}>
-                            {verificarCampo(item.titulo_vaga)}
-                        </Text>
-                        <View style={styles.salaryBadge}>
-                            <Text style={styles.salaryText}>
-                                {formatarSalario(verificarCampo(item.salarioVaga))}
-                            </Text>
-                        </View>
-                    </View>
-                    
-                    <View style={styles.locationContainer}>
-                        <Ionicons name="location-outline" size={16} color="#666" />
-                        <Text style={styles.vagaLocation}>
-                            {verificarCampo(item.area_contato_vaga)}
-                        </Text>
-                    </View>
-                    
-                    <View style={styles.divider} />
-                    
-                    {isExpanded ? (
-                        <View style={styles.expandedContent}>
-                            <View style={styles.sectionContainer}>
-                                <Text style={styles.sectionTitle}>
-                                    <MaterialIcons name="description" size={16} color="#4A80F0" /> Descrição
-                                </Text>
-                                <Text style={styles.vagaDescription}>
-                                    {verificarCampo(item.publicacao_text)}
-                                </Text>
-                            </View>
-                            
-                            <View style={styles.sectionContainer}>
-                                <Text style={styles.sectionTitle}>
-                                    <MaterialIcons name="assignment" size={16} color="#4A80F0" /> Requisitos
-                                </Text>
-                                <Text style={styles.vagaRequirements}>
-                                    {verificarCampo(item.requisito_vaga)}
-                                </Text>
-                            </View>
-
-                            <TouchableOpacity 
-                                style={styles.expandButton}
-                                onPress={() => toggleCardExpansion(item.id)}
-                            >
-                                <Text style={styles.expandText}>
-                                    Ver menos <Ionicons name="chevron-up" size={14} color="#4A80F0" />
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                    ) : (
-                        <>
-                            <Text style={styles.vagaDescription} numberOfLines={2}>
-                                {verificarCampo(item.publicacao_text)}
-                            </Text>
-                            <TouchableOpacity 
-                                style={styles.expandButton}
-                                onPress={() => toggleCardExpansion(item.id)}
-                            >
-                                <Text style={styles.expandText}>
-                                    Ver mais <Ionicons name="chevron-down" size={14} color="#4A80F0" />
-                                </Text>
-                            </TouchableOpacity>
-                        </>
-                    )}
-                </TouchableOpacity>
-                
-                <View style={styles.vagaActions}>
-                    <TouchableOpacity 
-                        style={[
-                            styles.candidaturaButton,
-                            jaCandidatou && styles.candidaturaSuccess
-                        ]}
-                        onPress={() => handleCandidatura(item)}
-                        disabled={jaCandidatou}
-                    >
-                        <Text style={styles.candidaturaButtonText}>
-                            {jaCandidatou ? (
-                                <>
-                                    <Ionicons name="checkmark-circle" size={16} color="white" /> CANDIDATURA ENVIADA
-                                </>
-                            ) : (
-                                <>
-                                    <FontAwesome name="paper-plane" size={14} color="white" /> Candidatar-se
-                                </>
-                            )}
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            </Animated.View>
+            <VagaCard
+                item={item}
+                index={index}
+                expandedCard={expandedCard}
+                candidaturas={candidaturas}
+                refreshing={refreshing}
+                onPress={toggleCardExpansion}
+                onCandidatura={handleCandidatura}
+                formatarSalario={formatarSalario}
+                getInitials={getInitials}
+            />
         );
     };
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <StatusBar barStyle="light-content" backgroundColor="#4A80F0" />
+            <StatusBar barStyle="dark-content" backgroundColor="#F5F5F5" />
             
             <Animated.View style={[styles.header, { height: headerHeight }]}>
                 <View style={styles.headerContent}>
-                    <Text style={styles.headerTitle}>Vagas Disponíveis</Text>
+                    <Animated.Text 
+                        style={[
+                            styles.headerTitle,
+                            { transform: [{ scale: titleScale }] }
+                        ]}
+                    >
+                        Vagas Disponíveis
+                    </Animated.Text>
                     <Text style={styles.headerSubtitle}>
                         Encontre oportunidades para iniciar sua carreira
                     </Text>
@@ -548,7 +612,7 @@ ${userData.nome_completo || 'Candidato'}
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#F5F7FF',
+        backgroundColor: '#F5F5F5',
     },
     container: {
         flex: 1,
@@ -558,7 +622,7 @@ const styles = StyleSheet.create({
         paddingTop: getResponsivePadding(8),
     },
     header: {
-        backgroundColor: '#4A80F0',
+        backgroundColor: '#000',
         paddingHorizontal: getResponsivePadding(20),
         paddingTop: getResponsivePadding(isIOS ? 10 : 40),
         paddingBottom: getResponsivePadding(15),
@@ -568,22 +632,31 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 5,
+        overflow: 'hidden', // Prevent text from overflowing
     },
     headerContent: {
         marginBottom: getResponsiveMargin(10),
+        justifyContent: 'flex-end', // Align content to bottom
     },
     headerTitle: {
         fontSize: getResponsiveFontSize(24),
         fontWeight: 'bold',
-        color: 'white',
+        color: '#FFF',
         marginBottom: getResponsiveMargin(5),
+        // Prevent text from being cut off
+        includeFontPadding: false,
+        textAlignVertical: 'center',
     },
     headerSubtitle: {
         fontSize: getResponsiveFontSize(14),
         color: 'rgba(255, 255, 255, 0.9)',
+        // Prevent text from being cut off
+        includeFontPadding: false,
+        textAlignVertical: 'center',
+        lineHeight: getResponsiveLineHeight(20),
     },
     vagaContainer: {
-        backgroundColor: 'white',
+        backgroundColor: '#FFF',
         borderRadius: getResponsiveBorderRadius(16),
         padding: getResponsivePadding(16),
         marginBottom: getResponsiveMargin(16),
@@ -612,7 +685,7 @@ const styles = StyleSheet.create({
     companyName: {
         fontSize: getResponsiveFontSize(16),
         fontWeight: '600',
-        color: '#333',
+        color: '#000',
         marginBottom: getResponsiveMargin(4),
     },
     dateTimeContainer: {
@@ -633,18 +706,18 @@ const styles = StyleSheet.create({
     vagaTitle: {
         fontSize: getResponsiveFontSize(18),
         fontWeight: 'bold',
-        color: '#333',
+        color: '#000',
         flex: 1,
         marginRight: getResponsiveMargin(8),
     },
     salaryBadge: {
-        backgroundColor: '#E8F0FF',
+        backgroundColor: '#F5F5F5',
         paddingHorizontal: getResponsivePadding(12),
         paddingVertical: getResponsivePadding(6),
         borderRadius: getResponsiveBorderRadius(20),
     },
     salaryText: {
-        color: '#4A80F0',
+        color: '#000',
         fontWeight: '600',
         fontSize: getResponsiveFontSize(14),
     },
@@ -672,7 +745,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: getResponsiveFontSize(15),
         fontWeight: '600',
-        color: '#333',
+        color: '#000',
         marginBottom: getResponsiveMargin(8),
     },
     vagaDescription: {
@@ -686,36 +759,30 @@ const styles = StyleSheet.create({
         color: '#666',
         lineHeight: getResponsiveLineHeight(20),
     },
-    vagaSalary: {
-        fontSize: getResponsiveFontSize(16),
-        color: '#4CAF50',
-        fontWeight: 'bold',
-        marginBottom: getResponsiveMargin(8),
-    },
     expandButton: {
         alignItems: 'center',
         marginTop: getResponsiveMargin(8),
     },
     expandText: {
         fontSize: getResponsiveFontSize(14),
-        color: '#4A80F0',
+        color: '#000',
         fontWeight: '500',
     },
     vagaActions: {
         marginTop: getResponsiveMargin(16),
     },
     candidaturaButton: {
-        backgroundColor: '#4A80F0',
+        backgroundColor: '#000',
         paddingVertical: getResponsivePadding(12),
         borderRadius: getResponsiveBorderRadius(12),
         alignItems: 'center',
         justifyContent: 'center',
     },
     candidaturaSuccess: {
-        backgroundColor: '#4CAF50',
+        backgroundColor: '#333',
     },
     candidaturaButtonText: {
-        color: 'white',
+        color: '#FFF',
         fontWeight: '600',
         fontSize: getResponsiveFontSize(14),
     },
@@ -723,12 +790,12 @@ const styles = StyleSheet.create({
         width: getResponsiveWidth(40),
         height: getResponsiveHeight(40),
         borderRadius: getResponsiveBorderRadius(20),
-        backgroundColor: '#4A80F0',
+        backgroundColor: '#000',
         justifyContent: 'center',
         alignItems: 'center',
     },
     avatarText: {
-        color: 'white',
+        color: '#FFF',
         fontSize: getResponsiveFontSize(16),
         fontWeight: 'bold',
     },
@@ -753,7 +820,7 @@ const styles = StyleSheet.create({
     emptyTitle: {
         fontSize: getResponsiveFontSize(20),
         fontWeight: 'bold',
-        color: '#333',
+        color: '#000',
         marginTop: getResponsiveMargin(16),
         marginBottom: getResponsiveMargin(8),
     },
@@ -766,11 +833,11 @@ const styles = StyleSheet.create({
     refreshButton: {
         paddingHorizontal: getResponsivePadding(24),
         paddingVertical: getResponsivePadding(12),
-        backgroundColor: '#4A80F0',
+        backgroundColor: '#000',
         borderRadius: getResponsiveBorderRadius(12),
     },
     refreshButtonText: {
-        color: 'white',
+        color: '#FFF',
         fontWeight: '600',
         fontSize: getResponsiveFontSize(14),
     },
