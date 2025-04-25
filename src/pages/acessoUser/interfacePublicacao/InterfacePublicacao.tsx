@@ -14,7 +14,8 @@ import {
     Animated,
     ScrollView,
     Dimensions,
-    Platform
+    Platform,
+    Image
 } from 'react-native';
 import { db } from '../../../firebase/firebase';
 import { collection, onSnapshot, query, getDocs, where, addDoc, setDoc, doc } from 'firebase/firestore';
@@ -47,6 +48,7 @@ type Vaga = {
     requisito_vaga: string;
     area_contato_vaga: string;
     nome_empresa: string;
+    profileImage: string;
 };
 
 interface UserData {
@@ -129,9 +131,16 @@ const VagaCard = React.memo(({
             >
                 <View style={styles.vagaHeader}>
                     <View style={styles.companyAvatarContainer}>
-                        <View style={styles.avatarCircle}>
-                            <Text style={styles.avatarText}>{companyInitials}</Text>
-                        </View>
+                        {item.profileImage ? (
+                            <Image
+                                source={{ uri: item.profileImage }}
+                                style={styles.avatarCircle}
+                            />
+                        ) : (
+                            <View style={styles.avatarCircle}>
+                                <Text style={styles.avatarText}>{companyInitials}</Text>
+                            </View>
+                        )}
                         <View style={styles.companyInfo}>
                             <Text style={styles.companyName} numberOfLines={1}>
                                 {verificarCampo(item.nome_empresa)}
@@ -285,8 +294,21 @@ export default function InterfacePublicacao() {
                     return;
                 }
 
-                const vagas = snapshot.docs.map((doc) => {
+                const vagas = await Promise.all(snapshot.docs.map(async (doc) => {
                     const data = doc.data();
+                    
+                    // Buscar dados da empresa para obter a imagem de perfil
+                    let profileImage = '';
+                    if (data.quem_publicou) {
+                        const empresasRef = collection(db, 'user_empresa');
+                        const q = query(empresasRef, where('email_empresa', '==', data.quem_publicou));
+                        const empresaSnapshot = await getDocs(q);
+                        
+                        if (!empresaSnapshot.empty) {
+                            const empresaData = empresaSnapshot.docs[0].data();
+                            profileImage = empresaData.profileImage || '';
+                        }
+                    }
 
                     return {
                         id: doc.id,
@@ -298,9 +320,10 @@ export default function InterfacePublicacao() {
                         titulo_vaga: data.titulo_vaga || 'Vaga sem título',
                         requisito_vaga: data.requisito_vaga || 'Requisitos não informados',
                         area_contato_vaga: data.area_contato_vaga || 'Contato não informado',
-                        nome_empresa: data.nome_empresa || 'Nome da empresa não informado!'
+                        nome_empresa: data.nome_empresa || 'Nome da empresa não informado!',
+                        profileImage: profileImage
                     };
-                });
+                }));
 
                 setVagasPublicadas(vagas);
             } catch (error) {
@@ -472,7 +495,7 @@ ${userData.nome_completo || 'Candidato'}
             if (snapshot.empty) {
                 setVagasPublicadas([]);
             } else {
-                const vagas = snapshot.docs.map((doc) => {
+                const vagas = await Promise.all(snapshot.docs.map(async (doc) => {
                     const data = doc.data();
                     return {
                         id: doc.id,
@@ -484,9 +507,10 @@ ${userData.nome_completo || 'Candidato'}
                         titulo_vaga: data.titulo_vaga || 'Vaga sem título',
                         requisito_vaga: data.requisito_vaga || 'Requisitos não informados',
                         area_contato_vaga: data.area_contato_vaga || 'Contato não informado',
-                        nome_empresa: data.nome_empresa || 'Nome da empresa não informado!'
+                        nome_empresa: data.nome_empresa || 'Nome da empresa não informado!',
+                        profileImage: data.profileImage || ''
                     };
-                });
+                }));
                 setVagasPublicadas(vagas);
             }
         } catch (error) {
@@ -793,6 +817,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#000',
         justifyContent: 'center',
         alignItems: 'center',
+        overflow: 'hidden',
     },
     avatarText: {
         color: '#FFF',

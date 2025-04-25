@@ -5,12 +5,13 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import PublicarVaga from '../src/pages/acessoEmpresa/publicarVagaEmpresa/publicarVaga';
 import ConfiguracoesEmpresa from '../src/pages/acessoEmpresa/ConfiguracoesPageEmpresa/ConfiguracoesEmpresa';
 import VagasPublicadas from '../src/pages/acessoEmpresa/VagasCriadasEmpresa/VagasPublicadas';
+import PerfilEmpresa from '../src/pages/acessoEmpresa/PerfilEmpresa';
 
 export default function TabRouterEmpresa() {
     const Tab = createBottomTabNavigator();
     return (
         <Tab.Navigator
-            
+
             screenOptions={{
                 tabBarStyle: { backgroundColor: '#fff', height: 60, paddingBottom: 10, paddingTop: 5 },
                 tabBarLabelStyle: {
@@ -39,6 +40,17 @@ export default function TabRouterEmpresa() {
                     headerShown: false,
                     tabBarIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="book-account-outline" color={color} size={size} />
+                    ),
+                }}
+            />
+
+            <Tab.Screen
+                name='Perfil Empresa'
+                component={PerfilEmpresa}
+                options={{
+                    headerShown: false,
+                    tabBarIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="account-circle" color={color} size={size} />
                     ),
                 }}
             />
