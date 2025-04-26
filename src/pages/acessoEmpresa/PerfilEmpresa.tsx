@@ -544,33 +544,6 @@ export default function PerfilEmpresa() {
         }
     };
 
-    // Função real para o botão Upgrade
-    const handleUpgrade = async () => {
-        try {
-            // Pega o e-mail da empresa logada
-            const userDataString = await AsyncStorage.getItem('userEmpresaLogado');
-            if (!userDataString) throw new Error('Usuário não encontrado');
-            const userData = JSON.parse(userDataString);
-            const email = userData.email_empresa;
-            if (!email) throw new Error('E-mail não encontrado');
-
-            // Chama a API para criar a sessão do Stripe
-            const response = await fetch('https://mobile-vagas.vercel.app/api/create-checkout-session', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
-            });
-            const data = await response.json();
-            if (data.url) {
-                Linking.openURL(data.url);
-            } else {
-                Alert.alert('Erro', 'Não foi possível criar a sessão de pagamento.');
-            }
-        } catch (error) {
-            Alert.alert('Erro', 'Ocorreu um erro ao processar o upgrade.');
-        }
-    };
-
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -625,9 +598,6 @@ export default function PerfilEmpresa() {
                                     </Text>
                                 </View>
                             </View>
-                            <TouchableOpacity style={styles.upgradeButton} onPress={handleUpgrade}>
-                                <Text style={styles.upgradeButtonText}>Upgrade</Text>
-                            </TouchableOpacity>
                         </LinearGradient>
                     )}
                     <View style={styles.profileImageContainer}>
@@ -1231,17 +1201,5 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: normalize(16),
         color: '#fff',
-    },
-    upgradeButton: {
-        backgroundColor: '#fff',
-        paddingVertical: normalize(8),
-        paddingHorizontal: normalize(16),
-        borderRadius: normalize(20),
-        marginLeft: normalize(10),
-    },
-    upgradeButtonText: {
-        color: '#FF8C00',
-        fontWeight: 'bold',
-        fontSize: normalize(14),
     },
 });
