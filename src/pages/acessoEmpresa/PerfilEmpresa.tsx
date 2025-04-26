@@ -543,6 +543,11 @@ export default function PerfilEmpresa() {
         }
     };
 
+    // Função placeholder para o botão Upgrade
+    const handleUpgrade = () => {
+        Alert.alert('Upgrade', 'Aqui será feita a integração com o Stripe para assinatura premium.');
+    };
+
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -561,8 +566,25 @@ export default function PerfilEmpresa() {
                 showsVerticalScrollIndicator={false}
             >
                 <View style={styles.header}>
-                    {/* Banner de status melhorado para publicações restantes */}
-                    {!isPremium && publicacaoRestante !== null && (
+                    {/* Banner de status acima da foto de perfil */}
+                    {isPremium ? (
+                        <LinearGradient
+                            colors={['#43e97b', '#38f9d7']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={styles.statusBanner}
+                        >
+                            <View style={styles.statusBannerContent}>
+                                <View style={styles.statusIconContainer}>
+                                    <Ionicons name="checkmark-circle" size={24} color="#fff" />
+                                </View>
+                                <View style={styles.statusTextContainer}>
+                                    <Text style={styles.statusBannerTitle}>Conta Premium</Text>
+                                    <Text style={styles.statusBannerText}>Você é um usuário premium! Aproveite todos os benefícios.</Text>
+                                </View>
+                            </View>
+                        </LinearGradient>
+                    ) : (
                         <LinearGradient
                             colors={['#FFA500', '#FF8C00']}
                             start={{ x: 0, y: 0 }}
@@ -580,7 +602,7 @@ export default function PerfilEmpresa() {
                                     </Text>
                                 </View>
                             </View>
-                            <TouchableOpacity style={styles.upgradeButton}>
+                            <TouchableOpacity style={styles.upgradeButton} onPress={handleUpgrade}>
                                 <Text style={styles.upgradeButtonText}>Upgrade</Text>
                             </TouchableOpacity>
                         </LinearGradient>
