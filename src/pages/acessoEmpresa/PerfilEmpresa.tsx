@@ -14,7 +14,8 @@ import {
     StatusBar,
     SafeAreaView,
     KeyboardAvoidingView,
-    ActivityIndicator
+    ActivityIndicator,
+    Linking
 } from 'react-native';
 import { auth, db } from '../../firebase/firebase';
 import { uploadImage } from '../../firebase/cloudinary';
@@ -543,9 +544,31 @@ export default function PerfilEmpresa() {
         }
     };
 
-    // Função placeholder para o botão Upgrade
-    const handleUpgrade = () => {
-        Alert.alert('Upgrade', 'Aqui será feita a integração com o Stripe para assinatura premium.');
+    // Função real para o botão Upgrade
+    const handleUpgrade = async () => {
+        try {
+            // Pega o e-mail da empresa logada
+            const userDataString = await AsyncStorage.getItem('userEmpresaLogado');
+            if (!userDataString) throw new Error('Usuário não encontrado');
+            const userData = JSON.parse(userDataString);
+            const email = userData.email_empresa;
+            if (!email) throw new Error('E-mail não encontrado');
+
+            // Chama a API para criar a sessão do Stripe
+            const response = await fetch('https://mobile-vagas.vercel.app/api/create-checkout-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+            const data = await response.json();
+            if (data.url) {
+                Linking.openURL(data.url);
+            } else {
+                Alert.alert('Erro', 'Não foi possível criar a sessão de pagamento.');
+            }
+        } catch (error) {
+            Alert.alert('Erro', 'Ocorreu um erro ao processar o upgrade.');
+        }
     };
 
     if (loading) {
