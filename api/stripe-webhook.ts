@@ -10,8 +10,8 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-const stripe = new Stripe('SUA_STRIPE_SECRET_KEY', { apiVersion: '2025-03-31.basil' }); // Troque pela sua chave
-const endpointSecret = 'SEU_ENDPOINT_SECRET'; // Troque pelo seu endpoint secret
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2025-03-31.basil' });
+const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET!;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
