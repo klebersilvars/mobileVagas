@@ -34,6 +34,9 @@ export default function PublicarVaga() {
     const [nomeEmpresa, setNomeEmpresa] = useState<string>('');
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
+    const [isPremium, setIsPremium] = useState<boolean>(false);
+    const [publicacaoRestante, setPublicacaoRestante] = useState<number>(0);
+    const [carregandoEmpresa, setCarregandoEmpresa] = useState<boolean>(true);
 
     function showAlert(message: string) {
         setAlertMessage(message);
@@ -46,17 +49,16 @@ export default function PublicarVaga() {
                 const userEmpresaLogado = await AsyncStorage.getItem('userEmpresaLogado');
                 if (userEmpresaLogado !== null) {
                     const userEmpresa = JSON.parse(userEmpresaLogado);
-                    
                     if (userEmpresa?.email) {
                         setUserLogadoState(userEmpresa.email);
-                        await queryBuscarNomeEmpresa(userEmpresa.email); // Busca o nome da empresa
+                        await queryBuscarNomeEmpresa(userEmpresa.email);
+                        await buscarStatusPremiumELimite(userEmpresa.email);
                     }
                 }
             } catch (error) {
                 console.error('Erro ao recuperar os dados do AsyncStorage:', error);
             }
         };
-
         fetchData();
     }, []);
 
@@ -78,13 +80,32 @@ export default function PublicarVaga() {
         }
     }
 
+    async function buscarStatusPremiumELimite(email: string) {
+        try {
+            const empresaQuery = query(collection(db, 'user_empresa'), where('email_empresa', '==', email));
+            const querySnapshot = await getDocs(empresaQuery);
+            if (!querySnapshot.empty) {
+                const empresaData = querySnapshot.docs[0].data();
+                setIsPremium(!!empresaData.premium);
+                setPublicacaoRestante(Number(empresaData.publicacao_restante ?? 0));
+            }
+        } catch (error) {
+            console.error('Erro ao buscar status premium e limite:', error);
+        } finally {
+            setCarregandoEmpresa(false);
+        }
+    }
+
     async function publicarVaga() {
+        if (!isPremium && publicacaoRestante <= 0) {
+            Alert.alert('Limite atingido', 'Você atingiu o limite de 5 publicações mensais. Torne-se premium para publicar mais vagas!');
+            return;
+        }
         try {
             if (!nomeEmpresa) {
                 Alert.alert('Erro', 'O nome da empresa não foi encontrado. Tente novamente.');
                 return;
             }
-
             const publicationRef = await addDoc(collection(db, 'publicar_vaga_empresa'), {
                 publicacao_text: publicacao_texto,
                 data: dataFormatted,
@@ -96,9 +117,20 @@ export default function PublicarVaga() {
                 titulo_vaga: tituloVaga,
                 area_contato_vaga: areaContatoVaga
             });
-
             const publicationId = publicationRef.id;
             await updateDoc(publicationRef, { id_doc: publicationId });
+
+            // Atualiza o limite de publicação se não for premium
+            if (!isPremium) {
+                const empresaQuery = query(collection(db, 'user_empresa'), where('email_empresa', '==', userLogadoState));
+                const querySnapshot = await getDocs(empresaQuery);
+                if (!querySnapshot.empty) {
+                    const empresaDocRef = querySnapshot.docs[0].ref;
+                    const novoLimite = publicacaoRestante - 1;
+                    await updateDoc(empresaDocRef, { publicacao_restante: novoLimite });
+                    setPublicacaoRestante(novoLimite);
+                }
+            }
 
             showAlert('Vaga publicada com sucesso!');
             setPublicacao_texto('');
@@ -131,7 +163,8 @@ export default function PublicarVaga() {
                     <Text style={PublicarVagaStyle.headerTitle}>NovosTalentos</Text>
                     <TouchableOpacity 
                         onPress={publicarVaga} 
-                        style={PublicarVagaStyle.publishButton}
+                        style={[PublicarVagaStyle.publishButton, (!isPremium && publicacaoRestante <= 0) && { backgroundColor: '#ccc' }]} 
+                        disabled={(!isPremium && publicacaoRestante <= 0) || carregandoEmpresa}
                     >
                         <MaterialCommunityIcons name="send" size={18} color="white" />
                         <Text style={PublicarVagaStyle.publishButtonText}>Publicar</Text>
@@ -222,6 +255,12 @@ export default function PublicarVaga() {
                         </View>
                     </View>
                 </ScrollView>
+
+                {!isPremium && (
+                    <Text style={{ color: '#888', textAlign: 'center', marginBottom: 8 }}>
+                        Publicações restantes este mês: {publicacaoRestante}
+                    </Text>
+                )}
             </SafeAreaView>
         </KeyboardAvoidingView>
     )

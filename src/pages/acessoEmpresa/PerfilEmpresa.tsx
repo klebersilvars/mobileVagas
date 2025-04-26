@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { auth, db } from '../../firebase/firebase';
 import { uploadImage } from '../../firebase/cloudinary';
-import { doc, getDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, query, where, getDocs, onSnapshot } from 'firebase/firestore';
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialCommunityIcons, Ionicons, Feather, MaterialIcons } from '@expo/vector-icons';
@@ -73,73 +73,53 @@ export default function PerfilEmpresa() {
         nova_senha: '',
         confirmar_senha: ''
     });
+    const [isPremium, setIsPremium] = useState<boolean>(false);
+    const [publicacaoRestante, setPublicacaoRestante] = useState<number | null>(null);
 
     useEffect(() => {
-        const fetchEmpresaData = async () => {
+        let unsubscribe: (() => void) | null = null;
+        const fetchEmpresaDataRealtime = async () => {
             try {
-                // Buscar dados do AsyncStorage
                 const empresaDataString = await AsyncStorage.getItem('userEmpresaLogado');
-                console.log('1. Dados brutos do AsyncStorage:', empresaDataString);
-
                 if (empresaDataString) {
-                    // Converter dados do AsyncStorage
                     const empresaData = JSON.parse(empresaDataString);
                     const empresaEmail = empresaData.email;
-                    console.log('2. Email da empresa:', empresaEmail);
-
                     if (empresaEmail) {
-                        // Buscar no Firestore
                         const empresasRef = collection(db, 'user_empresa');
                         const q = query(empresasRef, where('email_empresa', '==', empresaEmail));
-                        const querySnapshot = await getDocs(q);
-                        
-                        console.log('3. Documentos encontrados:', querySnapshot.docs.length);
-                        
-                        if (!querySnapshot.empty) {
-                            const empresaDoc = querySnapshot.docs[0];
-                            const data = empresaDoc.data();
-                            console.log('4. Dados do Firestore:', {
-                                id: empresaDoc.id,
-                                nome_empresa: data.nome_empresa,
-                                email: data.email
-                            });
-                            
-                            // Atualizar estado com dados do Firestore
-                            const empresaDataFirestore = {
-                                nome_empresa: data.nome_empresa || '',
-                                email: data.email || '',
-                                telefone: data.telefone || '',
-                                cnpj: data.cnpj_empresa || '',
-                                ramo_atividade: data.ramo_atividade || '',
-                                descricao: data.descricao || '',
-                                endereco: data.endereco || '',
-                                cidade: data.cidade || '',
-                                estado: data.estado || '',
-                                cep: data.cep || '',
-                                site: data.site || '',
-                                linkedin: data.linkedin || '',
-                                profileImage: data.profileImage || '',
-                                password: data.password || ''
-                            };
-                            
-                            setEmpresaData(empresaDataFirestore);
-                            setEditData({
-                                ...empresaDataFirestore,
-                                senha_atual: '',
-                                nova_senha: '',
-                                confirmar_senha: ''
-                            });
-
-                            console.log('5. Estado atualizado com sucesso:', {
-                                nome_empresa: empresaDataFirestore.nome_empresa,
-                                email: empresaDataFirestore.email
-                            });
-                        } else {
-                            console.log('Erro: Nenhuma empresa encontrada com o email:', empresaEmail);
-                        }
+                        unsubscribe = onSnapshot(q, (querySnapshot) => {
+                            if (!querySnapshot.empty) {
+                                const empresaDoc = querySnapshot.docs[0];
+                                const data = empresaDoc.data();
+                                setIsPremium(!!data.premium);
+                                setPublicacaoRestante(typeof data.publicacao_restante === 'number' ? data.publicacao_restante : null);
+                                // Atualizar estado com dados do Firestore
+                                const empresaDataFirestore = {
+                                    nome_empresa: data.nome_empresa || '',
+                                    email: data.email || '',
+                                    telefone: data.telefone || '',
+                                    cnpj: data.cnpj_empresa || '',
+                                    ramo_atividade: data.ramo_atividade || '',
+                                    descricao: data.descricao || '',
+                                    endereco: data.endereco || '',
+                                    cidade: data.cidade || '',
+                                    estado: data.estado || '',
+                                    cep: data.cep || '',
+                                    site: data.site || '',
+                                    linkedin: data.linkedin || '',
+                                    profileImage: data.profileImage || '',
+                                    password: data.password || ''
+                                };
+                                setEmpresaData(empresaDataFirestore);
+                                setEditData({
+                                    ...empresaDataFirestore,
+                                    senha_atual: '',
+                                    nova_senha: '',
+                                    confirmar_senha: ''
+                                });
+                            }
+                        });
                     }
-                } else {
-                    console.log('Erro: Nenhum dado encontrado no AsyncStorage');
                 }
             } catch (error) {
                 console.error('Erro ao buscar dados da empresa:', error);
@@ -147,8 +127,10 @@ export default function PerfilEmpresa() {
                 setLoading(false);
             }
         };
-
-        fetchEmpresaData();
+        fetchEmpresaDataRealtime();
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
     }, []);
 
     const handleSave = async () => {
@@ -579,6 +561,30 @@ export default function PerfilEmpresa() {
                 showsVerticalScrollIndicator={false}
             >
                 <View style={styles.header}>
+                    {/* Banner de status melhorado para publicações restantes */}
+                    {!isPremium && publicacaoRestante !== null && (
+                        <LinearGradient
+                            colors={['#FFA500', '#FF8C00']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={styles.statusBanner}
+                        >
+                            <View style={styles.statusBannerContent}>
+                                <View style={styles.statusIconContainer}>
+                                    <Ionicons name="alert-circle" size={24} color="#fff" />
+                                </View>
+                                <View style={styles.statusTextContainer}>
+                                    <Text style={styles.statusBannerTitle}>Conta não verificada</Text>
+                                    <Text style={styles.statusBannerText}>
+                                        Publicações restantes este mês: <Text style={styles.publicacoesCount}>{publicacaoRestante}</Text>
+                                    </Text>
+                                </View>
+                            </View>
+                            <TouchableOpacity style={styles.upgradeButton}>
+                                <Text style={styles.upgradeButtonText}>Upgrade</Text>
+                            </TouchableOpacity>
+                        </LinearGradient>
+                    )}
                     <View style={styles.profileImageContainer}>
                         {empresaData?.profileImage ? (
                             <Image
@@ -1132,5 +1138,65 @@ const styles = StyleSheet.create({
         color: 'white',
         fontWeight: '600',
         fontSize: normalize(15),
+    },
+    // Estilos melhorados para o banner de status
+    statusBanner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderRadius: normalize(16),
+        paddingVertical: normalize(12),
+        paddingHorizontal: normalize(16),
+        marginBottom: normalize(20),
+        marginHorizontal: normalize(16),
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.15,
+        shadowRadius: 5,
+        elevation: 6,
+    },
+    statusBannerContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+    },
+    statusIconContainer: {
+        width: normalize(40),
+        height: normalize(40),
+        borderRadius: normalize(20),
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: normalize(12),
+    },
+    statusTextContainer: {
+        flex: 1,
+    },
+    statusBannerTitle: {
+        color: '#fff',
+        fontSize: normalize(16),
+        fontWeight: 'bold',
+        marginBottom: normalize(4),
+    },
+    statusBannerText: {
+        color: '#fff',
+        fontSize: normalize(14),
+    },
+    publicacoesCount: {
+        fontWeight: 'bold',
+        fontSize: normalize(16),
+        color: '#fff',
+    },
+    upgradeButton: {
+        backgroundColor: '#fff',
+        paddingVertical: normalize(8),
+        paddingHorizontal: normalize(16),
+        borderRadius: normalize(20),
+        marginLeft: normalize(10),
+    },
+    upgradeButtonText: {
+        color: '#FF8C00',
+        fontWeight: 'bold',
+        fontSize: normalize(14),
     },
 });
