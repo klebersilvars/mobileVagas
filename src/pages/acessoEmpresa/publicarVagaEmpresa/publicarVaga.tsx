@@ -9,15 +9,24 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  StatusBar
+  StatusBar,
+  StyleSheet
 } from 'react-native';
 import PublicarVagaStyle from './publicarVagaStyle';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { db } from '../../../firebase/firebase';
-import { collection, addDoc, updateDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, getDocs, query, where, serverTimestamp } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 import CustomAlertGreen from '../../../components/CustomAlertGreen';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+type RootStackParamList = {
+    PerfilEmpresa: undefined;
+};
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function PublicarVaga() {
     const data = moment();
@@ -37,6 +46,8 @@ export default function PublicarVaga() {
     const [isPremium, setIsPremium] = useState<boolean>(false);
     const [publicacaoRestante, setPublicacaoRestante] = useState<number>(0);
     const [carregandoEmpresa, setCarregandoEmpresa] = useState<boolean>(true);
+
+    const navigation = useNavigation<NavigationProp>();
 
     function showAlert(message: string) {
         setAlertMessage(message);
@@ -98,14 +109,36 @@ export default function PublicarVaga() {
 
     async function publicarVaga() {
         if (!isPremium && publicacaoRestante <= 0) {
-            Alert.alert('Limite atingido', 'Você atingiu o limite de 5 publicações mensais. Torne-se premium para publicar mais vagas!');
+            Alert.alert(
+                'Limite de vagas atingido',
+                'Você atingiu o limite de 2 vagas mensais. Torne-se premium para publicar mais vagas!',
+                [
+                    {
+                        text: 'Cancelar',
+                        style: 'cancel'
+                    },
+                    {
+                        text: 'Tornar Premium',
+                        onPress: () => {
+                            navigation.navigate('PerfilEmpresa');
+                        }
+                    }
+                ]
+            );
             return;
         }
+
         try {
             if (!nomeEmpresa) {
                 Alert.alert('Erro', 'O nome da empresa não foi encontrado. Tente novamente.');
                 return;
             }
+
+            if (!tituloVaga || !publicacao_texto || !salarioVaga || !areaContatoVaga) {
+                Alert.alert('Atenção', 'Por favor, preencha todos os campos obrigatórios.');
+                return;
+            }
+
             const publicationRef = await addDoc(collection(db, 'publicar_vaga_empresa'), {
                 publicacao_text: publicacao_texto,
                 data: dataFormatted,
@@ -120,14 +153,24 @@ export default function PublicarVaga() {
             const publicationId = publicationRef.id;
             await updateDoc(publicationRef, { id_doc: publicationId });
 
-            // Atualiza o limite de publicação se não for premium
             if (!isPremium) {
                 const empresaQuery = query(collection(db, 'user_empresa'), where('email_empresa', '==', userLogadoState));
                 const querySnapshot = await getDocs(empresaQuery);
                 if (!querySnapshot.empty) {
                     const empresaDocRef = querySnapshot.docs[0].ref;
                     const novoLimite = publicacaoRestante - 1;
-                    await updateDoc(empresaDocRef, { publicacao_restante: novoLimite });
+                    
+                    if (novoLimite === 0) {
+                        await updateDoc(empresaDocRef, { 
+                            publicacao_restante: novoLimite,
+                            data_fim_normal: serverTimestamp()
+                        });
+                    } else {
+                        await updateDoc(empresaDocRef, { 
+                            publicacao_restante: novoLimite 
+                        });
+                    }
+                    
                     setPublicacaoRestante(novoLimite);
                 }
             }
@@ -163,7 +206,10 @@ export default function PublicarVaga() {
                     <Text style={PublicarVagaStyle.headerTitle}>NovosTalentos</Text>
                     <TouchableOpacity 
                         onPress={publicarVaga} 
-                        style={[PublicarVagaStyle.publishButton, (!isPremium && publicacaoRestante <= 0) && { backgroundColor: '#ccc' }]} 
+                        style={[
+                            PublicarVagaStyle.publishButton, 
+                            (!isPremium && publicacaoRestante <= 0) && { backgroundColor: '#ccc' }
+                        ]} 
                         disabled={(!isPremium && publicacaoRestante <= 0) || carregandoEmpresa}
                     >
                         <MaterialCommunityIcons name="send" size={18} color="white" />
@@ -256,12 +302,52 @@ export default function PublicarVaga() {
                     </View>
                 </ScrollView>
 
-                {!isPremium && (
-                    <Text style={{ color: '#888', textAlign: 'center', marginBottom: 8 }}>
-                        Publicações restantes este mês: {publicacaoRestante}
+                <View style={styles.publicacoesRestantesContainer}>
+                    <Text style={styles.publicacoesRestantesText}>
+                        Vagas restantes este mês: <Text style={styles.publicacoesCount}>{publicacaoRestante}</Text>
                     </Text>
-                )}
+                    {!isPremium && publicacaoRestante <= 0 && (
+                        <TouchableOpacity 
+                            style={styles.upgradeButton}
+                            onPress={() => navigation.navigate('PerfilEmpresa')}
+                        >
+                            <Text style={styles.upgradeButtonText}>Tornar Premium</Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
             </SafeAreaView>
         </KeyboardAvoidingView>
     )
 }
+
+const styles = StyleSheet.create({
+    publicacoesRestantesContainer: {
+        padding: 16,
+        backgroundColor: '#f8f9fa',
+        borderTopWidth: 1,
+        borderTopColor: '#e9ecef',
+        alignItems: 'center',
+    },
+    publicacoesRestantesText: {
+        fontSize: 16,
+        color: '#666',
+        textAlign: 'center',
+        marginBottom: 8,
+    },
+    publicacoesCount: {
+        fontWeight: 'bold',
+        color: '#000',
+    },
+    upgradeButton: {
+        backgroundColor: '#4F46E5',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        marginTop: 8,
+    },
+    upgradeButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
+});

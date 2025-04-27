@@ -193,7 +193,24 @@ export default function PageRegistroOne() {
                 email_empresa: emailEmpresa,
                 cnpj_empresa: cnpjEmpresa,
                 password_empresa: passwordEmpresa,
-                type_conta: typeConta
+                type_conta: typeConta,
+                cep: "",
+                cidade: "",
+                data_pagamento_premium: "",
+                data_assinatura: null,
+                data_renovacao: null,
+                descricao: "",
+                dias_restantes_premium: 0,
+                endereco: "",
+                estado: "",
+                limite_publicacao_mensal: 2,
+                linkedin: "",
+                premium: false,
+                profileImage: "",
+                publicacao_restante: 2,
+                ramo_atividade: "",
+                site: "",
+                telefone_empresa: ""
             }
 
             await setDoc(doc(db, 'user_empresa', uidEmpresa), empresaData)

@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import {
-    View,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    FlatList,
-    TouchableOpacity,
-    ActivityIndicator,
+import { 
+  View, 
+  SafeAreaView, 
+  StyleSheet, 
+  Text, 
+  FlatList, 
+  TouchableOpacity,
+  ActivityIndicator,
     StatusBar,
     Alert,
     Linking,
     RefreshControl,
     Animated,
     ScrollView,
-    Dimensions,
+  Dimensions,
     Platform,
     Image
 } from 'react-native';
@@ -285,17 +285,17 @@ export default function InterfacePublicacao() {
     useEffect(() => {
         const fetchVagas = async () => {
             try {
-                const refVagas = collection(db, 'publicar_vaga_empresa');
+        const refVagas = collection(db, 'publicar_vaga_empresa');
                 const snapshot = await getDocs(refVagas);
 
-                if (snapshot.empty) {
-                    console.log("Nenhuma vaga encontrada!");
-                    setVagasPublicadas([]);
-                    return;
-                }
+            if (snapshot.empty) {
+                console.log("Nenhuma vaga encontrada!");
+                setVagasPublicadas([]);
+                return;
+            }
 
                 const vagas = await Promise.all(snapshot.docs.map(async (doc) => {
-                    const data = doc.data();
+                const data = doc.data();
                     
                     // Buscar dados da empresa para obter a imagem de perfil
                     let profileImage = '';
@@ -310,22 +310,22 @@ export default function InterfacePublicacao() {
                         }
                     }
 
-                    return {
-                        id: doc.id,
-                        publicacao_text: data.publicacao_text || 'Sem descrição',
-                        data: formatarData(data.data || 'Data não informada'),
-                        hora: data.hora || 'Hora não informada',
-                        quem_publicou: typeof data.quem_publicou === 'string' ? data.quem_publicou : 'Usuário desconhecido',
-                        salarioVaga: data.salarioVaga || 'Não informado',
-                        titulo_vaga: data.titulo_vaga || 'Vaga sem título',
-                        requisito_vaga: data.requisito_vaga || 'Requisitos não informados',
-                        area_contato_vaga: data.area_contato_vaga || 'Contato não informado',
+                return {
+                    id: doc.id,
+                    publicacao_text: data.publicacao_text || 'Sem descrição',
+                    data: formatarData(data.data || 'Data não informada'),
+                    hora: data.hora || 'Hora não informada',
+                    quem_publicou: typeof data.quem_publicou === 'string' ? data.quem_publicou : 'Usuário desconhecido',
+                    salarioVaga: data.salarioVaga || 'Não informado',
+                    titulo_vaga: data.titulo_vaga || 'Vaga sem título',
+                    requisito_vaga: data.requisito_vaga || 'Requisitos não informados',
+                    area_contato_vaga: data.area_contato_vaga || 'Contato não informado',
                         nome_empresa: data.nome_empresa || 'Nome da empresa não informado!',
                         profileImage: profileImage
-                    };
+                };
                 }));
 
-                setVagasPublicadas(vagas);
+            setVagasPublicadas(vagas);
             } catch (error) {
                 console.error('Erro ao buscar vagas:', error);
             }
@@ -570,32 +570,32 @@ ${userData.nome_completo || 'Candidato'}
                     >
                         Vagas Disponíveis
                     </Animated.Text>
-                    <Text style={styles.headerSubtitle}>
-                        Encontre oportunidades para iniciar sua carreira
-                    </Text>
-                </View>
+                <Text style={styles.headerSubtitle}>
+                    Encontre oportunidades para iniciar sua carreira
+                </Text>
+            </View>
             </Animated.View>
-
+            
             <View style={styles.container}>
-                {vagasPublicadas.length === 0 ? (
-                    <View style={styles.emptyContainer}>
+            {vagasPublicadas.length === 0 ? (
+                <View style={styles.emptyContainer}>
                         <Ionicons name="briefcase-outline" size={60} color="#ccc" />
-                        <Text style={styles.emptyTitle}>Nenhuma vaga disponível</Text>
-                        <Text style={styles.emptySubtitle}>As vagas publicadas aparecerão aqui</Text>
+                    <Text style={styles.emptyTitle}>Nenhuma vaga disponível</Text>
+                    <Text style={styles.emptySubtitle}>As vagas publicadas aparecerão aqui</Text>
                         <TouchableOpacity 
                             style={styles.refreshButton}
                             onPress={onRefresh}
                         >
                             <Text style={styles.refreshButtonText}>Atualizar</Text>
                         </TouchableOpacity>
-                    </View>
-                ) : (
+                </View>
+            ) : (
                     <Animated.FlatList
-                        data={vagasPublicadas}
-                        keyExtractor={(item) => item.id}
-                        renderItem={renderVagaItem}
+                    data={vagasPublicadas}
+                    keyExtractor={(item) => item.id}
+                    renderItem={renderVagaItem}
                         contentContainerStyle={styles.contentContainer}
-                        showsVerticalScrollIndicator={false}
+                    showsVerticalScrollIndicator={false}
                         onScroll={Animated.event(
                             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
                             { useNativeDriver: false }

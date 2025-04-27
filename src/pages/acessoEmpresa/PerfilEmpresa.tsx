@@ -48,6 +48,9 @@ interface EmpresaData {
     linkedin: string;
     profileImage: string;
     password: string;
+    premium: boolean;
+    data_pagamento_premium: string;
+    publicacao_restante: number;
 }
 
 export default function PerfilEmpresa() {
@@ -77,6 +80,54 @@ export default function PerfilEmpresa() {
     const [isPremium, setIsPremium] = useState<boolean>(false);
     const [publicacaoRestante, setPublicacaoRestante] = useState<number | null>(null);
 
+    // Função para verificar se o premium expirou
+    const verificarPremiumExpirado = async (data: any) => {
+        if (data.premium && data.data_pagamento_premium) {
+            const dataPagamento = new Date(data.data_pagamento_premium);
+            const hoje = new Date();
+            
+            // Calcula a diferença em dias
+            const diffTime = Math.abs(hoje.getTime() - dataPagamento.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            // Se passou 30 dias, remove o premium
+            if (diffDays >= 30) {
+                try {
+                    const empresaDataString = await AsyncStorage.getItem('userEmpresaLogado');
+                    if (empresaDataString) {
+                        const empresaData = JSON.parse(empresaDataString);
+                        const empresaEmail = empresaData.email;
+                        
+                        if (empresaEmail) {
+                            const empresasRef = collection(db, 'user_empresa');
+                            const q = query(empresasRef, where('email_empresa', '==', empresaEmail));
+                            const querySnapshot = await getDocs(q);
+                            
+                            if (!querySnapshot.empty) {
+                                const empresaDoc = querySnapshot.docs[0];
+                                await updateDoc(doc(db, 'user_empresa', empresaDoc.id), {
+                                    premium: false,
+                                    publicacao_restante: 2
+                                });
+                                
+                                // Atualiza o estado local
+                                setIsPremium(false);
+                                setPublicacaoRestante(2);
+                                
+                                Alert.alert(
+                                    'Premium Expirado',
+                                    'Seu plano premium expirou. Renove para continuar com os benefícios!'
+                                );
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro ao verificar premium expirado:', error);
+                }
+            }
+        }
+    };
+
     useEffect(() => {
         let unsubscribe: (() => void) | null = null;
         const fetchEmpresaDataRealtime = async () => {
@@ -92,8 +143,13 @@ export default function PerfilEmpresa() {
                             if (!querySnapshot.empty) {
                                 const empresaDoc = querySnapshot.docs[0];
                                 const data = empresaDoc.data();
+                                
+                                // Verifica se o premium expirou
+                                verificarPremiumExpirado(data);
+                                
                                 setIsPremium(!!data.premium);
                                 setPublicacaoRestante(typeof data.publicacao_restante === 'number' ? data.publicacao_restante : null);
+                                
                                 // Atualizar estado com dados do Firestore
                                 const empresaDataFirestore = {
                                     nome_empresa: data.nome_empresa || '',
@@ -109,8 +165,12 @@ export default function PerfilEmpresa() {
                                     site: data.site || '',
                                     linkedin: data.linkedin || '',
                                     profileImage: data.profileImage || '',
-                                    password: data.password || ''
+                                    password: data.password || '',
+                                    premium: data.premium || false,
+                                    data_pagamento_premium: data.data_pagamento_premium || '',
+                                    publicacao_restante: data.publicacao_restante || 2
                                 };
+                                
                                 setEmpresaData(empresaDataFirestore);
                                 setEditData({
                                     ...empresaDataFirestore,
@@ -544,6 +604,39 @@ export default function PerfilEmpresa() {
         }
     };
 
+    // Função para o botão Upgrade com integração Stripe via backend Render
+    const handleUpgrade = async () => {
+        try {
+            // Pega o e-mail da empresa logada
+            const userDataString = await AsyncStorage.getItem('userEmpresaLogado');
+            if (!userDataString) {
+                Alert.alert('Erro', 'Usuário não encontrado');
+                return;
+            }
+            const userData = JSON.parse(userDataString);
+            const email = userData.email;
+            if (!email) {
+                Alert.alert('Erro', 'E-mail não encontrado');
+                return;
+            }
+
+            // Chama a API para criar a sessão do Stripe
+            const response = await fetch('https://backend-gopq.onrender.com/api/create-checkout-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+            const data = await response.json();
+            if (data.url) {
+                Linking.openURL(data.url);
+            } else {
+                Alert.alert('Erro', 'Não foi possível criar o pagamento.');
+            }
+        } catch (error) {
+            Alert.alert('Erro', 'Ocorreu um erro ao processar o pagamento.');
+        }
+    };
+
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -562,7 +655,7 @@ export default function PerfilEmpresa() {
                 showsVerticalScrollIndicator={false}
             >
                 <View style={styles.header}>
-                    {/* Banner de status acima da foto de perfil */}
+                    {/* Banner de status melhorado */}
                     {isPremium ? (
                         <LinearGradient
                             colors={['#43e97b', '#38f9d7']}
@@ -576,30 +669,60 @@ export default function PerfilEmpresa() {
                                 </View>
                                 <View style={styles.statusTextContainer}>
                                     <Text style={styles.statusBannerTitle}>Conta Premium</Text>
-                                    <Text style={styles.statusBannerText}>Você é um usuário premium! Aproveite todos os benefícios.</Text>
-                                </View>
-                            </View>
-                        </LinearGradient>
-                    ) : (
-                        <LinearGradient
-                            colors={['#FFA500', '#FF8C00']}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 0 }}
-                            style={styles.statusBanner}
-                        >
-                            <View style={styles.statusBannerContent}>
-                                <View style={styles.statusIconContainer}>
-                                    <Ionicons name="alert-circle" size={24} color="#fff" />
-                                </View>
-                                <View style={styles.statusTextContainer}>
-                                    <Text style={styles.statusBannerTitle}>Conta não verificada</Text>
                                     <Text style={styles.statusBannerText}>
-                                        Publicações restantes este mês: <Text style={styles.publicacoesCount}>{publicacaoRestante}</Text>
+                                        Vagas restantes: <Text style={styles.publicacoesCount}>{publicacaoRestante ?? 0}</Text>
+                                    </Text>
+                                    <Text style={styles.statusBannerText}>
+                                        Dias restantes: <Text style={styles.publicacoesCount}>{empresaData?.publicacao_restante || 0}</Text>
                                     </Text>
                                 </View>
                             </View>
                         </LinearGradient>
+                    ) : (
+                        <View style={styles.verificationContainer}>
+                            <LinearGradient
+                                colors={['#6366F1', '#4F46E5']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={styles.statusBanner}
+                            >
+                                <View style={styles.statusBannerContent}>
+                                    <View style={styles.statusIconContainer}>
+                                        <Ionicons name="alert-circle" size={24} color="#fff" />
+                                    </View>
+                                    <View style={styles.statusTextContainer}>
+                                        <Text style={styles.statusBannerTitle}>Conta não verificada</Text>
+                                        <Text style={styles.statusBannerText}>
+                                            Vagas restantes: <Text style={styles.publicacoesCount}>{publicacaoRestante ?? 0}</Text>
+                                        </Text>
+                                        {publicacaoRestante !== null && publicacaoRestante <= 0 && (
+                                            <Text style={styles.statusBannerText}>
+                                                Você atingiu o limite de 2 vagas mensais
+                                            </Text>
+                                        )}
+                                    </View>
+                                </View>
+                            </LinearGradient>
+                            
+                            {/* Botão Upgrade redesenhado */}
+                            <TouchableOpacity 
+                                style={styles.upgradeButton}
+                                onPress={handleUpgrade}
+                                activeOpacity={0.8}
+                            >
+                                <LinearGradient
+                                    colors={['#F59E0B', '#D97706']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
+                                    style={styles.upgradeButtonGradient}
+                                >
+                                    <Ionicons name="star" size={20} color="#fff" />
+                                    <Text style={styles.upgradeButtonText}>Upgrade Premium</Text>
+                                </LinearGradient>
+                            </TouchableOpacity>
+                        </View>
                     )}
+
                     <View style={styles.profileImageContainer}>
                         {empresaData?.profileImage ? (
                             <Image
@@ -1154,16 +1277,20 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         fontSize: normalize(15),
     },
-    // Estilos melhorados para o banner de status
+    // Estilos melhorados para o banner de status e botão de upgrade
+    verificationContainer: {
+        width: '100%',
+        paddingHorizontal: normalize(16),
+        marginBottom: normalize(20),
+    },
     statusBanner: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         borderRadius: normalize(16),
-        paddingVertical: normalize(12),
+        paddingVertical: normalize(14),
         paddingHorizontal: normalize(16),
-        marginBottom: normalize(20),
-        marginHorizontal: normalize(16),
+        marginBottom: normalize(12),
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.15,
@@ -1201,5 +1328,30 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: normalize(16),
         color: '#fff',
+    },
+    // Novos estilos para o botão de upgrade
+    upgradeButton: {
+        borderRadius: normalize(12),
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    upgradeButtonGradient: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: normalize(14),
+        paddingHorizontal: normalize(20),
+    },
+    upgradeButtonText: {
+        color: 'white',
+        fontWeight: '700',
+        fontSize: normalize(16),
+        marginLeft: normalize(8),
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
     },
 });

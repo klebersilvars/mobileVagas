@@ -425,31 +425,31 @@ export default function PerfilUser() {
                         <Text style={styles.inputLabel}>Nome Completo</Text>
                         <View style={styles.inputContainer}>
                             <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
-                            <TextInput
+                                <TextInput
                                 style={styles.input}
-                                placeholder="Nome Completo"
-                                value={editData.nome_completo}
-                                onChangeText={(text) => setEditData({...editData, nome_completo: text})}
-                            />
+                                    placeholder="Nome Completo"
+                                    value={editData.nome_completo}
+                                    onChangeText={(text) => setEditData({...editData, nome_completo: text})}
+                                />
                         </View>
-                        
+                                
                         <Text style={styles.inputLabel}>Telefone</Text>
                         <View style={styles.inputContainer}>
                             <Ionicons name="call-outline" size={20} color="#666" style={styles.inputIcon} />
-                            <TextInput
+                                <TextInput
                                 style={styles.input}
-                                placeholder="(99) 99999-9999"
-                                value={editData.telefone}
-                                onChangeText={handleTelefoneChange}
-                                keyboardType="phone-pad"
-                                maxLength={15}
-                            />
-                        </View>
+                                    placeholder="(99) 99999-9999"
+                                    value={editData.telefone}
+                                    onChangeText={handleTelefoneChange}
+                                    keyboardType="phone-pad"
+                                    maxLength={15}
+                                />
+                            </View>
 
                         <Text style={styles.inputLabel}>Data de Nascimento</Text>
                         <View style={styles.inputContainer}>
                             <Ionicons name="calendar-outline" size={20} color="#666" style={styles.inputIcon} />
-                            <TextInput
+                                <TextInput
                                 style={styles.input}
                                 placeholder="DD/MM/AAAA"
                                 value={editData.data_nascimento}
@@ -466,44 +466,44 @@ export default function PerfilUser() {
                             <MaterialIcons name="location-on" size={20} color="#666" style={styles.inputIcon} />
                             <TextInput
                                 style={styles.input}
-                                placeholder="CEP"
-                                value={editData.cep}
-                                onChangeText={(text) => setEditData({...editData, cep: text})}
+                                    placeholder="CEP"
+                                    value={editData.cep}
+                                    onChangeText={(text) => setEditData({...editData, cep: text})}
                                 keyboardType="numeric"
-                            />
+                                />
                         </View>
 
                         <Text style={styles.inputLabel}>Logradouro</Text>
                         <View style={styles.inputContainer}>
                             <Ionicons name="home-outline" size={20} color="#666" style={styles.inputIcon} />
-                            <TextInput
+                                <TextInput
                                 style={styles.input}
-                                placeholder="Logradouro"
-                                value={editData.logradouro}
-                                onChangeText={(text) => setEditData({...editData, logradouro: text})}
-                            />
+                                    placeholder="Logradouro"
+                                    value={editData.logradouro}
+                                    onChangeText={(text) => setEditData({...editData, logradouro: text})}
+                                />
                         </View>
 
                         <Text style={styles.inputLabel}>Bairro</Text>
                         <View style={styles.inputContainer}>
                             <Ionicons name="business-outline" size={20} color="#666" style={styles.inputIcon} />
-                            <TextInput
+                                <TextInput
                                 style={styles.input}
-                                placeholder="Bairro"
-                                value={editData.bairro}
-                                onChangeText={(text) => setEditData({...editData, bairro: text})}
-                            />
+                                    placeholder="Bairro"
+                                    value={editData.bairro}
+                                    onChangeText={(text) => setEditData({...editData, bairro: text})}
+                                />
                         </View>
 
                         <Text style={styles.inputLabel}>Complemento</Text>
                         <View style={styles.inputContainer}>
                             <MaterialIcons name="apartment" size={20} color="#666" style={styles.inputIcon} />
-                            <TextInput
+                                <TextInput
                                 style={styles.input}
-                                placeholder="Complemento"
-                                value={editData.complemento}
-                                onChangeText={(text) => setEditData({...editData, complemento: text})}
-                            />
+                                    placeholder="Complemento"
+                                    value={editData.complemento}
+                                    onChangeText={(text) => setEditData({...editData, complemento: text})}
+                                />
                         </View>
 
                         <View style={styles.rowContainer}>
@@ -511,28 +511,28 @@ export default function PerfilUser() {
                                 <Text style={styles.inputLabel}>Estado</Text>
                                 <View style={styles.inputContainer}>
                                     <MaterialIcons name="map" size={20} color="#666" style={styles.inputIcon} />
-                                    <TextInput
+                                        <TextInput
                                         style={styles.input}
-                                        placeholder="Estado"
-                                        value={editData.estado}
-                                        onChangeText={(text) => setEditData({...editData, estado: text})}
-                                    />
-                                </View>
+                                            placeholder="Estado"
+                                            value={editData.estado}
+                                            onChangeText={(text) => setEditData({...editData, estado: text})}
+                                        />
+                                    </View>
                             </View>
                             <View style={styles.halfInput}>
                                 <Text style={styles.inputLabel}>UF</Text>
                                 <View style={styles.inputContainer}>
                                     <MaterialIcons name="location-city" size={20} color="#666" style={styles.inputIcon} />
-                                    <TextInput
+                                        <TextInput
                                         style={styles.input}
-                                        placeholder="UF"
-                                        value={editData.uf}
-                                        onChangeText={(text) => setEditData({...editData, uf: text})}
+                                            placeholder="UF"
+                                            value={editData.uf}
+                                            onChangeText={(text) => setEditData({...editData, uf: text})}
                                         maxLength={2}
-                                    />
+                                        />
+                                    </View>
                                 </View>
                             </View>
-                        </View>
                     </>
                 );
             case 'education':
@@ -540,79 +540,79 @@ export default function PerfilUser() {
                     <>
                         <View style={styles.sectionContainer}>
                             <Text style={styles.sectionTitle}>Formação Acadêmica</Text>
-                            {editData.formacoes.map((formacao, index) => (
+                                {editData.formacoes.map((formacao, index) => (
                                 <View key={index} style={styles.listItemContainer}>
                                     <Text style={styles.inputLabel}>
-                                        {index === 0 ? 'Formação Principal' : `Formação ${index + 1}`}
-                                    </Text>
+                                            {index === 0 ? 'Formação Principal' : `Formação ${index + 1}`}
+                                        </Text>
                                     <View style={styles.listItemRow}>
                                         <View style={styles.listItemInput}>
                                             <Ionicons name="school-outline" size={20} color="#666" style={styles.inputIcon} />
-                                            <TextInput
+                                                <TextInput
                                                 style={styles.input}
-                                                placeholder="Descreva sua formação"
-                                                value={formacao}
-                                                onChangeText={(text) => updateFormacao(index, text)}
+                                                    placeholder="Descreva sua formação"
+                                                    value={formacao}
+                                                    onChangeText={(text) => updateFormacao(index, text)}
                                                 multiline
-                                            />
-                                        </View>
-                                        {index > 0 && (
-                                            <TouchableOpacity 
+                                                />
+                                            </View>
+                                            {index > 0 && (
+                                                <TouchableOpacity 
                                                 style={styles.deleteButton}
-                                                onPress={() => removeFormacao(index)}
-                                            >
+                                                    onPress={() => removeFormacao(index)}
+                                                >
                                                 <Ionicons name="trash-outline" size={20} color="#ff5252" />
-                                            </TouchableOpacity>
-                                        )}
+                                                </TouchableOpacity>
+                                            )}
+                                        </View>
                                     </View>
-                                </View>
-                            ))}
-                            <TouchableOpacity 
+                                ))}
+                                <TouchableOpacity 
                                 style={styles.addButton}
-                                onPress={addFormacao}
-                            >
+                                    onPress={addFormacao}
+                                >
                                 <Ionicons name="add-circle-outline" size={20} color="#000" />
                                 <Text style={styles.addButtonText}>Adicionar Formação</Text>
-                            </TouchableOpacity>
-                        </View>
+                                </TouchableOpacity>
+                            </View>
 
                         <View style={styles.sectionContainer}>
                             <Text style={styles.sectionTitle}>Experiência Profissional</Text>
-                            {editData.experiencias.map((experiencia, index) => (
+                                {editData.experiencias.map((experiencia, index) => (
                                 <View key={index} style={styles.listItemContainer}>
                                     <Text style={styles.inputLabel}>
-                                        {index === 0 ? 'Experiência Principal' : `Experiência ${index + 1}`}
-                                    </Text>
+                                            {index === 0 ? 'Experiência Principal' : `Experiência ${index + 1}`}
+                                        </Text>
                                     <View style={styles.listItemRow}>
                                         <View style={styles.listItemInput}>
                                             <Ionicons name="briefcase-outline" size={20} color="#666" style={styles.inputIcon} />
-                                            <TextInput
+                                                <TextInput
                                                 style={styles.input}
-                                                placeholder="Descreva sua experiência"
-                                                value={experiencia}
-                                                onChangeText={(text) => updateExperiencia(index, text)}
-                                                multiline
-                                            />
-                                        </View>
-                                        {index > 0 && (
-                                            <TouchableOpacity 
+                                                    placeholder="Descreva sua experiência"
+                                                    value={experiencia}
+                                                    onChangeText={(text) => updateExperiencia(index, text)}
+                                                    multiline
+                                                />
+                                            </View>
+                                            {index > 0 && (
+                                                <TouchableOpacity 
                                                 style={styles.deleteButton}
-                                                onPress={() => removeExperiencia(index)}
-                                            >
+                                                    onPress={() => removeExperiencia(index)}
+                                                >
                                                 <Ionicons name="trash-outline" size={20} color="#ff5252" />
-                                            </TouchableOpacity>
-                                        )}
+                                                </TouchableOpacity>
+                                            )}
+                                        </View>
                                     </View>
-                                </View>
-                            ))}
-                            <TouchableOpacity 
+                                ))}
+                                <TouchableOpacity 
                                 style={styles.addButton}
-                                onPress={addExperiencia}
-                            >
+                                    onPress={addExperiencia}
+                                >
                                 <Ionicons name="add-circle-outline" size={20} color="#000" />
                                 <Text style={styles.addButtonText}>Adicionar Experiência</Text>
-                            </TouchableOpacity>
-                        </View>
+                                </TouchableOpacity>
+                            </View>
                     </>
                 );
             case 'experience':
@@ -877,7 +877,7 @@ export default function PerfilUser() {
                         <Text style={styles.editButtonText}>Editar Perfil</Text>
                     </View>
                 </TouchableOpacity>
-            </ScrollView>
+                        </ScrollView>
 
             <Modal
                 animationType="slide"
@@ -891,7 +891,7 @@ export default function PerfilUser() {
                 >
                     <View style={styles.modalContent}>
                         <View style={styles.modalHeader}>
-                            <TouchableOpacity
+                            <TouchableOpacity 
                                 onPress={() => setModalVisible(false)}
                                 style={styles.closeButton}
                             >
@@ -1000,7 +1000,7 @@ export default function PerfilUser() {
                                     </Text>
                                 </TouchableOpacity>
                             </ScrollView>
-                        </View>
+                    </View>
 
                         {/* Content Area - Below tabs */}
                         <ScrollView 
@@ -1015,7 +1015,7 @@ export default function PerfilUser() {
                                 <Text style={styles.saveButtonText}>Salvar</Text>
                             </TouchableOpacity>
                         )}
-                    </View>
+                </View>
                 </KeyboardAvoidingView>
             </Modal>
         </SafeAreaView>
