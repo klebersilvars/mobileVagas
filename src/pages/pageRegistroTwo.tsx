@@ -182,14 +182,12 @@ export default function PageRegistroTwo() {
                             <View style={styles.inputContainer}>
                                 <Text allowFontScaling={false} style={styles.inputLabel}>CEP</Text>
                                 <TextInputMask
-                                    type={'custom'}
-                                    options={{
-                                        mask: '99999-999'
-                                    }}
+                                    type={'zip-code'}
                                     style={styles.input}
                                     placeholder="Digite seu CEP"
                                     placeholderTextColor="#A0AEC0"
                                     keyboardType='numeric'
+                                    value={cepRegistro}
                                     onChangeText={(value: string) => setCepRegistro(value)}
                                 />
                                 
@@ -199,26 +197,18 @@ export default function PageRegistroTwo() {
                                             onPress={buscarCep} 
                                             style={styles.searchButton}
                                         >
-                                            {/* {loading ? (
-                                                <ActivityIndicator size="small" color="#fff" />
-                                            ) : ( */}
-                                                <Text allowFontScaling={false} style={styles.searchButtonText}>
-                                                    Buscar
-                                                </Text>
-                                            {/* )} */}
+                                            <Text allowFontScaling={false} style={styles.searchButtonText}>
+                                                Buscar
+                                            </Text>
                                         </TouchableOpacity>
                                     ) : (
                                         <TouchableOpacity 
                                             style={styles.searchButtonDisabled}
                                             disabled={true}
                                         >
-                                            {/* {loading ? (
-                                                <ActivityIndicator size="small" color="#fff" />
-                                            ) : ( */}
-                                                <Text allowFontScaling={false} style={styles.searchButtonText}>
-                                                    Buscar
-                                                </Text>
-                                            {/* )} */}
+                                            <Text allowFontScaling={false} style={styles.searchButtonText}>
+                                                Buscar
+                                            </Text>
                                         </TouchableOpacity>
                                     )}
                                 </View>
