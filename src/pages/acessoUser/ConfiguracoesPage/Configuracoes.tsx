@@ -52,7 +52,7 @@ export default function ConfiguracoesUser() {
                 <NavBarConfigs />
 
                 <View style={styles.container}>
-                    <TouchableOpacity onPress={assinaturaAviso} style={styles.buttonDeslogarConta}>
+                    {/* <TouchableOpacity onPress={assinaturaAviso} style={styles.buttonDeslogarConta}>
                         <Text style={styles.textAssinaturaConta}>Assinatura</Text>
                         <MaterialCommunityIcons
                             name="cash"
@@ -60,7 +60,7 @@ export default function ConfiguracoesUser() {
                             color={'black'}
                             style={styles.iconExitApp}
                         />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
 
                     <TouchableOpacity 
                         onPress={() => navigation.navigate('SuporteUser')} 

@@ -620,18 +620,37 @@ export default function PerfilEmpresa() {
                 return;
             }
 
-            // Chama a API para criar a sessão do Stripe
-            const response = await fetch('https://backend-gopq.onrender.com/api/create-checkout-session', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
-            });
-            const data = await response.json();
-            if (data.url) {
-                Linking.openURL(data.url);
-            } else {
-                Alert.alert('Erro', 'Não foi possível criar o pagamento.');
-            }
+            // Mostra alerta informando sobre o redirecionamento
+            Alert.alert(
+                'Redirecionando',
+                'Você será redirecionado para a página de pagamento em 10 segundos.',
+                [
+                    {
+                        text: 'OK',
+                        onPress: () => {
+                            // Inicia o timer de 10 segundos
+                            setTimeout(async () => {
+                                try {
+                                    // Chama a API para criar a sessão do Stripe
+                                    const response = await fetch('https://backend-gopq.onrender.com/api/create-checkout-session', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ email }),
+                                    });
+                                    const data = await response.json();
+                                    if (data.url) {
+                                        Linking.openURL(data.url);
+                                    } else {
+                                        Alert.alert('Erro', 'Não foi possível criar o pagamento.');
+                                    }
+                                } catch (error) {
+                                    Alert.alert('Erro', 'Ocorreu um erro ao processar o pagamento.');
+                                }
+                            }, 10000); // 10 segundos
+                        }
+                    }
+                ]
+            );
         } catch (error) {
             Alert.alert('Erro', 'Ocorreu um erro ao processar o pagamento.');
         }
