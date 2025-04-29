@@ -616,44 +616,7 @@ export default function PerfilUser() {
                     </>
                 );
             case 'experience':
-                return (
-                    <>
-                        {editData.experiencias.map((experiencia, index) => (
-                            <View key={index} style={styles.listItemContainer}>
-                                <Text style={styles.inputLabel}>
-                                    {index === 0 ? 'Experiência Principal' : `Experiência ${index + 1}`}
-                                </Text>
-                                <View style={styles.listItemRow}>
-                                    <View style={styles.listItemInput}>
-                                        <Ionicons name="briefcase-outline" size={20} color="#666" style={styles.inputIcon} />
-                                        <TextInput
-                                            style={styles.input}
-                                            placeholder="Descreva sua experiência"
-                                            value={experiencia}
-                                            onChangeText={(text) => updateExperiencia(index, text)}
-                                            multiline
-                                        />
-                                    </View>
-                                    {index > 0 && (
-                                        <TouchableOpacity 
-                                            style={styles.deleteButton}
-                                            onPress={() => removeExperiencia(index)}
-                                        >
-                                            <Ionicons name="trash-outline" size={20} color="#ff5252" />
-                                        </TouchableOpacity>
-                                    )}
-                                </View>
-                            </View>
-                        ))}
-                        <TouchableOpacity 
-                            style={styles.addButton}
-                            onPress={addExperiencia}
-                        >
-                            <Ionicons name="add-circle-outline" size={20} color="#000" />
-                            <Text style={styles.addButtonText}>Adicionar Experiência</Text>
-                        </TouchableOpacity>
-                    </>
-                );
+                return null; // Removendo o conteúdo da aba 'experience' pois já está na aba 'education'
             case 'password':
                 return (
                     <View style={styles.tabContent}>
@@ -971,20 +934,6 @@ export default function PerfilUser() {
                                         Formação
                                     </Text>
                                 </TouchableOpacity>
-                                
-                                <TouchableOpacity
-                                    style={[styles.tab, activeTab === 'experience' && styles.activeTab]}
-                                    onPress={() => setActiveTab('experience')}
-                                >
-                                    <Ionicons 
-                                        name="briefcase" 
-                                        size={20} 
-                                        color={activeTab === 'experience' ? '#000' : '#666'} 
-                                    />
-                                    <Text style={[styles.tabText, activeTab === 'experience' && styles.activeTabText]}>
-                                        Experiência
-                                    </Text>
-                                </TouchableOpacity>
 
                                 <TouchableOpacity
                                     style={[styles.tab, activeTab === 'password' && styles.activeTab]}
@@ -1000,7 +949,7 @@ export default function PerfilUser() {
                                     </Text>
                                 </TouchableOpacity>
                             </ScrollView>
-                    </View>
+                        </View>
 
                         {/* Content Area - Below tabs */}
                         <ScrollView 
