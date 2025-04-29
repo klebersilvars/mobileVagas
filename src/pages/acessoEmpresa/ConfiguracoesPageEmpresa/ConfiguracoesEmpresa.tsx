@@ -9,6 +9,7 @@ import { RootStackParamList } from '../../../../routes/RootStackParamList';
 import { StackNavigationProp } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomAlertRed from '../../../components/CustomAlertRed';
+import SuporteUser from '../../acessoUser/areaSuporte/SuporteUser';
 
 type RouterHomeExit = StackNavigationProp<RootStackParamList>;
 
@@ -46,29 +47,38 @@ export default function ConfiguracoesEmpresa() {
                 <NavBarConfigs />
 
                 <View style={styles.container}>
+                    <TouchableOpacity 
+                        onPress={() => navigation.navigate('SuporteUser')} 
+                        style={styles.buttonDeslogarConta}
+                    >
+                        <Text style={styles.textSuporte}>Suporte</Text>
+                        <MaterialCommunityIcons
+                            name="headset"
+                            size={25}
+                            color={'black'}
+                            style={styles.iconArrow}
+                        />
+                    </TouchableOpacity>
 
-            
                     <TouchableOpacity onPress={alertaVersao} style={styles.buttonDeslogarConta}>
                         <Text style={styles.textVersionApp}>Versão do aplicativo</Text>
                         <MaterialCommunityIcons
-                                    name="arrow-right"
-                                    size={25}
-                                    color={'black'}
-                                    style={styles.iconArrow}
-                                />
+                            name="arrow-right"
+                            size={25}
+                            color={'black'}
+                            style={styles.iconArrow}
+                        />
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={deslogarConta} style={styles.buttonDeslogarConta}>
                         <Text style={styles.textDeslogarConta}>Deslogar conta</Text>
                         <MaterialCommunityIcons
-                                    name="exit-to-app"
-                                    size={25}
-                                    color={'red'}
-                                    style={styles.iconExitApp}
-                                />
+                            name="exit-to-app"
+                            size={25}
+                            color={'red'}
+                            style={styles.iconExitApp}
+                        />
                     </TouchableOpacity>
-
-
                 </View>
             </SafeAreaView>
         </>
@@ -102,6 +112,10 @@ export const styles = StyleSheet.create({
     textAssinaturaConta: {
         color: 'black',
         fontWeight: 'bold'
+    },
+    textSuporte: {
+        color: 'black',
+        fontWeight: '500'
     },
     textVersionApp: {
         color: 'black'
