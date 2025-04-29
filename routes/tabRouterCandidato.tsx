@@ -5,7 +5,6 @@ import LoginEmpresa from '../src/pages/acessoEmpresa/acessoEmpresa'
 import ConfiguracoesUser from '../src/pages/acessoUser/ConfiguracoesPage/Configuracoes';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import PerfilUser from '../src/pages/acessoUser/PerfilUser';
-
 export default function TabRouterCandidato() {
     const Tab = createBottomTabNavigator();
 

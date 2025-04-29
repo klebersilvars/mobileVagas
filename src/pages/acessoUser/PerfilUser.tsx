@@ -949,7 +949,7 @@ export default function PerfilUser() {
                                     </Text>
                                 </TouchableOpacity>
                             </ScrollView>
-                        </View>
+                    </View>
 
                         {/* Content Area - Below tabs */}
                         <ScrollView 

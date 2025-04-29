@@ -11,6 +11,8 @@ import PageEsqueciSenha from '../src/pages/pageEsqueciSenha';
 import TabRouterCandidato from './tabRouterCandidato';
 import { HeaderLeft, HeaderLeftPageLogin } from '../src/components/HeaderLeft/HeaderLeft';
 import TabRouterEmpresa from './tabRouterEmpresa';
+import SuporteUser from '../src/pages/acessoUser/areaSuporte/SuporteUser';
+
 const Stack = createStackNavigator();
 
 export default function Routes() {
@@ -123,6 +125,14 @@ export default function Routes() {
                         headerShown: false,           // Exibe o cabeçalho
                         title: '',                   // Remove o título da tela
                         headerTransparent: true,     // Torna o cabeçalho transparente
+                    }}
+                />
+
+                <Stack.Screen
+                    name='SuporteUser'
+                    component={SuporteUser}
+                    options={{
+                        headerShown: false,
                     }}
                 />
             </Stack.Navigator>

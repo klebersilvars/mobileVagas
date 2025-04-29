@@ -9,4 +9,5 @@ export type RootStackParamList = {
     PageEsqueciSenha: undefined;
     BottomTabsCandidato: { screen?: string } | undefined;
     BottomTabsEmpresa: { screen?: string } | undefined;
+    SuporteUser: undefined;
 };

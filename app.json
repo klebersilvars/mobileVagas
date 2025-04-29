@@ -2,7 +2,7 @@
   "expo": {
     "name": "NovosTalentos",
     "slug": "mobileVagas",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/novos_talentos_logo_fundo.png",
     "userInterfaceStyle": "light",

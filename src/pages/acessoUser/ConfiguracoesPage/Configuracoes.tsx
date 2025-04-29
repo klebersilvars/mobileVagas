@@ -9,6 +9,7 @@ import { RootStackParamList } from '../../../../routes/RootStackParamList';
 import { StackNavigationProp } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomAlertRed from '../../../components/CustomAlertRed';
+import SuporteUser from '../areaSuporte/SuporteUser';
 
 type RouterHomeExit = StackNavigationProp<RootStackParamList>;
 
@@ -58,6 +59,19 @@ export default function ConfiguracoesUser() {
                             size={25}
                             color={'black'}
                             style={styles.iconExitApp}
+                        />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                        onPress={() => navigation.navigate('SuporteUser')} 
+                        style={styles.buttonDeslogarConta}
+                    >
+                        <Text style={styles.textSuporte}>Suporte</Text>
+                        <MaterialCommunityIcons
+                            name="headset"
+                            size={25}
+                            color={'black'}
+                            style={styles.iconArrow}
                         />
                     </TouchableOpacity>
 
@@ -113,6 +127,10 @@ export const styles = StyleSheet.create({
     textAssinaturaConta: {
         color: 'black',
         fontWeight: 'bold'
+    },
+    textSuporte: {
+        color: 'black',
+        fontWeight: '500'
     },
     textVersionApp: {
         color: 'black'
