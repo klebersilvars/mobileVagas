@@ -1,26 +1,28 @@
 {
   "expo": {
-    "name": "NovosTalentos",
-    "slug": "mobileVagas",
+    "name": "mobilevagas",
+    "slug": "mobilevagas",
     "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/novos_talentos_logo_fundo.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/novos_talentos_logo_fundo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
     "android": {
-      "package": "com.kleberfjv.NovosTalentos",
       "adaptiveIcon": {
         "foregroundImage": "./assets/novos_talentos_logo_fundo.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.kleberfjv.mobilevagas"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -32,6 +34,7 @@
       "eas": {
         "projectId": "10d78967-cb07-4623-857c-550463ecd395"
       }
-    }
+    },
+    "jsEngine": "jsc"
   }
 }
