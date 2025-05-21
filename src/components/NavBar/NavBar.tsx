@@ -1,7 +1,6 @@
 import React, {useState} from 'react'
 import {View, Text, SafeAreaView, TouchableOpacity, Image, Alert} from 'react-native'
-import { db } from '../../firebase/firebase'
-import { auth } from '../../firebase/firebase'
+import { auth, db } from '../../firebase/firebase'
 import { collection, where, query } from 'firebase/firestore'
 import { StyleLoginNavBar } from './NavBarStyle'
 import { useNavigation } from '@react-navigation/native';

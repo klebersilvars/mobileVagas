@@ -19,8 +19,7 @@ import {
 import { ButtonPasswordFalse, ButtonPasswordTrue } from '../components/ButtonStepOne';
 import { RegistroUserGeral } from '../interfaces/storageRegistroInterface';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { auth } from '../firebase/firebase';
-import { db } from '../firebase/firebase';
+import { auth, db } from '../firebase/firebase';
 import {setDoc, doc} from 'firebase/firestore'
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { StackNavigationProp } from '@react-navigation/stack';

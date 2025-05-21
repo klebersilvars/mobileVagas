@@ -1,4 +1,4 @@
-import { db } from './firebase';
+import { db } from './firebase/firebase';
 import { collection, getDocs, setDoc, doc, getDoc } from 'firebase/firestore';
 
 const VERSION_DOC_ID = 'dzXz1HCFbOYhjOo2MXjh';

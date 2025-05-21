@@ -25,9 +25,8 @@ import { TextInputMask } from 'react-native-masked-text';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {RegistroUserOne, RegistroEmpresaFirebase} from '../interfaces/storageRegistroInterface';
-import { auth } from '../firebase/firebase';
+import { auth, db } from '../firebase/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { db } from '../firebase/firebase';
 import { setDoc, doc } from 'firebase/firestore';
 
 const { width, height } = Dimensions.get('window');

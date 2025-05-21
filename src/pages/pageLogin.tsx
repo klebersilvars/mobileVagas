@@ -19,11 +19,10 @@ import {
   ScrollView
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { db } from '../firebase/firebase';
+import { auth, db } from '../firebase/firebase';
 import { collection, where, query, getDocs } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase/firebase';
 import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootTabParamList } from '../../routes/RootTabParamList';
